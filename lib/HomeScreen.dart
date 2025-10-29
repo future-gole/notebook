@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:notebook/server/LogService.dart';
 import 'package:share_handler/share_handler.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -21,14 +22,14 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _initShareHandler() async {
     // 监听：当App在后台/前台运行时，接收到新的分享
     handler.sharedMediaStream.listen((SharedMedia media) {
-      print('Received shared media while running');
+      log.d('Received shared media while running');
       _handleSharedData(media);
     });
 
     // 获取：当App是关闭状态，通过分享第一次启动
     final media = await handler.getInitialSharedMedia();
     if (media != null) {
-      print('Received shared media on launch');
+      log.d('Received shared media on launch');
       _handleSharedData(media);
     }
   }
@@ -44,7 +45,7 @@ class _HomeScreenState extends State<HomeScreen> {
     if (sharedContent == null) return;
 
     // 提取分享的内容，通常是URL或文本
-    print("Detected shared content: $sharedContent");
+    log.d("Detected shared content: $sharedContent");
   }
 
   @override
