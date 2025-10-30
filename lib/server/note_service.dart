@@ -37,14 +37,16 @@ class NoteService {
 
   // 根据 title 查询笔记
   Future<List<Note>> findNotesWithTitle(String query) async {
-    return await isar.notes.filter()
+    return await isar.notes
+        .filter()
         .titleContains(query, caseSensitive: false)
         .findAll();
   }
 
   // 根据 content 查询笔记
   Future<List<Note>> findNotesWithContent(String query) async {
-    return await isar.notes.filter()
+    return await isar.notes
+        .filter()
         .contentContains(query, caseSensitive: false)
         .findAll();
   }
