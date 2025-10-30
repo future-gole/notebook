@@ -1,7 +1,25 @@
 import 'package:flutter/material.dart';
+import 'package:isar_community/isar.dart';
 import 'package:notebook/HomeScreen.dart';
 
-void main() {
+
+import 'package:path_provider/path_provider.dart';import 'model/note.dart';
+
+late Isar isar;
+
+Future<void> main() async {
+  // 确保 flutter 绑定初始化了
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // 获取一个可写目录
+  final dir = await getApplicationDocumentsDirectory();
+
+  // 打开 Isar 实例
+  isar = await Isar.open(
+    [NoteSchema], // 传入您所有模型的 Schema
+    directory: dir.path,
+  );
+
   runApp(const MyApp());
 }
 

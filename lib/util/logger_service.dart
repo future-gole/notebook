@@ -153,40 +153,70 @@ class LogService {
       // 1. 设置过滤级别
       level: kReleaseMode ? Level.info : Level.verbose,
 
-      printer: SimplePrinter(
-        colors: true,
-      ),
+      printer: SimplePrinter(colors: true),
 
       output: DeveloperLogOutput(),
     );
 
     // 打印一条启动日志
-    i("LogService", "Logger Service initialized. Mode: ${kReleaseMode ? 'Release' : 'Debug'}");
+    i(
+      "LogService",
+      "Logger Service initialized. Mode: ${kReleaseMode ? 'Release' : 'Debug'}",
+    );
   }
 
   // 4. 封装的日志方法
   void v(String tag, dynamic message, {dynamic error, StackTrace? stackTrace}) {
-    _logger.v({"tag": tag, "msg": message}, error: error, stackTrace: stackTrace);
+    _logger.v(
+      {"tag": tag, "msg": message},
+      error: error,
+      stackTrace: stackTrace,
+    );
   }
 
   void d(String tag, dynamic message, {dynamic error, StackTrace? stackTrace}) {
-    _logger.d({"tag": tag, "msg": message}, error: error, stackTrace: stackTrace);
+    _logger.d(
+      {"tag": tag, "msg": message},
+      error: error,
+      stackTrace: stackTrace,
+    );
   }
 
   void i(String tag, dynamic message, {dynamic error, StackTrace? stackTrace}) {
-    _logger.i({"tag": tag, "msg": message}, error: error, stackTrace: stackTrace);
+    _logger.i(
+      {"tag": tag, "msg": message},
+      error: error,
+      stackTrace: stackTrace,
+    );
   }
 
   void w(String tag, dynamic message, {dynamic error, StackTrace? stackTrace}) {
-    _logger.w({"tag": tag, "msg": message}, error: error, stackTrace: stackTrace);
+    _logger.w(
+      {"tag": tag, "msg": message},
+      error: error,
+      stackTrace: stackTrace,
+    );
   }
 
   void e(String tag, dynamic message, {dynamic error, StackTrace? stackTrace}) {
-    _logger.e({"tag": tag, "msg": message}, error: error, stackTrace: stackTrace);
+    _logger.e(
+      {"tag": tag, "msg": message},
+      error: error,
+      stackTrace: stackTrace,
+    );
   }
 
-  void wtf(String tag, dynamic message, {dynamic error, StackTrace? stackTrace}) {
-    _logger.f({"tag": tag, "msg": message}, error: error, stackTrace: stackTrace);
+  void wtf(
+    String tag,
+    dynamic message, {
+    dynamic error,
+    StackTrace? stackTrace,
+  }) {
+    _logger.f(
+      {"tag": tag, "msg": message},
+      error: error,
+      stackTrace: stackTrace,
+    );
   }
 }
 
