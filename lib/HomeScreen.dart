@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:notebook/main.dart';
 import 'package:notebook/model/note.dart';
+import 'package:notebook/page/widget/nav_bar.dart';
 import 'package:notebook/page/widget/note_Item.dart';
 import 'package:notebook/server/note_service.dart';
 import 'package:notebook/util/logger_service.dart';
@@ -16,7 +18,7 @@ String tag = "HomeScreen";
 class _HomeScreenState extends State<HomeScreen> {
   // 获取插件单例
   final handler = ShareHandler.instance;
-  final NoteService _noteService = NoteService();
+  final NoteService _noteService = NoteService(isar);
   String? sharedContent;
 
   // 用于UI展示的状态
@@ -83,14 +85,14 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[100],
+      backgroundColor: Color.fromARGB(1, 11, 1, 1),
       appBar: AppBar(
         title: Text(
           'NoteBook',
           style: TextStyle(fontWeight: FontWeight.bold, fontSize: 24),
         ),
         elevation: 0,
-        backgroundColor: Colors.white,
+        backgroundColor: Color.fromARGB(100, 9, 156, 189),
         foregroundColor: Colors.black87,
         actions: [
           // 搜索按钮
@@ -102,8 +104,12 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
-      body: _notes.isEmpty
-          ? Center(
+      body: Column(
+        children: [
+          GlassNavBar(),
+          Expanded(
+            child: _notes.isEmpty
+                ? Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -129,14 +135,18 @@ class _HomeScreenState extends State<HomeScreen> {
                 ],
               ),
             )
-          : ListView.builder(
+                : ListView.builder(
               padding: EdgeInsets.only(top: 8, bottom: 80),
               itemCount: _notes.length,
               itemBuilder: (context, index) {
                 final note = _notes[index];
+                // 确保 noteItem(note, _noteService) 返回的是一个 Widget
                 return noteItem(note, _noteService);
               },
             ),
+          ),
+        ],
+      ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
           _showAddNoteDialog(context);
