@@ -1,13 +1,20 @@
 import 'package:isar_community/isar.dart';
-import 'package:notebook/main.dart';
 import 'package:notebook/model/note.dart';
 
 class NoteService {
+  final Isar isar;
+
+  NoteService(this.isar);
   // 增添笔记
-  Future<void> addOrUpdateNote(String title, String content) async {
+  Future<void> addOrUpdateNote(
+    String title,
+    String content, {
+    String? category,
+  }) async {
     final newNote = Note()
       ..title = title
       ..content = content
+      ..category = category
       ..time = DateTime.now();
     await isar.writeTxn(() async {
       await isar.notes.put(newNote);

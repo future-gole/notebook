@@ -10,4 +10,6 @@ class Note{
   String? content;
 
   DateTime? time;
+
+  String? category;
 }
