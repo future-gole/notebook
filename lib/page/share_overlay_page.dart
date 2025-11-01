@@ -259,8 +259,8 @@ class _ShareOverlayPageState extends State<ShareOverlayPage>
                           if (newTitle.isNotEmpty && newContent.isNotEmpty) {
                             final noteService = NoteService(isar);
                             await noteService.addOrUpdateNote(
-                              newTitle,
-                              newContent,
+                              title: newTitle,
+                              content: newContent,
                             );
                             log.d(_tag, 'Note updated: $newTitle');
                           }

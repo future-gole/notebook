@@ -6,6 +6,9 @@ import 'package:notebook/providers/nav_providers.dart';
 import 'package:notebook/services/share_background_service.dart';
 import 'package:path_provider/path_provider.dart';
 import 'model/note.dart';
+// 这会强制构建系统将 main_share.dart 编译到应用中
+// 我们给它一个 "as" 别名，以防万一有命名冲突
+import 'package:notebook/main_share.dart' as share_entrypoint;
 
 late Isar isar;
 
@@ -22,8 +25,8 @@ Future<void> main() async {
     directory: dir.path,
   );
 
-  // 初始化后台分享服务
-  ShareBackgroundService.initialize();
+  // // 初始化后台分享服务
+  // ShareBackgroundService.initialize();
 
   runApp(
     // 使用 ProviderScope 包裹应用，并 override isarProvider

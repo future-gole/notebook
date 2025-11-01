@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
+import 'package:isar_community/isar.dart';
 import 'package:notebook/main.dart';
 import 'package:notebook/server/note_service.dart';
 import 'package:notebook/util/logger_service.dart';
@@ -14,8 +15,11 @@ class ShareBackgroundService {
     'com.example.notebook/share',
   );
 
+  static late Isar _isar;
+
   /// 初始化后台服务
-  static void initialize() {
+  static void initialize(Isar isarInstance) {
+    _isar = isarInstance;
     _channel.setMethodCallHandler(_handleMethodCall);
     log.d(_tag, 'Share background service initialized');
   }
@@ -25,7 +29,7 @@ class ShareBackgroundService {
     try {
       switch (call.method) {
         case 'saveAndSync':
-          return await _saveAndSync(call.arguments);
+          return await saveAndSync(call.arguments);
         default:
           log.w(_tag, 'Unknown method: ${call.method}');
           return null;
@@ -37,7 +41,7 @@ class ShareBackgroundService {
   }
 
   /// 保存数据并同步到后端
-  static Future<Map<String, dynamic>> _saveAndSync(dynamic arguments) async {
+  static Future<Map<String, dynamic>> saveAndSync(dynamic arguments) async {
     try {
       if (arguments is! Map) {
         throw ArgumentError('Invalid arguments type');
@@ -45,6 +49,8 @@ class ShareBackgroundService {
 
       final title = arguments['title'] as String? ?? '分享内容';
       final content = arguments['content'] as String? ?? '';
+      final category = arguments['category'] as String?;
+      final tag = arguments['tag'] as String?;
       final timestamp =
           arguments['timestamp'] as int? ??
           DateTime.now().millisecondsSinceEpoch;
@@ -52,10 +58,10 @@ class ShareBackgroundService {
       log.d(_tag, '📥 Received: $title (${content.length} chars)');
 
       // 1. 立即保存到本地数据库
-      await _saveToLocal(title, content);
+      await _saveToLocal(title, content, category, tag);
 
       // 2. 异步同步到后端（不阻塞）
-      _syncToBackend(title, content, timestamp);
+      _syncToBackend(title, content, category, tag, timestamp);
 
       return {
         'success': true,
@@ -69,10 +75,19 @@ class ShareBackgroundService {
   }
 
   /// 保存到本地 Isar 数据库
-  static Future<void> _saveToLocal(String title, String content) async {
+  static Future<void> _saveToLocal(
+      String title,
+      String content,
+      String? category,
+      String? tag) async {
     try {
-      final noteService = NoteService(isar);
-      await noteService.addOrUpdateNote(title, content);
+      final noteService = NoteService(_isar);
+      await noteService.addOrUpdateNote(
+        title: title,
+        content: content,
+        category: category,
+        tag: tag,
+      );
       log.d(_tag, '✅ Saved to local database');
     } catch (e) {
       log.e(_tag, '❌ Failed to save locally: $e');
@@ -82,9 +97,11 @@ class ShareBackgroundService {
 
   /// 同步到后端服务器
   static Future<void> _syncToBackend(
-    String title,
-    String content,
-    int timestamp,
+      String title,
+      String content,
+      String? category,
+      String? tag,
+      int timestamp,
   ) async {
     try {
       // TODO: 替换为你的实际后端 API 地址
@@ -102,6 +119,8 @@ class ShareBackgroundService {
             body: jsonEncode({
               'title': title,
               'content': content,
+              'category': category,
+              'tag': tag,
               'timestamp': timestamp,
               'source': 'android_share',
               'device_id': 'TODO', // 可以添加设备 ID

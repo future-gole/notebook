@@ -6,10 +6,11 @@ class NoteService {
 
   NoteService(this.isar);
   // 增添笔记
-  Future<void> addOrUpdateNote(
-    String title,
-    String content, {
+  Future<void> addOrUpdateNote({
+    String title = "默认标题",
+    String content = "默认内容",
     String? category,
+    String? tag,
   }) async {
     final newNote = Note()
       ..title = title

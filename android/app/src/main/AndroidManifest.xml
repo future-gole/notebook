@@ -27,7 +27,7 @@
             </intent-filter>
         </activity>
 
-        <!-- 透明分享接收 Activity - 实现无权限悬浮窗效果 -->
+        <!-- 透明分享接收 Activity - 单一 FlutterActivity 架构 -->
         <activity
             android:name=".ShareActivity"
             android:theme="@style/Theme.Transparent"
@@ -35,7 +35,9 @@
             android:launchMode="singleTask"
             android:taskAffinity=""
             android:excludeFromRecents="true"
-            android:noHistory="true">
+            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
+            android:hardwareAccelerated="true"
+            android:windowSoftInputMode="adjustResize">
             <intent-filter>
                 <!-- 接收单个分享项目 -->
                 <action android:name="android.intent.action.SEND" />
@@ -57,6 +59,7 @@
                 <data android:mimeType="application/*" />
             </intent-filter>
         </activity>
+
 
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
