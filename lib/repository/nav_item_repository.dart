@@ -4,7 +4,7 @@ import 'package:notebook/model/nav_item.dart';
 abstract class NavItemRepository {
   /// 获取所有导航项
   Future<List<NavItem>> getNavItems();
-  
+
   /// 监听导航项变化
   Stream<List<NavItem>> watchNavItems();
 }
