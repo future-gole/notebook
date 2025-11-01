@@ -2,6 +2,7 @@
 <!-- 优雅的原生分享 UI - mymind 风格 -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@android:color/transparent">
@@ -37,7 +38,7 @@
                     android:layout_height="44dp"
                     android:layout_gravity="center"
                     android:src="@drawable/ic_check"
-                    android:tint="#4CAF50" />
+                    app:tint="#4CAF50" />
 
             </FrameLayout>
 
@@ -116,5 +117,73 @@
         </LinearLayout>
 
     </androidx.cardview.widget.CardView>
+
+    <LinearLayout
+        android:id="@+id/editContainer"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="center_horizontal"
+        android:visibility="gone"
+        tools:visibility="visible"> <androidx.cardview.widget.CardView
+            android:id="@+id/cardEdit"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="100dp"
+            android:layout_marginStart="24dp"
+            android:layout_marginEnd="24dp"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="16dp"
+            app:cardBackgroundColor="#FFFFFF">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="20dp">
+
+                <EditText
+                    android:id="@+id/editTextContent"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:minHeight="120dp"
+                    android:hint="添加笔记或标签..."
+                    android:background="@null"
+                    android:gravity="top"
+                    android:textSize="16sp"
+                    android:textColor="#333333" />
+                
+                <TextView
+                    android:id="@+id/textRecentTagsPreview"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:text="RECENT TAGS: frff"
+                    android:textColor="#888888"
+                    android:textSize="12sp" />
+
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+        <Space
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
+
+        <Button
+            android:id="@+id/btnDone"
+            android:layout_width="wrap_content"
+            android:layout_height="52dp"
+            android:layout_marginBottom="60dp"
+            android:text="Done"
+            android:backgroundTint="#FF6F00"
+            android:textColor="#FFFFFF"
+            android:paddingStart="40dp"
+            android:paddingEnd="40dp"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            app:cornerRadius="26dp" />
+
+    </LinearLayout>
 
 </FrameLayout>

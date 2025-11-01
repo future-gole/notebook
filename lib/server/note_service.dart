@@ -14,8 +14,9 @@ class NoteService {
     final newNote = Note()
       ..title = title
       ..content = content
-      ..category = category
-      ..time = DateTime.now();
+      ..category = category ?? "home"
+      ..time = DateTime.now()
+      ..tag;
     await isar.writeTxn(() async {
       await isar.notes.put(newNote);
     });
@@ -55,6 +56,13 @@ class NoteService {
     return await isar.notes
         .filter()
         .contentContains(query, caseSensitive: false)
+        .findAll();
+  }
+
+  Future<List<Note>> findNotesWithTag(String query) async {
+    return await isar.notes
+        .filter()
+        .tagContains(query,caseSensitive: false)
         .findAll();
   }
 }

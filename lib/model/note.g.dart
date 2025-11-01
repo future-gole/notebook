@@ -23,8 +23,9 @@ const NoteSchema = CollectionSchema(
       type: IsarType.string,
     ),
     r'content': PropertySchema(id: 1, name: r'content', type: IsarType.string),
-    r'time': PropertySchema(id: 2, name: r'time', type: IsarType.dateTime),
-    r'title': PropertySchema(id: 3, name: r'title', type: IsarType.string),
+    r'tag': PropertySchema(id: 2, name: r'tag', type: IsarType.string),
+    r'time': PropertySchema(id: 3, name: r'time', type: IsarType.dateTime),
+    r'title': PropertySchema(id: 4, name: r'title', type: IsarType.string),
   },
 
   estimateSize: _noteEstimateSize,
@@ -61,6 +62,12 @@ int _noteEstimateSize(
     }
   }
   {
+    final value = object.tag;
+    if (value != null) {
+      bytesCount += 3 + value.length * 3;
+    }
+  }
+  {
     final value = object.title;
     if (value != null) {
       bytesCount += 3 + value.length * 3;
@@ -77,8 +84,9 @@ void _noteSerialize(
 ) {
   writer.writeString(offsets[0], object.category);
   writer.writeString(offsets[1], object.content);
-  writer.writeDateTime(offsets[2], object.time);
-  writer.writeString(offsets[3], object.title);
+  writer.writeString(offsets[2], object.tag);
+  writer.writeDateTime(offsets[3], object.time);
+  writer.writeString(offsets[4], object.title);
 }
 
 Note _noteDeserialize(
@@ -91,8 +99,9 @@ Note _noteDeserialize(
   object.category = reader.readStringOrNull(offsets[0]);
   object.content = reader.readStringOrNull(offsets[1]);
   object.id = id;
-  object.time = reader.readDateTimeOrNull(offsets[2]);
-  object.title = reader.readStringOrNull(offsets[3]);
+  object.tag = reader.readStringOrNull(offsets[2]);
+  object.time = reader.readDateTimeOrNull(offsets[3]);
+  object.title = reader.readStringOrNull(offsets[4]);
   return object;
 }
 
@@ -108,8 +117,10 @@ P _noteDeserializeProp<P>(
     case 1:
       return (reader.readStringOrNull(offset)) as P;
     case 2:
-      return (reader.readDateTimeOrNull(offset)) as P;
+      return (reader.readStringOrNull(offset)) as P;
     case 3:
+      return (reader.readDateTimeOrNull(offset)) as P;
+    case 4:
       return (reader.readStringOrNull(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -588,6 +599,168 @@ extension NoteQueryFilter on QueryBuilder<Note, Note, QFilterCondition> {
     });
   }
 
+  QueryBuilder<Note, Note, QAfterFilterCondition> tagIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'tag'),
+      );
+    });
+  }
+
+  QueryBuilder<Note, Note, QAfterFilterCondition> tagIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'tag'),
+      );
+    });
+  }
+
+  QueryBuilder<Note, Note, QAfterFilterCondition> tagEqualTo(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'tag',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Note, Note, QAfterFilterCondition> tagGreaterThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'tag',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Note, Note, QAfterFilterCondition> tagLessThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'tag',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Note, Note, QAfterFilterCondition> tagBetween(
+    String? lower,
+    String? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'tag',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Note, Note, QAfterFilterCondition> tagStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'tag',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Note, Note, QAfterFilterCondition> tagEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'tag',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Note, Note, QAfterFilterCondition> tagContains(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'tag',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Note, Note, QAfterFilterCondition> tagMatches(
+    String pattern, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'tag',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Note, Note, QAfterFilterCondition> tagIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'tag', value: ''),
+      );
+    });
+  }
+
+  QueryBuilder<Note, Note, QAfterFilterCondition> tagIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'tag', value: ''),
+      );
+    });
+  }
+
   QueryBuilder<Note, Note, QAfterFilterCondition> timeIsNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
@@ -853,6 +1026,18 @@ extension NoteQuerySortBy on QueryBuilder<Note, Note, QSortBy> {
     });
   }
 
+  QueryBuilder<Note, Note, QAfterSortBy> sortByTag() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'tag', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Note, Note, QAfterSortBy> sortByTagDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'tag', Sort.desc);
+    });
+  }
+
   QueryBuilder<Note, Note, QAfterSortBy> sortByTime() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'time', Sort.asc);
@@ -915,6 +1100,18 @@ extension NoteQuerySortThenBy on QueryBuilder<Note, Note, QSortThenBy> {
     });
   }
 
+  QueryBuilder<Note, Note, QAfterSortBy> thenByTag() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'tag', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Note, Note, QAfterSortBy> thenByTagDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'tag', Sort.desc);
+    });
+  }
+
   QueryBuilder<Note, Note, QAfterSortBy> thenByTime() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'time', Sort.asc);
@@ -957,6 +1154,14 @@ extension NoteQueryWhereDistinct on QueryBuilder<Note, Note, QDistinct> {
     });
   }
 
+  QueryBuilder<Note, Note, QDistinct> distinctByTag({
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'tag', caseSensitive: caseSensitive);
+    });
+  }
+
   QueryBuilder<Note, Note, QDistinct> distinctByTime() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'time');
@@ -988,6 +1193,12 @@ extension NoteQueryProperty on QueryBuilder<Note, Note, QQueryProperty> {
   QueryBuilder<Note, String?, QQueryOperations> contentProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'content');
+    });
+  }
+
+  QueryBuilder<Note, String?, QQueryOperations> tagProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'tag');
     });
   }
 
