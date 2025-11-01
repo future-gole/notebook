@@ -220,7 +220,7 @@ class noteItem extends StatelessWidget {
                   note.title = title;
                   note.content = content;
                   note.time = DateTime.now();
-                  await _noteService.addOrUpdateNote(title, content);
+                  await _noteService.addOrUpdateNote(title: title,content:  content);
                   log.d(tag, 'Note updated: $title');
                   Navigator.of(context).pop();
                 }

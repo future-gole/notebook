@@ -221,7 +221,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 final title = titleController.text.trim();
                 final content = contentController.text.trim();
                 if (title.isNotEmpty && content.isNotEmpty) {
-                  await _noteService.addOrUpdateNote(title, content);
+                  await _noteService.addOrUpdateNote(title: title, content:  content);
                   log.d(tag, 'Note added: $title');
                   Navigator.of(context).pop();
 
