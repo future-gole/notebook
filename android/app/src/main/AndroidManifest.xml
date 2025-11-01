@@ -25,6 +25,17 @@
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
+        </activity>
+
+        <!-- 透明分享接收 Activity - 实现无权限悬浮窗效果 -->
+        <activity
+            android:name=".ShareActivity"
+            android:theme="@style/Theme.Transparent"
+            android:exported="true"
+            android:launchMode="singleTask"
+            android:taskAffinity=""
+            android:excludeFromRecents="true"
+            android:noHistory="true">
             <intent-filter>
                 <!-- 接收单个分享项目 -->
                 <action android:name="android.intent.action.SEND" />
@@ -34,19 +45,19 @@
                 <data android:mimeType="image/*" />
                 <data android:mimeType="video/*" />
                 <data android:mimeType="application/*" />
-                <data android:mimeType="*/*" />
             </intent-filter>
             <intent-filter>
                 <!-- 接收多个分享项目 -->
                 <action android:name="android.intent.action.SEND_MULTIPLE" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <!-- 支持的MIME类型 -->
+                <data android:mimeType="text/*" />
                 <data android:mimeType="image/*" />
                 <data android:mimeType="video/*" />
                 <data android:mimeType="application/*" />
-                <data android:mimeType="*/*" />
             </intent-filter>
         </activity>
+
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <meta-data

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:isar_community/isar.dart';
 import 'package:notebook/HomeScreen.dart';
 import 'package:notebook/providers/nav_providers.dart';
+import 'package:notebook/services/share_background_service.dart';
 import 'package:path_provider/path_provider.dart';
 import 'model/note.dart';
 
@@ -21,13 +22,14 @@ Future<void> main() async {
     directory: dir.path,
   );
 
+  // 初始化后台分享服务
+  ShareBackgroundService.initialize();
+
   runApp(
     // 使用 ProviderScope 包裹应用，并 override isarProvider
     // 后续都使用状态管理里面的isar
     ProviderScope(
-      overrides: [
-        isarProvider.overrideWithValue(isar),
-      ],
+      overrides: [isarProvider.overrideWithValue(isar)],
       child: const MyApp(),
     ),
   );

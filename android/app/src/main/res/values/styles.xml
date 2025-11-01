@@ -15,4 +15,24 @@
     <style name="NormalTheme" parent="@android:style/Theme.Light.NoTitleBar">
         <item name="android:windowBackground">?android:colorBackground</item>
     </style>
+
+    <!-- 透明主题 - 用于分享接收 Activity -->
+    <style name="Theme.Transparent" parent="Theme.AppCompat.Light.NoActionBar">
+        <!-- 启用透明效果 -->
+        <item name="android:windowIsTranslucent">true</item>
+        <!-- 设置透明背景 -->
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <!-- 移除窗口内容覆盖层 -->
+        <item name="android:windowContentOverlay">@null</item>
+        <!-- 无标题栏 -->
+        <item name="android:windowNoTitle">true</item>
+        <!-- 全屏覆盖模式（非对话框模式） -->
+        <item name="android:windowIsFloating">false</item>
+        <!-- 禁用背景变暗 -->
+        <item name="android:backgroundDimEnabled">false</item>
+        <!-- 从最近任务列表中排除 -->
+        <item name="android:excludeFromRecents">true</item>
+        <!-- 无动画 -->
+        <item name="android:windowAnimationStyle">@null</item>
+    </style>
 </resources>
