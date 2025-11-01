@@ -1,89 +1,26 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:notebook/main.dart';
 import 'package:notebook/model/note.dart';
 import 'package:notebook/page/widget/nav_bar.dart';
 import 'package:notebook/page/widget/note_Item.dart';
+import 'package:notebook/providers/nav_providers.dart';
+import 'package:notebook/providers/note_providers.dart';
 import 'package:notebook/server/note_service.dart';
 import 'package:notebook/util/logger_service.dart';
 import 'package:share_handler/share_handler.dart';
 
-class HomeScreen extends StatefulWidget {
-  @override
-  _HomeScreenState createState() => _HomeScreenState();
-}
-
-String tag = "HomeScreen";
-
-class _HomeScreenState extends State<HomeScreen> {
-  // 获取插件单例
-  final handler = ShareHandler.instance;
-  final NoteService _noteService = NoteService(isar);
-  String? sharedContent;
-
-  // 用于UI展示的状态
-  String? _shareText;
-
-  // 笔记列表
-  List<Note> _notes = [];
-  StreamSubscription<List<Note>>? _notesSubscription;
+final String tag = "HomeScreen";
+class HomeScreen extends ConsumerWidget {
 
   @override
-  void initState() {
-    super.initState();
-    _initShareHandler();
-    _loadNotes();
-  }
+  Widget build(BuildContext context,WidgetRef ref) {
+    // 对应 Category 下的 note
+    final noteByCategory = ref.watch(noteByCategoryProvider);
 
-  // 加载笔记列表
-  void _loadNotes() {
-    _notesSubscription = _noteService.watchAllNotes().listen((notes) {
-      setState(() {
-        _notes = notes;
-      });
-    });
-  }
-
-  @override
-  void dispose() {
-    _notesSubscription?.cancel();
-    super.dispose();
-  }
-
-  Future<void> _initShareHandler() async {
-    // 监听：当App在后台/前台运行时，接收到新的分享
-    handler.sharedMediaStream.listen((SharedMedia media) {
-      log.d(tag, 'Received shared media while running');
-      _handleSharedData(media);
-    });
-
-    // 获取：当App是关闭状态，通过分享第一次启动
-    final media = await handler.getInitialSharedMedia();
-    if (media != null) {
-      log.d(tag, 'Received shared media on launch');
-      _handleSharedData(media);
-    }
-  }
-
-  // 统一的处理入口
-  void _handleSharedData(SharedMedia media) {
-    setState(() {
-      // 先处理文本/URL
-      if (media.content != null && media.content!.isNotEmpty) {
-        _shareText = media.content;
-        log.d(tag, "Detected shared text/url: $_shareText");
-      }
-
-      // 设置title
-      _showAddNoteDialog(context, content: _shareText);
-    });
-
-    // 提取分享的内容，通常是URL或文本
-    log.d(tag, "Detected shared content: $sharedContent");
-  }
-
-  @override
-  Widget build(BuildContext context) {
+    final noteService = ref.watch(noteServiceProvider);
+    // 获取激活的下标
     return Scaffold(
       backgroundColor: Color.fromARGB(1, 11, 1, 1),
       appBar: AppBar(
@@ -108,48 +45,53 @@ class _HomeScreenState extends State<HomeScreen> {
         children: [
           GlassNavBar(),
           Expanded(
-            child: _notes.isEmpty
-                ? Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.note_add_outlined,
-                    size: 80,
-                    color: Colors.grey[400],
-                  ),
-                  SizedBox(height: 16),
-                  Text(
-                    '暂无笔记',
-                    style: TextStyle(
-                      fontSize: 18,
-                      color: Colors.grey[600],
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  SizedBox(height: 8),
-                  Text(
-                    '点击右下角按钮添加新笔记',
-                    style: TextStyle(fontSize: 14, color: Colors.grey[500]),
-                  ),
-                ],
-              ),
-            )
-                : ListView.builder(
-              padding: EdgeInsets.only(top: 8, bottom: 80),
-              itemCount: _notes.length,
-              itemBuilder: (context, index) {
-                final note = _notes[index];
-                // 确保 noteItem(note, _noteService) 返回的是一个 Widget
-                return noteItem(note, _noteService);
-              },
-            ),
+            child: noteByCategory.when(
+                data: (notes){
+                  if(notes.isEmpty) {
+                    return Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.note_add_outlined,
+                              size: 80,
+                              color: Colors.grey[400],
+                            ),
+                            SizedBox(height: 16),
+                            Text(
+                              '暂无笔记',
+                              style: TextStyle(
+                                fontSize: 18,
+                                color: Colors.grey[600],
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            SizedBox(height: 8),
+                            Text(
+                              '点击右下角按钮添加新笔记',
+                              style: TextStyle(fontSize: 14,
+                                  color: Colors.grey[500]),
+                            ),
+                          ],
+                        )
+                    );
+                  }
+                  return ListView.builder(
+                      padding: EdgeInsets.only(top: 8,bottom: 80),
+                      itemCount: notes.length,
+                      itemBuilder: (context,index){
+                        final note = notes[index];
+                        return noteItem(note, noteService);
+                  });
+                },
+                error: (error,stack) => Center(child: Text('加载笔记失败: $error')),
+                loading: () => Center(child: CircularProgressIndicator()))
           ),
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
-          _showAddNoteDialog(context);
+          _showAddNoteDialog(context: context,noteService : noteService,ref : ref);
         },
         icon: Icon(Icons.add),
         label: Text('新建笔记'),
@@ -160,7 +102,10 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   // 显示添加笔记对话框
-  void _showAddNoteDialog(BuildContext context, {String? content}) {
+  void _showAddNoteDialog({
+    required BuildContext context,
+    required NoteService noteService,
+    required WidgetRef ref,String? content}) {
     final titleController = TextEditingController();
     final contentController = TextEditingController(text: content);
 
@@ -221,10 +166,10 @@ class _HomeScreenState extends State<HomeScreen> {
                 final title = titleController.text.trim();
                 final content = contentController.text.trim();
                 if (title.isNotEmpty && content.isNotEmpty) {
-                  await _noteService.addOrUpdateNote(title: title, content:  content);
+                  await noteService.addOrUpdateNote(title: title, content:  content);
                   log.d(tag, 'Note added: $title');
-                  Navigator.of(context).pop();
-
+                  await ref.refresh(noteByCategoryProvider);
+                  if(!context.mounted) return;
                   // 显示成功提示
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
@@ -234,6 +179,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       duration: Duration(seconds: 2),
                     ),
                   );
+                  Navigator.of(context).pop();
                 }
               },
               style: ElevatedButton.styleFrom(
