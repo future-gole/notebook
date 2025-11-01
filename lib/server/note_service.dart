@@ -3,7 +3,7 @@ import 'package:notebook/model/note.dart';
 
 class NoteService {
   final Isar isar;
-
+  final String defaultCategory = "home";
   NoteService(this.isar);
   // 增添笔记
   Future<void> addOrUpdateNote({
@@ -15,7 +15,7 @@ class NoteService {
     final newNote = Note()
       ..title = title
       ..content = content
-      ..category = category ?? "home"
+      ..category = category ?? defaultCategory
       ..time = DateTime.now()
       ..tag;
     await isar.writeTxn(() async {
@@ -33,6 +33,7 @@ class NoteService {
     return await isar.notes.where().findAll();
   }
 
+  // 监听并且获取所有笔记
   Stream<List<Note>> watchAllNotes() {
     return isar.notes.where().watch(fireImmediately: true);
   }
@@ -59,6 +60,19 @@ class NoteService {
         .contentContains(query, caseSensitive: false)
         .findAll();
   }
+
+  // 根据 category 查询笔记
+  Future<List<Note>> findNotesWithCategory(String query) async {
+    if(query == defaultCategory){
+      return await getAllNotes();
+    }
+    return await isar.notes
+      .filter()
+      .categoryEqualTo(query, caseSensitive: false)
+      .findAll();
+  }
+
+  // 根据 tag 查询笔记
 
   Future<List<Note>> findNotesWithTag(String query) async {
     return await isar.notes
