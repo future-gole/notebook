@@ -42,6 +42,15 @@ class ShareActivity : AppCompatActivity() {
     private lateinit var textCountdown: TextView
     private lateinit var btnDetail: Button
     
+    private lateinit var editContainer: View // 编辑界面的根布局
+    private lateinit var cardEdit: CardView
+    private lateinit var editTextContent: TextView // 编辑框
+    private lateinit var btnDone: Button // "Done" 按钮
+
+    // 用于存储原始分享数据
+    private var sharedTitle: String? = null
+    private var sharedContent: String? = null
+
     private var flutterEngine: FlutterEngine? = null
     private var methodChannel: MethodChannel? = null
     private var countdownTimer: CountDownTimer? = null
@@ -65,8 +74,14 @@ class ShareActivity : AppCompatActivity() {
         textPreview = findViewById(R.id.textPreview)
         textCountdown = findViewById(R.id.textCountdown)
         btnDetail = findViewById(R.id.btnDetail)
+
+        editContainer = findViewById(R.id.editContainer)
+        cardEdit = findViewById(R.id.cardEdit)
+        editTextContent = findViewById(R.id.editTextContent)
+        btnDone = findViewById(R.id.btnDone)
         
         btnDetail.setOnClickListener { onDetailClicked() }
+        btnDone.setOnClickListener { onDoneClicked() }
     }
 
     private fun initFlutterBackgroundEngine() {
@@ -118,7 +133,10 @@ class ShareActivity : AppCompatActivity() {
         if (text.isNullOrBlank()) return finish()
         
         val title = intent.getStringExtra(Intent.EXTRA_SUBJECT) ?: "分享内容"
-        
+
+        this.sharedTitle = title
+        this.sharedContent = text
+
         displayPreview(title)
         sendToFlutterBackground(title, text)
         startCountdown()
@@ -129,7 +147,10 @@ class ShareActivity : AppCompatActivity() {
         if (uri == null) return finish()
         
         val title = "分享图片"
-        
+
+        this.sharedTitle = title
+        this.sharedContent = uri.toString()
+
         displayPreview(title)
         sendToFlutterBackground(title, uri.toString())
         startCountdown()
@@ -209,15 +230,63 @@ class ShareActivity : AppCompatActivity() {
     private fun onDetailClicked() {
         countdownTimer?.cancel()
         
-        // TODO: 显示编辑对话框或 Flutter 页面
-        // 这里可以选择：
-        // 1. 原生 Dialog 编辑
-        // 2. 启动 Flutter 编辑页面
-        
-        Log.d(TAG, "Detail clicked")
-        
-        // 暂时直接关闭
-        closeWithAnimation()
+        // 显示编辑对话框
+        // 1. 把分享数据显示到编辑框
+        val fullText = "${sharedTitle ?: ""}\n\n${sharedContent ?: ""}"
+        editTextContent.text = fullText.trim()
+
+        Log.d(TAG, "开始切换detail")
+        // 2. 执行切换动画
+        // 淡出 "成功" 卡片
+        cardView.animate()
+            .alpha(0f)
+            .scaleX(0.9f)
+            .scaleY(0.9f)
+            .setDuration(200)
+            .setInterpolator(DecelerateInterpolator())
+            .withEndAction {
+                cardView.visibility = View.GONE // 隐藏成功卡片
+
+                // 淡入 "编辑" 界面
+                editContainer.visibility = View.VISIBLE
+                editContainer.alpha = 0f
+                editContainer.animate()
+                    .alpha(1f)
+                    .setDuration(200)
+                    .start()
+            }
+            .start()
+    }
+
+    /**
+     * 当点击 "Done" 按钮时调用
+     */
+    private fun onDoneClicked() {
+        // 1. 获取编辑后的新内容
+        val newContent = editTextContent.text.toString()
+
+        // 2. (可选) 你可以把新旧内容对比
+        // ...
+
+        // 3. 把更新后的数据发送给 Flutter
+        //    我们复用 sendToFlutterBackground
+        //    或者调用一个新方法，比如 updateToFlutter
+
+        Log.d(TAG, "发送更新后的数据到 Flutter")
+        // 注意：我们只发送了更新后的 content。
+        // 你也可以把 title 和 content 分开，在布局中用两个 EditText
+        sendToFlutterBackground(sharedTitle ?: "已编辑", newContent)
+
+        // 4. 执行关闭动画并结束 Activity
+        //    我们为 editContainer 创建一个新的关闭动画
+        editContainer.animate()
+            .alpha(0f)
+            .setDuration(300)
+            .setInterpolator(DecelerateInterpolator())
+            .withEndAction {
+                finish() // 动画结束时, 关闭 Activity
+            }
+            .start()
     }
 
     private fun closeWithAnimation() {

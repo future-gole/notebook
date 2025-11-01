@@ -12,4 +12,7 @@ class Note{
   DateTime? time;
 
   String? category;
+
+  String? tag;
+
 }
