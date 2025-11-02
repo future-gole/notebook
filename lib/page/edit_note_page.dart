@@ -2,26 +2,28 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-// ⬇️ ⬇️ ⬇️ 导入你的后台服务 ⬇️ ⬇️ ⬇️
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:notebook/providers/note_providers.dart';
+import 'package:notebook/server/note_service.dart';
+
 import 'package:notebook/services/share_background_service.dart';
 
-class EditNotePage extends StatefulWidget {
+class EditNotePage extends ConsumerStatefulWidget {
   final String initialTitle;
   final String initialContent;
   final VoidCallback onDone; // ⬅️ 2. 添加 onDone 回调
 
   const EditNotePage({
-    Key? key,
+    super.key,
     required this.initialTitle,
     required this.initialContent,
     required this.onDone,
-  }) : super(key: key);
+  });
 
   @override
-  _EditNotePageState createState() => _EditNotePageState();
+  ConsumerState<EditNotePage> createState() => EditNotePageState();
 }
-class _EditNotePageState extends State<EditNotePage> {
+class EditNotePageState extends ConsumerState<EditNotePage> {
   late final TextEditingController _titleController;
   late final TextEditingController _contentController;
   late final TextEditingController _categoryController;
@@ -45,19 +47,21 @@ class _EditNotePageState extends State<EditNotePage> {
     super.dispose();
   }
 
-  void _onDone() {
+  void _onDone() async {
     final newTitle = _titleController.text;
     final newContent = _contentController.text;
     final newCategory = _categoryController.text;
     final newTag = _tagController.text;
 
-    // 1. 调用 MethodChannel 发送数据
-    ShareBackgroundService.saveAndSync({
-      "title": newTitle,
-      "content": newContent,
-      "category": newCategory,
-      "tag": newTag,
-    });
+    final noteService = ref.read(noteServiceProvider);
+    await noteService.addOrUpdateNote(
+      title: newTitle,
+      content: newContent,
+      category: newCategory,
+      tag: newTag,
+    );
+
+    //todo 发送至后端写在这里
 
     // 2. 关闭整个 ShareHostActivity
     widget.onDone();

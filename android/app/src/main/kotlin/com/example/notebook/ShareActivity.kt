@@ -1,8 +1,8 @@
-// 路径: android/app/src/main/kotlin/com/example/notebook/ShareActivity.kt
 package com.example.notebook
 
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import io.flutter.FlutterInjector
@@ -45,9 +45,9 @@ class ShareActivity : FlutterActivity() {
         val shareData = parseShareIntent(intent)
         if (shareData != null) {
             pendingShareData = shareData
-            Log.d(TAG, "保存待处理的分享数据: ${shareData.title}")
+            Log.d(TAG, "保存待处理的分享数据: title:${shareData.title},content:${shareData.content}")
             
-            // ⚠️ 关键修复：如果引擎已经准备好（热启动），立即处理
+            // 如果引擎已经准备好（热启动），立即处理
             // onCreate 在 provideFlutterEngine 之后执行，所以此时 isEngineReady 可能已经为 true
             if (isEngineReady && methodChannel != null) {
                 Log.d(TAG, "onCreate: 引擎已就绪（热启动），立即处理分享")
@@ -95,8 +95,9 @@ class ShareActivity : FlutterActivity() {
         if (engine == null) {
             Log.d(TAG, "创建新的 Flutter 引擎 (main_share)")
             
-            // ⚠️ 关键修复：确保 FlutterLoader 已初始化
+
             val flutterLoader = FlutterInjector.instance().flutterLoader()
+            // 确保 FlutterLoader 已初始化
             if (!flutterLoader.initialized()) {
                 Log.d(TAG, "初始化 FlutterLoader")
                 flutterLoader.startInitialization(applicationContext)
@@ -104,15 +105,12 @@ class ShareActivity : FlutterActivity() {
             }
             
             val appBundlePath = flutterLoader.findAppBundlePath()
-            if (appBundlePath == null) {
-                Log.e(TAG, "FATAL: 无法找到 App Bundle Path")
-                return null
-            }
-            
+            // flutterLoader 以及初始化了的话 appBundlePath 不会为空
             engine = FlutterEngine(this).apply {
                 dartExecutor.executeDartEntrypoint(
                     DartExecutor.DartEntrypoint(
                         appBundlePath,
+                        // 启动flutter应用的第二个入口
                         "package:notebook/main_share.dart",
                         "main_share"
                     )
@@ -129,7 +127,7 @@ class ShareActivity : FlutterActivity() {
             isEngineReady = true
         }
         
-        // ⚠️ 关键修复：无论冷启动还是热启动，都重新设置 MethodChannel
+        // 关键无论冷启动还是热启动，都重新设置 MethodChannel
         // 因为 Activity 重新创建后，methodChannel 实例变量会被重置为 null
         setupMethodChannel(engine)
         
@@ -187,25 +185,6 @@ class ShareActivity : FlutterActivity() {
     }
 
     /**
-     * 处理分享 Intent 的核心方法（已废弃，保留用于向后兼容）
-     */
-    @Deprecated("不再使用，改用 onCreate 和 onNewIntent 直接处理")
-    private fun handleShare(intent: Intent?) {
-        Log.d(TAG, "开始处理分享 Intent")
-        
-        val shareData = parseShareIntent(intent)
-        
-        if (shareData == null) {
-            Log.w(TAG, "无法解析的分享数据，关闭 Activity")
-            finish()
-            return
-        }
-        
-        // 通知 Dart 端显示新的分享 UI
-        notifyDartToShowShare(shareData)
-    }
-
-    /**
      * 解析分享 Intent 并返回数据
      */
     private fun parseShareIntent(intent: Intent?): ShareData? {
@@ -223,8 +202,16 @@ class ShareActivity : FlutterActivity() {
                         ShareData(title, text)
                     }
                     type.startsWith("image/") -> {
-                        val uri = intent.getParcelableExtra<android.net.Uri>(Intent.EXTRA_STREAM) ?: return null
-                        ShareData("分享图片", uri.toString())
+                        val uri: android.net.Uri? = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                            // Android 13 (API 33) 及以上使用新方法
+                            intent.getParcelableExtra(Intent.EXTRA_STREAM, android.net.Uri::class.java)
+                        } else {
+                            // Android 13 以下使用旧方法
+                            @Suppress("DEPRECATION")
+                            intent.getParcelableExtra(Intent.EXTRA_STREAM)
+                        }
+                        if (uri == null) return null
+                        ShareData(title = "分享图片", content = uri.toString())
                     }
                     else -> {
                         val text = intent.getStringExtra(Intent.EXTRA_TEXT) ?: return null

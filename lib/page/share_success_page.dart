@@ -6,21 +6,21 @@ import 'package:flutter/material.dart';
 class ShareSuccessPage extends StatefulWidget {
   final String title;
   final String content;
-  final VoidCallback onDismiss; // ⬅️ 2. 添加 onDismiss 回调
+  final VoidCallback onDismiss; // 添加 onDismiss 回调
 
   const ShareSuccessPage({
-    Key? key,
+    super.key,
     required this.title,
     required this.content,
     required this.onDismiss,
-  }) : super(key: key);
+  });
 
   @override
   _ShareSuccessPageState createState() => _ShareSuccessPageState();
 }
 
 class _ShareSuccessPageState extends State<ShareSuccessPage> {
-  Timer? _countdownTimer; // ⬅️ 3. 加回倒计时
+  Timer? _countdownTimer; // 加回倒计时
 
   @override
   void initState() {
@@ -66,11 +66,10 @@ class _ShareSuccessPageState extends State<ShareSuccessPage> {
         child: Container(
           color: Colors.black.withOpacity(0.1), // 半透明遮罩
           child: Center(
-            // 模仿 mymind 截图的 UI
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // 你的 Logo (可选)
+                //todo logo
                 Icon(Icons.lightbulb_outline, color: Colors.white, size: 30),
                 SizedBox(height: 20),
                 Text(
@@ -78,14 +77,14 @@ class _ShareSuccessPageState extends State<ShareSuccessPage> {
                   style: TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.bold),
                 ),
                 Text(
-                  "It's in your mind.", // 你可以改成 "It's in your notebook."
+                  "It's in your notebook.",
                   style: TextStyle(color: Colors.white.withOpacity(0.8), fontSize: 24),
                 ),
                 SizedBox(height: 40),
                 // "Add Details" 按钮
                 OutlinedButton.icon(
                   icon: Icon(Icons.add, size: 18),
-                  label: Text("Add Details"), // 替换 "Detail"
+                  label: Text("Add Details"),
                   onPressed: _onDetailClicked,
                   style: OutlinedButton.styleFrom(
                     foregroundColor: Colors.white,
