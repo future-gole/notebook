@@ -108,6 +108,7 @@ class HomeScreen extends ConsumerWidget {
     required WidgetRef ref,String? content}) {
     final titleController = TextEditingController();
     final contentController = TextEditingController(text: content);
+    final categoryController = TextEditingController(text: "home");
 
     showDialog(
       context: context,
@@ -138,6 +139,21 @@ class HomeScreen extends ConsumerWidget {
                 ),
                 SizedBox(height: 16),
                 TextField(
+                  controller: categoryController,
+                  decoration: InputDecoration(
+                    labelText: '分类',
+                    hintText: '选一个分类吧',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    prefixIcon: Icon(Icons.notes),
+                    alignLabelWithHint: true,
+                  ),
+                  maxLines: 1,
+                  autofocus: content != null,
+                ),
+                SizedBox(height: 16),
+                TextField(
                   controller: contentController,
                   decoration: InputDecoration(
                     labelText: '内容',
@@ -165,10 +181,12 @@ class HomeScreen extends ConsumerWidget {
               onPressed: () async {
                 final title = titleController.text.trim();
                 final content = contentController.text.trim();
+                final category = categoryController.text.trim();
                 if (title.isNotEmpty && content.isNotEmpty) {
-                  await noteService.addOrUpdateNote(title: title, content:  content);
+                  await noteService.addOrUpdateNote(title: title, content:  content,category: category);
                   log.d(tag, 'Note added: $title');
-                  await ref.refresh(noteByCategoryProvider);
+                  // 标记
+                  ref.invalidate(noteByCategoryProvider);
                   if(!context.mounted) return;
                   // 显示成功提示
                   ScaffoldMessenger.of(context).showSnackBar(
