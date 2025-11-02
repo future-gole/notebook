@@ -38,7 +38,7 @@ class _ShareSuccessPageState extends State<ShareSuccessPage> {
   }
 
   void _onDetailClicked() {
-    _countdownTimer?.cancel(); // ⬅️ 5. 用户交互，取消倒计时
+    _countdownTimer?.cancel(); // 用户交互，取消倒计时
 
     // 导航到“编辑”页面
     Navigator.of(context).pushNamed(

@@ -7,6 +7,8 @@ import 'package:notebook/model/note.dart';
 import 'package:notebook/page/edit_note_page.dart';
 import 'package:notebook/page/share_success_page.dart';
 import 'package:notebook/providers/nav_providers.dart';
+import 'package:notebook/providers/note_providers.dart';
+import 'package:notebook/server/note_service.dart';
 import 'package:notebook/services/share_background_service.dart';
 import 'package:path_provider/path_provider.dart';
 import '../../util/logger_service.dart';
@@ -34,19 +36,22 @@ Future<void> main_share() async {
   );
 }
 
-class MyShareApp extends StatefulWidget {
+class MyShareApp extends ConsumerStatefulWidget {
   const MyShareApp({super.key});
   @override
-  State<MyShareApp> createState() => _MyShareAppState();
+  ConsumerState<MyShareApp> createState() => _MyShareAppState();
 }
 
-class _MyShareAppState extends State<MyShareApp> {
+class _MyShareAppState extends ConsumerState<MyShareApp> {
+  // 添加 GlobalKey
+  final GlobalKey<NavigatorState> _navigatorKey = GlobalKey<NavigatorState>();
   static const _channel = MethodChannel('com.example.notebook/share');
   ShareData? _currentShare;
-
+  late final NoteService noteService;
   @override
   void initState() {
     super.initState();
+    noteService = ref.read(noteServiceProvider);
     _channel.setMethodCallHandler(_handleMethodCall);
     log.d(tag,"MyShareApp 初始化完成, 等待分享...");
 
@@ -71,12 +76,16 @@ class _MyShareAppState extends State<MyShareApp> {
   void _dismissUI() {
     log.d(tag,"Dismissing UI...");
 
+    //  先清空 Flutter 导航堆栈
+    // 弹出所有页面，直到只剩下 'home' 页面
+    _navigatorKey.currentState?.popUntil((route) => route.isFirst);
     setState(() {
       // 清楚之前的数据
       _currentShare = null;
     });
 
     // 关闭 ShareActivity
+    // 此时 Flutter UI 已经完全重置，下次复用时就是干净的,而不会出现编辑框还在的情况
     SystemNavigator.pop();
   }
 
@@ -93,10 +102,14 @@ class _MyShareAppState extends State<MyShareApp> {
         log.d(tag,"showShare: title=$title");
 
         try {
-          // 1. 保存数据到后台
-          await ShareBackgroundService.saveAndSync(
-            args.cast<String, dynamic>(),
+          // 1. 保存数据到数据库
+          await noteService.addOrUpdateNote(
+            title: args['title'],
+            content: args['content'],
+            category: args['category'],
+            tag: args['tag'],
           );
+          // todo 发送到后端
 
           // 2. 更新 UI 状态以显示 ShareSuccessPage
           setState(() {
@@ -111,14 +124,17 @@ class _MyShareAppState extends State<MyShareApp> {
         }
 
       case 'saveAndSync':
-        // 保留这个方法用于向后兼容（如果需要）
         final args = call.arguments as Map;
         log.d(tag,"saveAndSync (legacy): ${args['title']}");
 
         try {
-          await ShareBackgroundService.saveAndSync(
-            args.cast<String, dynamic>(),
+          await noteService.addOrUpdateNote(
+            title: args['title'],
+            content: args['content'],
+            category: args['category'],
+            tag: args['tag'],
           );
+          //todo 发送到后端
 
           // 也显示 UI
           final title = args['title'] as String;
@@ -144,12 +160,12 @@ class _MyShareAppState extends State<MyShareApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      navigatorKey: _navigatorKey,
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
 
-      // home 现在调用 _buildCurrentScreen
       home: _buildCurrentScreen(),
 
       onGenerateRoute: (settings) {
