@@ -404,23 +404,6 @@ class ShareActivity : FlutterActivity() {
 
             Log.d(TAG, "MethodChannel 已重新设置，isEngineReady=$isEngineReady")
 
-            // 如果引擎已经准备好（热启动场景），且有待处理的数据，立即处理
-            if (isEngineReady) {
-                Log.d(TAG, "setupMethodChannel: 引擎已就绪（热启动）")
-                pendingShareData?.let { data ->
-                    Log.d(TAG, "setupMethodChannel: 发现待处理数据: ${data.title}")
-                    // 热启动时，剪贴板数据会在 onWindowFocusChanged 中处理
-                    // 这里只处理非剪贴板的分享数据 (来自 onNewIntent)
-                    if (!pendingClipboardRead) {
-                        Log.d(TAG, "热启动：引擎已准备好，立即处理 ACTION_SEND: ${data.title}")
-                        notifyDartToShowShare(data)
-                        pendingShareData = null
-                    } else {
-                        Log.d(TAG, "热启动：等待 onWindowFocusChanged 处理剪贴板数据")
-                    }
-                } ?: Log.d(TAG, "setupMethodChannel: 无待处理数据")
-            }
-
             // 注册日志通道（可选）
             val loggerChannel = MethodChannel(messenger, "com.example.notebook/logger")
             loggerChannel.setMethodCallHandler { call, result ->
@@ -497,7 +480,7 @@ class ShareActivity : FlutterActivity() {
             flutterEngine?.let { setupMethodChannel(it) }
         }
 
-        // ✅ 健壮性：再次检查
+        // 再次检查
         if (methodChannel == null) {
             Log.e(TAG, "notifyDartToShowShare: methodChannel 仍然为 null！无法发送。")
             return
