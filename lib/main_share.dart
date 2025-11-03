@@ -24,8 +24,8 @@ Future<void> main_share() async {
   // 2. 打开 Isar 实例,和主示例相同，要不然存的地方就不一样了
   isar = await Isar.open([NoteSchema], directory: dir.path);
 
-  // 3. 初始化后台服务 (并把 Isar 传给它)
-  ShareBackgroundService.initialize(isar);
+  // // 3. 初始化后台服务 (并把 Isar 传给它),并不需要了，先留着
+  // ShareBackgroundService.initialize(isar);
 
   // 4. 运行一个 只 包含分享 UI 的应用
   runApp(
@@ -48,6 +48,7 @@ class _MyShareAppState extends ConsumerState<MyShareApp> {
   static const _channel = MethodChannel('com.example.notebook/share');
   ShareData? _currentShare;
   late final NoteService noteService;
+  int id = -1;
   @override
   void initState() {
     super.initState();
@@ -94,7 +95,7 @@ class _MyShareAppState extends ConsumerState<MyShareApp> {
 
     switch (call.method) {
       case 'showShare':
-        // 这是新的命令：显示分享 UI
+        // 显示分享 UI
         final args = call.arguments as Map;
         final title = args['title'] as String;
         final content = args['content'] as String;
@@ -103,7 +104,7 @@ class _MyShareAppState extends ConsumerState<MyShareApp> {
 
         try {
           // 1. 保存数据到数据库
-          await noteService.addOrUpdateNote(
+          id = await noteService.addOrUpdateNote(
             title: args['title'],
             content: args['content'],
             category: args['category'],
@@ -120,32 +121,6 @@ class _MyShareAppState extends ConsumerState<MyShareApp> {
           return "Success";
         } catch (e) {
           log.e(tag,"展示识别: $e");
-          return e.toString();
-        }
-
-      case 'saveAndSync':
-        final args = call.arguments as Map;
-        log.d(tag,"saveAndSync (legacy): ${args['title']}");
-
-        try {
-          await noteService.addOrUpdateNote(
-            title: args['title'],
-            content: args['content'],
-            category: args['category'],
-            tag: args['tag'],
-          );
-          //todo 发送到后端
-
-          // 也显示 UI
-          final title = args['title'] as String;
-          final content = args['content'] as String;
-          setState(() {
-            _currentShare = ShareData(title: title, content: content);
-          });
-
-          return "Success";
-        } catch (e) {
-          log.e(tag,"Error in saveAndSync: $e");
           return e.toString();
         }
 
@@ -173,6 +148,7 @@ class _MyShareAppState extends ConsumerState<MyShareApp> {
           final args = settings.arguments as Map<String, dynamic>? ?? {};
           final title = args['title'] as String? ?? '编辑笔记';
           final content = args['content'] as String? ?? '';
+          final id = args['id'] as int? ?? -1;
 
           return PageRouteBuilder(
             opaque: false,
@@ -181,6 +157,7 @@ class _MyShareAppState extends ConsumerState<MyShareApp> {
               initialTitle: title,
               initialContent: content,
               onDone: _dismissUI, // 把"隐藏"方法传给编辑页
+              id: id,
             ),
           );
         }
@@ -201,6 +178,7 @@ class _MyShareAppState extends ConsumerState<MyShareApp> {
         title: _currentShare!.title,
         content: _currentShare!.content,
         onDismiss: _dismissUI, // 把"隐藏"方法传给成功页
+        id: id,
       );
     }
   }

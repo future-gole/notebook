@@ -1,12 +1,17 @@
 import 'package:isar_community/isar.dart';
 import 'package:notebook/model/note.dart';
+import 'package:notebook/util/logger_service.dart';
 
+final String NoteServiceTag = "NoteService";
 class NoteService {
   final Isar isar;
   final String defaultCategory = "home";
+
   NoteService(this.isar);
-  // 增添笔记
-  Future<void> addOrUpdateNote({
+
+  // 增添/更新笔记，返回id，-1 为插入失败
+  Future<int> addOrUpdateNote({
+    int? id,
     String title = "默认标题",
     String content = "默认内容",
     String? category,
@@ -18,9 +23,20 @@ class NoteService {
       ..category = category ?? defaultCategory
       ..time = DateTime.now()
       ..tag;
-    await isar.writeTxn(() async {
-      await isar.notes.put(newNote);
-    });
+    if(id != null && id != -1){
+      newNote.id  = id;
+    }
+    try {
+      int resultId = -1;
+      await isar.writeTxn(() async {
+            // 这里需要获取id，因为用户可能点击detail进行更新
+            resultId = await isar.notes.put(newNote);
+          });
+      return resultId;
+    } catch (e) {
+      log.e(NoteServiceTag,"插入/更新数据失败: $e");
+      return -1;
+    }
   }
 
   // 根据笔记id获取笔记
@@ -40,9 +56,13 @@ class NoteService {
 
   // 删除笔记
   Future<void> deleteNote(Id noteId) async {
-    await isar.writeTxn(() async {
-      await isar.notes.delete(noteId);
-    });
+    try {
+      await isar.writeTxn(() async {
+            await isar.notes.delete(noteId);
+          });
+    } catch (e) {
+      log.e(NoteServiceTag,"删除数据失败: $e");
+    }
   }
 
   // 根据 title 查询笔记
@@ -73,7 +93,6 @@ class NoteService {
   }
 
   // 根据 tag 查询笔记
-
   Future<List<Note>> findNotesWithTag(String query) async {
     return await isar.notes
         .filter()

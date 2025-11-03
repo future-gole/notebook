@@ -7,12 +7,14 @@ class ShareSuccessPage extends StatefulWidget {
   final String title;
   final String content;
   final VoidCallback onDismiss; // 添加 onDismiss 回调
+  final int id;
 
   const ShareSuccessPage({
     super.key,
     required this.title,
     required this.content,
     required this.onDismiss,
+    required this.id
   });
 
   @override
@@ -44,6 +46,7 @@ class _ShareSuccessPageState extends State<ShareSuccessPage> {
     Navigator.of(context).pushNamed(
       '/editNote',
       arguments: {
+        'id': widget.id, // 传递 id 给编辑页
         'title': widget.title,
         'content': widget.content,
       },

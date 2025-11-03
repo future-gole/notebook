@@ -493,7 +493,7 @@ class ShareActivity : FlutterActivity() {
         )
 
         Log.d(TAG, "发送 showShare 到 Dart: ${data.title}")
-
+        // 对应 dart 中的 showShare 方法调用
         methodChannel?.invokeMethod("showShare", payload, object : MethodChannel.Result {
             override fun success(result: Any?) {
                 Log.d(TAG, "✅ Dart 已接收 showShare")

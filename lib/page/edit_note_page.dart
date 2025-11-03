@@ -11,13 +11,15 @@ import 'package:notebook/services/share_background_service.dart';
 class EditNotePage extends ConsumerStatefulWidget {
   final String initialTitle;
   final String initialContent;
-  final VoidCallback onDone; // ⬅️ 2. 添加 onDone 回调
+  final VoidCallback onDone; // 添加 onDone 回调
+  final int id;
 
   const EditNotePage({
     super.key,
     required this.initialTitle,
     required this.initialContent,
     required this.onDone,
+    required this.id,
   });
 
   @override
@@ -52,9 +54,11 @@ class EditNotePageState extends ConsumerState<EditNotePage> {
     final newContent = _contentController.text;
     final newCategory = _categoryController.text;
     final newTag = _tagController.text;
+    final editId = widget.id;
 
     final noteService = ref.read(noteServiceProvider);
     await noteService.addOrUpdateNote(
+      id: editId,
       title: newTitle,
       content: newContent,
       category: newCategory,
@@ -74,7 +78,7 @@ class EditNotePageState extends ConsumerState<EditNotePage> {
       child: BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
           child: Container(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             child:Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.end,
@@ -129,7 +133,6 @@ class EditNotePageState extends ConsumerState<EditNotePage> {
               // 这是 "Done" 按钮
               ElevatedButton(
                 onPressed: _onDone,
-                child: Text("Done", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.orange, // 匹配 mymind 截图
                   foregroundColor: Colors.white,
@@ -138,6 +141,7 @@ class EditNotePageState extends ConsumerState<EditNotePage> {
                     borderRadius: BorderRadius.circular(26),
                   ),
                 ),
+                child: Text("Done", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
               ),
             ],
           ),
