@@ -46,7 +46,7 @@ class NoteService {
 
   // 获取所有笔记
   Future<List<Note>> getAllNotes() async {
-    return await isar.notes.where().findAll();
+    return await isar.notes.where().sortByTimeDesc().findAll();
   }
 
   // 监听并且获取所有笔记
@@ -89,6 +89,7 @@ class NoteService {
     return await isar.notes
       .filter()
       .categoryEqualTo(query, caseSensitive: false)
+      .sortByTimeDesc()
       .findAll();
   }
 
