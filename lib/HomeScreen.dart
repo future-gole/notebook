@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:notebook/main.dart';
 import 'package:notebook/model/note.dart';
-import 'package:notebook/page/widget/nav_bar.dart';
+import 'package:notebook/page/widget/glass_nav_bar.dart';
 import 'package:notebook/page/widget/note_Item.dart';
 import 'package:notebook/providers/nav_providers.dart';
 import 'package:notebook/providers/note_providers.dart';
@@ -43,7 +43,9 @@ class HomeScreen extends ConsumerWidget {
       ),
       body: Column(
         children: [
-          GlassNavBar(),
+          Center(
+            child: GlassNavBar(),
+          ),
           Expanded(
             child: noteByCategory.when(
                 data: (notes){
@@ -184,7 +186,6 @@ class HomeScreen extends ConsumerWidget {
                 final category = categoryController.text.trim();
                 if (title.isNotEmpty && content.isNotEmpty) {
                   await noteService.addOrUpdateNote(title: title, content:  content,category: category);
-                  log.d(tag, 'Note added: $title');
                   // 标记
                   ref.invalidate(noteByCategoryProvider);
                   if(!context.mounted) return;

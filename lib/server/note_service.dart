@@ -5,18 +5,21 @@ import 'package:notebook/util/logger_service.dart';
 final String NoteServiceTag = "NoteService";
 class NoteService {
   final Isar isar;
-  final String defaultCategory = "home";
+  static const String defaultCategory = "home";
+  static const String defaultTitle = "默认标题";
+  static const String defaultContent = "默认内容";
 
   NoteService(this.isar);
 
   // 增添/更新笔记，返回id，-1 为插入失败
   Future<int> addOrUpdateNote({
     int? id,
-    String title = "默认标题",
-    String content = "默认内容",
+    String title = defaultTitle,
+    String content = defaultContent,
     String? category,
     String? tag,
   }) async {
+    log.d(NoteServiceTag, 'Note added: title: $title, content: $content, category: $category ');
     final newNote = Note()
       ..title = title
       ..content = content

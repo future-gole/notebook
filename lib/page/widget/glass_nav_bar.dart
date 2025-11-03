@@ -39,30 +39,34 @@ class GlassNavBar extends ConsumerWidget {
                 color: Colors.white.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(100.0),
               ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min, // 使 Row 包裹内容
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: List.generate(navItems.length, (index) {
-                  final item = navItems[index];
-                  return Padding(
-                    // 模拟 'gap-1.5' (6px)。
-                    padding: EdgeInsets.only(
-                      // 最后一个 item 右侧没有间距
-                      right: index == navItems.length - 1 ? 0 : 6.0,
-                    ),
-                    child: ItemBar(
-                      svgPath: item.svgPath,
-                      text: item.text,
-                      // 检查当前 index 是否为激活 index
-                      isActive: activeIndex == index,
-                      onTap: () {
-                        // 点击时，更新 provider 中的状态
-                        ref.read(activeNavIndexProvider.notifier).state = index;
-                      },
-                    ),
-                  );
-                }),
-              ),
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min, // 使 Row 包裹内容
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: List.generate(navItems.length, (index) {
+                    final item = navItems[index];
+                    return Padding(
+                      // 模拟 'gap-1.5' (6px)。
+                      padding: EdgeInsets.only(
+                        // 最后一个 item 右侧没有间距
+                        right: index == navItems.length - 1 ? 0 : 6.0,
+                      ),
+                      child: ItemBar(
+                        svgPath: item.svgPath,
+                        text: item.text,
+                        // 检查当前 index 是否为激活 index
+                        isActive: activeIndex == index,
+                        onTap: () {
+                          // 点击时，更新 provider 中的状态
+                          ref.read(activeNavIndexProvider.notifier).state = index;
+                        },
+                      ),
+                    );
+                  }),
+                ),
+              )
+
             ),
           ),
         );

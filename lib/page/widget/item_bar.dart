@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
-// Dart/Flutter 约定类名使用大驼峰 (ItemBar)
 class ItemBar extends StatelessWidget {
   // 假设这些是来自 'assets/' 的路径
   final String svgPath;
