@@ -38,18 +38,6 @@ class noteItem extends ConsumerWidget {
     }
   }
 
-  // 删除笔记（滑动删除时调用）
-  Future<void> _deleteNote(
-    BuildContext context,
-    WidgetRef ref,
-    int noteId,
-  ) async {
-    ref.read(noteServiceProvider).deleteNote(noteId);
-    log.d(tag, 'Note deleted: $noteId');
-    // 刷新笔记列表
-    ref.invalidate(noteByCategoryProvider);
-  }
-
   // 显示编辑笔记模态框
   void _showEditNoteModal(BuildContext context) {
     showModalBottomSheet(
@@ -82,7 +70,7 @@ class noteItem extends ConsumerWidget {
     return Dismissible(
       key: Key(_note.id.toString()),
       direction: DismissDirection.endToStart,
-      onDismissed: (direction) => _deleteNote(context, ref, _note.id),
+      onDismissed: (direction) => ref.read(noteServiceProvider).deleteNote(_note.id),
       background: Container(
         alignment: Alignment.centerRight,
         margin: isGridMode

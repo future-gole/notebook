@@ -21,16 +21,45 @@ final noteByIdProvider = FutureProvider.family<Note?, int>((ref, id) async {
   return noteService.getNoteById(id);
 });
 
-final noteByCategoryProvider = FutureProvider<List<Note>>((ref) async {
-  // 获取激活的下标
-  final activeIndex = ref.watch(activeNavIndexProvider);
-
-  // 获取service
-  final noteService = ref.watch(noteServiceProvider);
-
-  // 获取最新的导航项 List<NavItem>
-  final navItem = await ref.watch(navItemsProvider.future);
-
-  // 获取 Category 下的 note
-  return noteService.findNotesWithCategory(navItem[activeIndex].category);
+final noteByCategoryProvider = AsyncNotifierProvider<NoteByCategory, List<Note>>(() {
+  return NoteByCategory();
 });
+
+class NoteByCategory extends AsyncNotifier<List<Note>> {
+
+  // 1. build 方法负责异步获取数据（和你旧的 FutureProvider 逻辑一样）
+  @override
+  Future<List<Note>> build() async {
+    // 获取激活的下标
+    final activeIndex = ref.watch(activeNavIndexProvider);
+    // 获取service
+    final noteService = ref.watch(noteServiceProvider);
+    // 获取最新的导航项 List<NavItem>
+    final navItem = await ref.watch(navItemsProvider.future);
+
+    // 获取 Category 下的 note
+    return noteService.findNotesWithCategory(navItem[activeIndex].category);
+  }
+
+  // 2. 关键：一个同步修改状态的方法
+  Future<void> deleteNote(int noteId) async {
+    // A. 保存旧状态，用于失败时回滚
+    final previousState = state;
+
+    // B. (关键!) 立即、同步地更新 UI 状态
+    // 我们从当前的状态(.value)中过滤掉被删除的笔记
+    // 这就是“Optimistic UI”：我们乐观地假设删除会成功
+    state = AsyncValue.data(
+      state.valueOrNull?.where((note) => note.id != noteId).toList() ?? [],
+    );
+
+    // C. 在后台异步执行真正的数据库删除
+    try {
+      await ref.read(noteServiceProvider).deleteNote(noteId);
+      // 成功了！UI 已经是正确的，什么都不用做。
+    } catch (e, s) {
+      // D. (回滚) 数据库删除失败！把 UI 恢复到旧状态
+      state = previousState;
+    }
+  }
+}
