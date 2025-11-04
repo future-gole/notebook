@@ -30,7 +30,6 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  share_handler: ^0.0.25
   logger: ^2.6.2
   intl: ^0.20.0
   isar_community: 3.3.0-dev.3
