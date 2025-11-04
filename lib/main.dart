@@ -4,6 +4,7 @@ import 'package:isar_community/isar.dart';
 import 'package:notebook/HomeScreen.dart';
 import 'package:notebook/providers/nav_providers.dart';
 import 'package:notebook/services/share_background_service.dart';
+import 'package:notebook/util/theme_data.dart';
 import 'package:path_provider/path_provider.dart';
 import 'model/note.dart';
 
@@ -42,10 +43,17 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-      ),
+      title: 'NoteBook',
+
+      // 应用"赤陶与暖沙"主题（亮色模式）
+      theme: calmBeigeTheme,
+
+      // 应用"静谧之夜"主题（暗色模式）
+      darkTheme: quietNightTheme,
+
+      // 跟随系统主题设置
+      themeMode: ThemeMode.system,
+
       home: HomeScreen(),
     );
   }

@@ -24,3 +24,9 @@ final navItemsProvider = StreamProvider<List<NavItem>>((ref) {
 
 /// 当前激活的导航项索引 Provider
 final activeNavIndexProvider = StateProvider<int>((ref) => 0);
+
+/// 笔记布局模式枚举
+enum NoteLayout { list, grid }
+
+/// 笔记布局模式 Provider（默认使用瀑布流）
+final noteLayoutProvider = StateProvider<NoteLayout>((ref) => NoteLayout.grid);

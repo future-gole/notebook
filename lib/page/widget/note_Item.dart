@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:notebook/providers/nav_providers.dart';
+import 'package:notebook/providers/note_providers.dart';
 import '../../model/note.dart';
 import '../../server/note_service.dart';
 import '../../util/logger_service.dart';
 import '../../util/url_helper.dart';
 import 'link_preview_card.dart';
+import 'note_editor_sheet.dart';
 
 String tag = "noteItem";
 
-class noteItem extends StatelessWidget {
+class noteItem extends ConsumerWidget {
   final Note _note;
   final NoteService _noteService;
 
@@ -34,210 +38,176 @@ class noteItem extends StatelessWidget {
     }
   }
 
-  // 删除笔记
-  Future<void> _deleteNote(BuildContext context, int noteId) async {
-    // 显示确认对话框
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text('确认删除'),
-        content: Text('确定要删除这条笔记吗？'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: Text('取消'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: Text('删除'),
-          ),
-        ],
-      ),
-    );
+  // 删除笔记（滑动删除时调用）
+  Future<void> _deleteNote(
+    BuildContext context,
+    WidgetRef ref,
+    int noteId,
+  ) async {
+    ref.read(noteServiceProvider).deleteNote(noteId);
+    log.d(tag, 'Note deleted: $noteId');
+    // 刷新笔记列表
+    ref.invalidate(noteByCategoryProvider);
+  }
 
-    if (confirmed == true) {
-      await _noteService.deleteNote(noteId);
-      log.d(tag, 'Note deleted: $noteId');
-    }
+  // 显示编辑笔记模态框
+  void _showEditNoteModal(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => NoteEditorSheet(note: _note),
+    );
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final hasUrl = UrlHelper.containsUrl(_note.content);
     final extractedUrl = hasUrl ? UrlHelper.extractUrl(_note.content) : null;
     final contentWithoutUrl = hasUrl
         ? UrlHelper.removeUrls(_note.content)
         : _note.content;
 
-    return Card(
-      margin: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: InkWell(
-        onTap: () => _showEditNoteDialog(context, _note),
-        borderRadius: BorderRadius.circular(16),
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // 标题和操作按钮行
-              Row(
-                children: [
-                  // 标题
-                  Expanded(
-                    child: Text(
-                      _note.title ?? '无标题',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black87,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                  // 删除按钮
-                  IconButton(
-                    icon: Icon(Icons.delete_outline, size: 20),
-                    color: Colors.grey[600],
-                    onPressed: () => _deleteNote(context, _note.id),
-                    padding: EdgeInsets.zero,
-                    constraints: BoxConstraints(),
-                  ),
-                ],
-              ),
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
 
-              // 时间信息
-              SizedBox(height: 4),
-              Row(
-                children: [
-                  Icon(Icons.access_time, size: 14, color: Colors.grey[500]),
-                  SizedBox(width: 4),
-                  Text(
-                    _formatTime(_note.time),
-                    style: TextStyle(fontSize: 12, color: Colors.grey[500]),
-                  ),
-                ],
-              ),
+    // 判断是否为纯文本笔记
+    final isTextOnly = !hasUrl;
 
-              // 如果有文本内容（去除URL后）
-              if (contentWithoutUrl != null &&
-                  contentWithoutUrl.isNotEmpty) ...[
-                SizedBox(height: 12),
-                Container(
-                  padding: EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Colors.grey[50],
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: Colors.grey[200]!),
-                  ),
-                  child: Text(
-                    contentWithoutUrl,
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.black87,
-                      height: 1.5,
-                    ),
-                    maxLines: 3,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-              ],
+    // 获取当前布局模式
+    final currentLayout = ref.watch(noteLayoutProvider);
+    final isGridMode = currentLayout == NoteLayout.grid;
 
-              // 如果有URL，显示链接预览卡片
-              if (hasUrl && extractedUrl != null) ...[
-                SizedBox(height: 12),
-                LinkPreviewCard(url: extractedUrl),
-              ],
-            ],
-          ),
+    // 使用 Dismissible 实现滑动删除
+    return Dismissible(
+      key: Key(_note.id.toString()),
+      direction: DismissDirection.endToStart,
+      onDismissed: (direction) => _deleteNote(context, ref, _note.id),
+      background: Container(
+        alignment: Alignment.centerRight,
+        margin: isGridMode
+            ? const EdgeInsets.symmetric(horizontal: 4.0, vertical: 4.0)
+            : const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+        decoration: BoxDecoration(
+          color: colorScheme.error,
+          borderRadius: BorderRadius.circular(16),
         ),
+        child: Icon(Icons.delete_outline, color: colorScheme.onError, size: 28),
       ),
-    );
-  }
-
-  // 显示编辑笔记对话框
-  void _showEditNoteDialog(BuildContext context, Note note) {
-    final titleController = TextEditingController(text: note.title);
-    final contentController = TextEditingController(text: note.content);
-
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: Row(
-            children: [
-              Icon(Icons.edit, color: Colors.blue),
-              SizedBox(width: 8),
-              Text('编辑笔记'),
-            ],
-          ),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextField(
-                  controller: titleController,
-                  decoration: InputDecoration(
-                    labelText: '标题',
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    prefixIcon: Icon(Icons.title),
-                  ),
-                ),
-                SizedBox(height: 16),
-                TextField(
-                  controller: contentController,
-                  decoration: InputDecoration(
-                    labelText: '内容',
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    prefixIcon: Icon(Icons.notes),
-                    alignLabelWithHint: true,
-                  ),
-                  maxLines: 8,
-                ),
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: Text('取消'),
-            ),
-            ElevatedButton(
-              onPressed: () async {
-                final title = titleController.text.trim();
-                final content = contentController.text.trim();
-                if (title.isNotEmpty && content.isNotEmpty) {
-                  // 更新笔记
-                  note.title = title;
-                  note.content = content;
-                  note.time = DateTime.now();
-                  await _noteService.addOrUpdateNote(title: title,content:  content);
-                  log.d(tag, 'Note updated: $title');
-                  Navigator.of(context).pop();
-                }
-              },
-              style: ElevatedButton.styleFrom(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
-              child: Text('保存'),
+      child: Container(
+        margin: isGridMode
+            ? const EdgeInsets.symmetric(horizontal: 4.0, vertical: 4.0)
+            : const EdgeInsets.symmetric(horizontal: 4.0, vertical: 4.0),
+        decoration: BoxDecoration(
+          color: Theme.of(context).cardColor,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Theme.of(context).shadowColor,
+              blurRadius: 20,
+              spreadRadius: -5,
+              offset: const Offset(0, 4),
             ),
           ],
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-        );
-      },
+        ),
+        child: InkWell(
+          onTap: () => _showEditNoteModal(context),
+          borderRadius: BorderRadius.circular(16),
+          child: isTextOnly
+              // 1. 纯文本模式：
+              ? Container(
+                  // (关键!) 给卡片一个最小高度，比如 80
+                  // 这样它就有了“填充”的视觉效果
+                  constraints: const BoxConstraints(minHeight: 80.0),
+
+                  // (关键!) 自动在垂直和水平方向上居中 child (Text)
+                  alignment: Alignment.center,
+
+                  // 只需要水平 padding 来防止文字碰到左右边缘
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+
+                  child: Text(
+                    contentWithoutUrl ?? "",
+                    textAlign: TextAlign.center, // 确保多行文本也居中
+                    style: TextStyle(
+                      fontSize: 25,
+                      fontWeight: FontWeight.w300,
+                      color: colorScheme.primary,
+                      height: 1.7,
+                    ),
+                    maxLines: 8,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                )
+              // 链接模式
+              : Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // 链接卡片部分
+                    Container(
+                      child: (hasUrl && extractedUrl != null)
+                          ? Column(
+                              children: [
+                                LinkPreviewCard(
+                                  url: extractedUrl,
+                                  isVertical: isGridMode,
+                                  hasContent:
+                                      contentWithoutUrl != null &&
+                                      contentWithoutUrl.isNotEmpty,
+                                ),
+                              ],
+                            )
+                          : const SizedBox.shrink(),
+                    ),
+
+                    // 链接卡片下面的文字部分
+                    Visibility(
+                      visible:
+                          contentWithoutUrl != null &&
+                          contentWithoutUrl.isNotEmpty,
+                      child: Padding(
+                        padding: const EdgeInsets.only(
+                          left: 12,
+                          right: 12,
+                          top: 8,
+                          bottom: 12,
+                        ),
+                        child: Text(
+                          contentWithoutUrl ?? "",
+                          style: textTheme.bodyMedium,
+                          maxLines: 3,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ),
+                    // Row(
+                    //   crossAxisAlignment: CrossAxisAlignment.center,
+                    //   children: [
+                    //     // // 标题 先不用了，感觉没啥用
+                    //     // Expanded(
+                    //     //   child: Text(
+                    //     //     _note.title ?? '无标题',
+                    //     //     style: textTheme.titleMedium,
+                    //     //     maxLines: 1,
+                    //     //     overflow: TextOverflow.ellipsis,
+                    //     //   ),
+                    //     // ),
+                    //     // SizedBox(width: 1),
+                    //     // Container(
+                    //     //   height: 16, // 尝试一个和 titleMedium 字体差不多的高度
+                    //     //   width: 1.0,
+                    //     //   color: Colors.white, // 你要的白色
+                    //     // ),
+                    //     // 时间信息
+                    //     // Text(
+                    //     //   _formatTime(_note.time),
+                    //     //   style: textTheme.bodySmall,
+                    //     // ),
+                    //   ],
+                  ],
+                ),
+        ),
+      ),
     );
   }
 }
