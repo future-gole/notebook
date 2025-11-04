@@ -27,6 +27,7 @@ class NoteService {
       ..time = DateTime.now()
       ..tag;
     if(id != null && id != -1){
+      log.d(NoteServiceTag, "id:${id},进行更新操作");
       newNote.id  = id;
     }
     try {

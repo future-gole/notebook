@@ -9,8 +9,6 @@ import 'package:notebook/providers/nav_providers.dart';
 import 'package:notebook/providers/note_providers.dart';
 import 'package:notebook/server/note_service.dart';
 import 'package:notebook/util/logger_service.dart';
-import 'package:share_handler/share_handler.dart';
-
 final String tag = "HomeScreen";
 class HomeScreen extends ConsumerWidget {
 
@@ -86,7 +84,10 @@ class HomeScreen extends ConsumerWidget {
                         return noteItem(note, noteService);
                   });
                 },
-                error: (error,stack) => Center(child: Text('加载笔记失败: $error')),
+                error: (error,stack) {
+                  log.e(tag, "stack: $error,stack:$stack");
+                  return Center(child: Text('加载笔记失败'));
+                },
                 loading: () => Center(child: CircularProgressIndicator()))
           ),
         ],

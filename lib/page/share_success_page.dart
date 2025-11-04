@@ -1,108 +1,135 @@
 // 路径: lib/pages/share_success_page.dart
 import 'dart:async';
-import 'dart:ui'; // ⬅️ 1. 导入
 import 'package:flutter/material.dart';
 
 class ShareSuccessPage extends StatefulWidget {
   final String title;
   final String content;
-  final VoidCallback onDismiss; // 添加 onDismiss 回调
-  final int id;
+  final VoidCallback onDismiss;
+  final VoidCallback onAddDetailsClicked;
 
   const ShareSuccessPage({
     super.key,
     required this.title,
     required this.content,
     required this.onDismiss,
-    required this.id
+    required this.onAddDetailsClicked,
   });
 
   @override
-  _ShareSuccessPageState createState() => _ShareSuccessPageState();
+  State<ShareSuccessPage> createState() => _ShareSuccessPageState();
 }
 
-class _ShareSuccessPageState extends State<ShareSuccessPage> {
-  Timer? _countdownTimer; // 加回倒计时
+class _ShareSuccessPageState extends State<ShareSuccessPage>
+    with SingleTickerProviderStateMixin {
+  Timer? _countdownTimer;
+  late AnimationController _progressController;
 
   @override
   void initState() {
     super.initState();
-    startCountdown();
+    _progressController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 3),
+    );
+    _startCountdown();
   }
 
-  // ⬅️ 4. 加回倒计时逻辑
-  void startCountdown() {
+  void _startCountdown() {
+    _progressController.forward();
     _countdownTimer = Timer(const Duration(seconds: 3), () {
       if (mounted) {
-        widget.onDismiss(); // 3秒到，调用回调以“隐藏”
+        widget.onDismiss();
       }
     });
   }
 
-  void _onDetailClicked() {
-    _countdownTimer?.cancel(); // 用户交互，取消倒计时
-
-    // 导航到“编辑”页面
-    Navigator.of(context).pushNamed(
-      '/editNote',
-      arguments: {
-        'id': widget.id, // 传递 id 给编辑页
-        'title': widget.title,
-        'content': widget.content,
-      },
-    );
+  void _onUserInteraction() {
+    _countdownTimer?.cancel();
+    _progressController.stop();
+    widget.onAddDetailsClicked();
   }
 
   @override
   void dispose() {
-    _countdownTimer?.cancel(); // ⬅️ 6. 销毁
+    _countdownTimer?.cancel();
+    _progressController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      type: MaterialType.transparency,
-      // ⬅️ 7. 添加模糊和遮罩
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-        child: Container(
-          color: Colors.black.withOpacity(0.1), // 半透明遮罩
-          child: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                //todo logo
-                Icon(Icons.lightbulb_outline, color: Colors.white, size: 30),
-                SizedBox(height: 20),
-                Text(
-                  "Good find!",
-                  style: TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.bold),
-                ),
-                Text(
-                  "It's in your notebook.",
-                  style: TextStyle(color: Colors.white.withOpacity(0.8), fontSize: 24),
-                ),
-                SizedBox(height: 40),
-                // "Add Details" 按钮
-                OutlinedButton.icon(
-                  icon: Icon(Icons.add, size: 18),
-                  label: Text("Add Details"),
-                  onPressed: _onDetailClicked,
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: Colors.white,
-                    side: BorderSide(color: Colors.white.withOpacity(0.5)),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30),
-                    ),
-                    padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                  ),
-                )
-              ],
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        // Logo/Icon - 使用点睛色
+        Icon(
+          Icons.check_circle_outline,
+          color: colorScheme.surfaceContainerHighest, // 点睛色
+          size: 48,
+        ),
+        const SizedBox(height: 24),
+
+        // 主标题
+        Text(
+          "Good find!",
+          style: TextStyle(
+            color: colorScheme.primary,
+            fontSize: 32,
+            fontWeight: FontWeight.bold,
+            letterSpacing: -0.5,
+          ),
+        ),
+        const SizedBox(height: 8),
+
+        // 副标题
+        Text(
+          "It's in your notebook.",
+          style: TextStyle(
+            color: colorScheme.secondary,
+            fontSize: 24,
+            fontWeight: FontWeight.normal,
+            letterSpacing: -0.3,
+          ),
+        ),
+        const SizedBox(height: 48),
+
+        // "Add Details" 文本按钮
+        GestureDetector(
+          onTap: _onUserInteraction,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            child: Text(
+              "Add Details",
+              style: TextStyle(
+                color: colorScheme.primary,
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                letterSpacing: 0.5,
+              ),
             ),
           ),
         ),
-      ),
+        const SizedBox(height: 16),
+
+        // 进度条 - 极细的线 - 使用点睛色
+        AnimatedBuilder(
+          animation: _progressController,
+          builder: (context, child) {
+            return Container(
+              height: 2,
+              width: 150 * _progressController.value,
+              decoration: BoxDecoration(
+                color: colorScheme.surfaceContainerHighest, // 点睛色
+                borderRadius: BorderRadius.circular(1),
+              ),
+            );
+          },
+        ),
+      ],
     );
   }
 }
