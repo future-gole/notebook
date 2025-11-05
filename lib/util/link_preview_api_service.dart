@@ -1,18 +1,20 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:notebook/util/app_config.dart';
 
 /// 使用 LinkPreview.net API 的链接预览服务
 /// 这个服务不受代理限制，直接访问第三方 API
 class LinkPreviewApiService {
-  static const String _apiKey = 'a7550aee7664cdd0a16233f8c1150c47';
   static const String _baseUrl = 'https://api.linkpreview.net';
 
   /// 获取链接的元数据
   static Future<ApiLinkMetadata> fetchMetadata(String url) async {
     try {
-      print('🌐 使用 LinkPreview API 获取: $url');
+      // 从配置中获取 API Key
+      final config = AppConfig();
+      final apiKey = config.linkPreviewApiKey;
       
-      final apiUrl = '$_baseUrl/?key=$_apiKey&q=${Uri.encodeComponent(url)}';
+      final apiUrl = '$_baseUrl/?key=$apiKey&q=${Uri.encodeComponent(url)}';
       final response = await http.get(
         Uri.parse(apiUrl),
         headers: {
@@ -22,8 +24,6 @@ class LinkPreviewApiService {
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        
-        print('✅ API 返回成功: title=${data['title']}');
         
         return ApiLinkMetadata(
           title: data['title'],

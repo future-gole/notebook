@@ -128,6 +128,18 @@ class GlassNavBar extends ConsumerWidget {
               onPressed: onSearchPressed ?? () {},
               isDark: isDark,
             ),
+
+            const SizedBox(width: 8),
+
+            // 设置按钮
+            _buildIconButton(
+              context,
+              icon: Icons.settings,
+              onPressed: () {
+                Navigator.of(context).pushNamed('/settings');
+              },
+              isDark: isDark,
+            ),
           ],
         );
       },

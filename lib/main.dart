@@ -4,9 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:isar_community/isar.dart';
 import 'package:notebook/HomeScreen.dart';
+import 'package:notebook/page/settings_page.dart';
 import 'package:notebook/providers/nav_providers.dart';
 import 'package:notebook/services/share_background_service.dart';
 import 'package:notebook/util/proxy_config.dart';
+import 'package:notebook/util/app_config.dart';
 import 'package:notebook/util/theme_data.dart';
 import 'package:path_provider/path_provider.dart';
 import 'model/note.dart';
@@ -21,17 +23,24 @@ Future<void> main() async {
   // 确保 flutter 绑定初始化了
   WidgetsFlutterBinding.ensureInitialized();
 
+  // 初始化应用配置
+  final config = AppConfig();
+  await config.init();
+
+  // 根据配置设置代理
+  if (config.proxyEnabled) {
+    HttpOverrides.global = GlobalHttpOverrides(
+      "${config.proxyHost}:${config.proxyPort}",
+      allowBadCertificates: true,
+    );
+  }
+
   // 获取一个可写目录
   final dir = await getApplicationDocumentsDirectory();
   // 打开 Isar 实例
   isar = await Isar.open(
     [NoteSchema], // 传入您所有模型的 Schema
     directory: dir.path,
-  );
-
-  HttpOverrides.global = GlobalHttpOverrides(
-    "127.0.0.1:7890",
-    allowBadCertificates: true,
   );
 
   runApp(
@@ -62,6 +71,11 @@ class MyApp extends StatelessWidget {
       themeMode: ThemeMode.system,
 
       home: HomeScreen(),
+
+      // 配置路由
+      routes: {
+        '/settings': (context) => const SettingsPage(),
+      },
     );
   }
 }

@@ -1,8 +1,11 @@
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'logger_service.dart';
+
 /// 链接预览缓存管理器
 /// 缓存时间设置为1年，避免重复网络请求
+final String tag = "LinkPreviewCache";
 class LinkPreviewCache {
   static const String _cachePrefix = 'link_preview_cache_';
   static const Duration _cacheDuration = Duration(days: 365); // 1年
@@ -19,9 +22,9 @@ class LinkPreviewCache {
       };
       
       await prefs.setString(cacheKey, json.encode(cacheData));
-      print('💾 缓存已保存: $url');
+      log.d(tag,'💾 缓存已保存: $url');
     } catch (e) {
-      print('❌ 缓存保存失败: $e');
+      log.d(tag,'❌ 缓存保存失败: $e');
     }
   }
 
@@ -47,11 +50,11 @@ class LinkPreviewCache {
         return null;
       }
       
-      print('✅ 使用缓存: $url');
+      log.d(tag,'✅ 使用缓存: $url');
       return cacheData['metadata'] as Map<String, dynamic>;
       
     } catch (e) {
-      print('❌ 缓存读取失败: $e');
+      log.d(tag,'❌ 缓存读取失败: $e');
       return null;
     }
   }
@@ -63,7 +66,7 @@ class LinkPreviewCache {
       final cacheKey = _getCacheKey(url);
       await prefs.remove(cacheKey);
     } catch (e) {
-      print('❌ 缓存清除失败: $e');
+      log.d(tag,'❌ 缓存清除失败: $e');
     }
   }
 
@@ -78,10 +81,10 @@ class LinkPreviewCache {
           await prefs.remove(key);
         }
       }
-      
-      print('🗑️ 所有缓存已清除');
+
+      log.d(tag,'🗑️ 所有缓存已清除');
     } catch (e) {
-      print('❌ 清除所有缓存失败: $e');
+      log.d(tag,'❌ 缓存清除失败: $e');
     }
   }
 
@@ -114,7 +117,7 @@ class LinkPreviewCache {
         'size': totalSize,
       };
     } catch (e) {
-      print('❌ 获取缓存统计失败: $e');
+      log.d(tag,'❌ 获取缓存统计失败: $e');
       return {'count': 0, 'size': 0};
     }
   }
