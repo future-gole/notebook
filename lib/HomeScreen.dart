@@ -10,9 +10,23 @@ import 'package:notebook/util/logger_service.dart';
 
 final String tag = "HomeScreen";
 
-class HomeScreen extends ConsumerWidget {
+class HomeScreen extends ConsumerStatefulWidget {
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends ConsumerState<HomeScreen> {
+  // 滚动控制器，用于保持滚动位置
+  final ScrollController _scrollController = ScrollController();
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     // 对应 Category 下的 note
     final noteByCategory = ref.watch(noteByCategoryProvider);
     final noteService = ref.watch(noteServiceProvider);
@@ -45,8 +59,25 @@ class HomeScreen extends ConsumerWidget {
 
             // 笔记列表（根据布局模式切换）
             Expanded(
-              child: noteByCategory.when(
-                data: (notes) {
+              child: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 200),
+                switchInCurve: Curves.easeInOut,
+                switchOutCurve: Curves.easeInOut,
+                transitionBuilder: (Widget child, Animation<double> animation) {
+                  // 淡入淡出 + 轻微缩放效果，掩盖瀑布流的重排
+                  return FadeTransition(
+                    opacity: animation,
+                    child: ScaleTransition(
+                      scale: Tween<double>(begin: 0.95, end: 1.0).animate(animation),
+                      child: child,
+                    ),
+                  );
+                },
+                child: KeyedSubtree(
+                  key: ValueKey('notes_count_${noteByCategory.value?.length ?? 0}'),
+                  child: noteByCategory.when(
+                    skipLoadingOnRefresh:true,
+                    data: (notes) {
                   if (notes.isEmpty) {
                     return Center(
                       child: Column(
@@ -81,7 +112,10 @@ class HomeScreen extends ConsumerWidget {
                   if (currentLayout == NoteLayout.grid) {
                     // 瀑布流布局
                     return MasonryGridView.count(
+                      controller: _scrollController,
+                      key: const PageStorageKey('masonry_grid_view'),
                       crossAxisCount: 2,
+                      cacheExtent: 500.0,  // 提前缓存屏幕外内容，减少滚动时的重新计算
                       // 外边距由noteItem自己来决定
                       padding: const EdgeInsets.symmetric(
                         horizontal: 4,
@@ -90,17 +124,35 @@ class HomeScreen extends ConsumerWidget {
                       itemCount: notes.length,
                       itemBuilder: (context, index) {
                         final note = notes[index];
-                        return noteItem(note, noteService);
+                        // 使用 RepaintBoundary 减少重绘范围
+                        return RepaintBoundary(
+                          child: noteItem(
+                            note,
+                            noteService,
+                            isGridMode: true,
+                            key: ValueKey('note_${note.id}'),
+                          ),
+                        );
                       },
                     );
                   } else {
                     // 列表布局
                     return ListView.builder(
+                      controller: _scrollController,
+                      key: const PageStorageKey('list_view'),
+                      cacheExtent: 500.0,  // 提前缓存屏幕外内容
                       padding: const EdgeInsets.symmetric(horizontal: 4),
                       itemCount: notes.length,
                       itemBuilder: (context, index) {
                         final note = notes[index];
-                        return noteItem(note, noteService);
+                        return RepaintBoundary(
+                          child: noteItem(
+                            note,
+                            noteService,
+                            isGridMode: false,
+                            key: ValueKey('note_${note.id}'),
+                          ),
+                        );
                       },
                     );
                   }
@@ -111,7 +163,9 @@ class HomeScreen extends ConsumerWidget {
                 },
                 loading: () => const Center(child: CircularProgressIndicator()),
               ),
-            ),
+                  ), // KeyedSubtree
+                ), // AnimatedSwitcher
+              ), // Expanded
           ],
         ),
       ),

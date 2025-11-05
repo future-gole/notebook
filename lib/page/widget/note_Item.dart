@@ -1,42 +1,36 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:notebook/providers/nav_providers.dart';
 import 'package:notebook/providers/note_providers.dart';
 import '../../model/note.dart';
 import '../../server/note_service.dart';
-import '../../util/logger_service.dart';
 import '../../util/url_helper.dart';
 import 'link_preview_card.dart';
 import 'note_editor_sheet.dart';
 
 String tag = "noteItem";
 
-class noteItem extends ConsumerWidget {
+// 改为 StatefulWidget 以支持 AutomaticKeepAliveClientMixin
+class noteItem extends ConsumerStatefulWidget {
   final Note _note;
-  final NoteService _noteService;
+  final bool isGridMode;
 
-  const noteItem(this._note, this._noteService);
+  const noteItem(
+    this._note,
+    NoteService noteService, {
+    required this.isGridMode,
+    Key? key,
+  }) : super(key: key);
 
-  // 格式化时间
-  String _formatTime(DateTime? time) {
-    if (time == null) return '';
-    final now = DateTime.now();
-    final difference = now.difference(time);
+  @override
+  ConsumerState<noteItem> createState() => _noteItemState();
+}
 
-    if (difference.inDays == 0) {
-      if (difference.inHours == 0) {
-        if (difference.inMinutes == 0) {
-          return '刚刚';
-        }
-        return '${difference.inMinutes} 分钟前';
-      }
-      return '${difference.inHours} 小时前';
-    } else if (difference.inDays < 7) {
-      return '${difference.inDays} 天前';
-    } else {
-      return '${time.year}-${time.month.toString().padLeft(2, '0')}-${time.day.toString().padLeft(2, '0')}';
-    }
-  }
+class _noteItemState extends ConsumerState<noteItem> 
+    with AutomaticKeepAliveClientMixin {
+  
+  // 保持 widget 状态，避免滚动时被销毁重建
+  @override
+  bool get wantKeepAlive => true;
 
   // 显示编辑笔记模态框
   void _showEditNoteModal(BuildContext context) {
@@ -44,17 +38,20 @@ class noteItem extends ConsumerWidget {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => NoteEditorSheet(note: _note),
+      builder: (context) => NoteEditorSheet(note: widget._note),
     );
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final hasUrl = UrlHelper.containsUrl(_note.content);
-    final extractedUrl = hasUrl ? UrlHelper.extractUrl(_note.content) : null;
+  Widget build(BuildContext context) {
+    // 必须调用 super.build，让 AutomaticKeepAliveClientMixin 工作
+    super.build(context);
+    
+    final hasUrl = UrlHelper.containsUrl(widget._note.content);
+    final extractedUrl = hasUrl ? UrlHelper.extractUrl(widget._note.content) : null;
     final contentWithoutUrl = hasUrl
-        ? UrlHelper.removeUrls(_note.content)
-        : _note.content;
+        ? UrlHelper.removeUrls(widget._note.content)
+        : widget._note.content;
 
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
@@ -62,28 +59,44 @@ class noteItem extends ConsumerWidget {
     // 判断是否为纯文本笔记
     final isTextOnly = !hasUrl;
 
-    // 获取当前布局模式
-    final currentLayout = ref.watch(noteLayoutProvider);
-    final isGridMode = currentLayout == NoteLayout.grid;
+    // 使用传入的 isGridMode 参数，而不是 watch provider
+    // 这样可以避免不必要的 rebuild, 和 构建参数异常
 
     // 使用 Dismissible 实现滑动删除
     return Dismissible(
-      key: Key(_note.id.toString()),
+      key: Key(widget._note.id.toString()),
       direction: DismissDirection.endToStart,
-      onDismissed: (direction) => ref.read(noteServiceProvider).deleteNote(_note.id),
+      // 动画时长：让删除过程更平滑
+      movementDuration: const Duration(milliseconds: 250),
+      resizeDuration: const Duration(milliseconds: 250),
+      // 使用 confirmDismiss 在动画开始前就更新 UI
+      confirmDismiss: (direction) async {
+        // 立即更新 UI（Optimistic UI）
+        ref.read(noteByCategoryProvider.notifier).deleteNote(widget._note.id);
+        // 返回 true 让 Dismissible 继续完成动画
+        return true;
+      },
       background: Container(
         alignment: Alignment.centerRight,
-        margin: isGridMode
+        margin: widget.isGridMode
             ? const EdgeInsets.symmetric(horizontal: 4.0, vertical: 4.0)
             : const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
         decoration: BoxDecoration(
-          color: colorScheme.error,
+          // 使用接近背景的颜色，减少删除时的视觉闪烁
+          color: Theme.of(context).scaffoldBackgroundColor,
           borderRadius: BorderRadius.circular(16),
         ),
-        child: Icon(Icons.delete_outline, color: colorScheme.onError, size: 28),
+        child: Padding(
+          padding: const EdgeInsets.only(right: 20),
+          child: Icon(
+            Icons.delete_outline,
+            color: colorScheme.error,
+            size: 28,
+          ),
+        ),
       ),
       child: Container(
-        margin: isGridMode
+        margin: widget.isGridMode
             ? const EdgeInsets.symmetric(horizontal: 4.0, vertical: 4.0)
             : const EdgeInsets.symmetric(horizontal: 4.0, vertical: 4.0),
         decoration: BoxDecoration(
@@ -138,7 +151,7 @@ class noteItem extends ConsumerWidget {
                               children: [
                                 LinkPreviewCard(
                                   url: extractedUrl,
-                                  isVertical: isGridMode,
+                                  isVertical: widget.isGridMode,
                                   hasContent:
                                       contentWithoutUrl != null &&
                                       contentWithoutUrl.isNotEmpty,
