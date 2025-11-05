@@ -68,104 +68,110 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   return FadeTransition(
                     opacity: animation,
                     child: ScaleTransition(
-                      scale: Tween<double>(begin: 0.95, end: 1.0).animate(animation),
+                      scale: Tween<double>(
+                        begin: 0.95,
+                        end: 1.0,
+                      ).animate(animation),
                       child: child,
                     ),
                   );
                 },
                 child: KeyedSubtree(
-                  key: ValueKey('notes_count_${noteByCategory.value?.length ?? 0}'),
+                  key: ValueKey(
+                    'notes_count_${noteByCategory.value?.length ?? 0}',
+                  ),
                   child: noteByCategory.when(
-                    skipLoadingOnRefresh:true,
+                    skipLoadingOnRefresh: true,
                     data: (notes) {
-                  if (notes.isEmpty) {
-                    return Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.note_add_outlined,
-                            size: 80,
-                            color: Theme.of(context).colorScheme.secondary,
+                      if (notes.isEmpty) {
+                        return Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.note_add_outlined,
+                                size: 80,
+                                color: Theme.of(context).colorScheme.secondary,
+                              ),
+                              const SizedBox(height: 16),
+                              Text(
+                                '你的思绪将汇聚于此',
+                                style: Theme.of(context).textTheme.titleMedium
+                                    ?.copyWith(
+                                      color: Theme.of(
+                                        context,
+                                      ).colorScheme.secondary,
+                                    ),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                '点击右下角，捕捉第一个灵感',
+                                style: Theme.of(context).textTheme.bodySmall,
+                              ),
+                            ],
                           ),
-                          const SizedBox(height: 16),
-                          Text(
-                            '你的思绪将汇聚于此',
-                            style: Theme.of(context).textTheme.titleMedium
-                                ?.copyWith(
-                                  color: Theme.of(
-                                    context,
-                                  ).colorScheme.secondary,
-                                ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            '点击右下角，捕捉第一个灵感',
-                            style: Theme.of(context).textTheme.bodySmall,
-                          ),
-                        ],
-                      ),
-                    );
-                  }
+                        );
+                      }
 
-                  // 根据布局模式返回不同的列表
-                  if (currentLayout == NoteLayout.grid) {
-                    // 瀑布流布局
-                    return MasonryGridView.count(
-                      controller: _scrollController,
-                      key: const PageStorageKey('masonry_grid_view'),
-                      crossAxisCount: 2,
-                      cacheExtent: 500.0,  // 提前缓存屏幕外内容，减少滚动时的重新计算
-                      // 外边距由noteItem自己来决定
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 4,
-                        vertical: 8,
-                      ),
-                      itemCount: notes.length,
-                      itemBuilder: (context, index) {
-                        final note = notes[index];
-                        // 使用 RepaintBoundary 减少重绘范围
-                        return RepaintBoundary(
-                          child: noteItem(
-                            note,
-                            noteService,
-                            isGridMode: true,
-                            key: ValueKey('note_${note.id}'),
+                      // 根据布局模式返回不同的列表
+                      if (currentLayout == NoteLayout.grid) {
+                        // 瀑布流布局
+                        return MasonryGridView.count(
+                          controller: _scrollController,
+                          key: const PageStorageKey('masonry_grid_view'),
+                          crossAxisCount: 2,
+                          cacheExtent: 500.0, // 提前缓存屏幕外内容，减少滚动时的重新计算
+                          // 外边距由noteItem自己来决定
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 4,
+                            vertical: 8,
                           ),
+                          itemCount: notes.length,
+                          itemBuilder: (context, index) {
+                            final note = notes[index];
+                            // 使用 RepaintBoundary 减少重绘范围
+                            return RepaintBoundary(
+                              child: noteItem(
+                                note,
+                                noteService,
+                                isGridMode: true,
+                                key: ValueKey('note_${note.id}'),
+                              ),
+                            );
+                          },
                         );
-                      },
-                    );
-                  } else {
-                    // 列表布局
-                    return ListView.builder(
-                      controller: _scrollController,
-                      key: const PageStorageKey('list_view'),
-                      cacheExtent: 500.0,  // 提前缓存屏幕外内容
-                      padding: const EdgeInsets.symmetric(horizontal: 4),
-                      itemCount: notes.length,
-                      itemBuilder: (context, index) {
-                        final note = notes[index];
-                        return RepaintBoundary(
-                          child: noteItem(
-                            note,
-                            noteService,
-                            isGridMode: false,
-                            key: ValueKey('note_${note.id}'),
-                          ),
+                      } else {
+                        // 列表布局
+                        return ListView.builder(
+                          controller: _scrollController,
+                          key: const PageStorageKey('list_view'),
+                          cacheExtent: 500.0, // 提前缓存屏幕外内容
+                          padding: const EdgeInsets.symmetric(horizontal: 4),
+                          itemCount: notes.length,
+                          itemBuilder: (context, index) {
+                            final note = notes[index];
+                            return RepaintBoundary(
+                              child: noteItem(
+                                note,
+                                noteService,
+                                isGridMode: false,
+                                key: ValueKey('note_${note.id}'),
+                              ),
+                            );
+                          },
                         );
-                      },
-                    );
-                  }
-                },
-                error: (error, stack) {
-                  log.e(tag, "stack: $error,stack:$stack");
-                  return const Center(child: Text('加载笔记失败'));
-                },
-                loading: () => const Center(child: CircularProgressIndicator()),
-              ),
-                  ), // KeyedSubtree
-                ), // AnimatedSwitcher
-              ), // Expanded
+                      }
+                    },
+                    error: (error, stack) {
+                      log.e(tag, "stack: $error,stack:$stack");
+                      return const Center(child: Text('加载笔记失败'));
+                    },
+                    loading: () =>
+                        const Center(child: CircularProgressIndicator()),
+                  ),
+                ), // KeyedSubtree
+              ), // AnimatedSwitcher
+            ), // Expanded
           ],
         ),
       ),

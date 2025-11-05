@@ -1,9 +1,12 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:isar_community/isar.dart';
 import 'package:notebook/HomeScreen.dart';
 import 'package:notebook/providers/nav_providers.dart';
 import 'package:notebook/services/share_background_service.dart';
+import 'package:notebook/util/proxy_config.dart';
 import 'package:notebook/util/theme_data.dart';
 import 'package:path_provider/path_provider.dart';
 import 'model/note.dart';
@@ -20,11 +23,15 @@ Future<void> main() async {
 
   // 获取一个可写目录
   final dir = await getApplicationDocumentsDirectory();
-
   // 打开 Isar 实例
   isar = await Isar.open(
     [NoteSchema], // 传入您所有模型的 Schema
     directory: dir.path,
+  );
+
+  HttpOverrides.global = GlobalHttpOverrides(
+    "127.0.0.1:7890",
+    allowBadCertificates: true,
   );
 
   runApp(

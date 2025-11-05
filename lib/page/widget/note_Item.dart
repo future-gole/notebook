@@ -25,9 +25,8 @@ class noteItem extends ConsumerStatefulWidget {
   ConsumerState<noteItem> createState() => _noteItemState();
 }
 
-class _noteItemState extends ConsumerState<noteItem> 
+class _noteItemState extends ConsumerState<noteItem>
     with AutomaticKeepAliveClientMixin {
-  
   // 保持 widget 状态，避免滚动时被销毁重建
   @override
   bool get wantKeepAlive => true;
@@ -46,9 +45,11 @@ class _noteItemState extends ConsumerState<noteItem>
   Widget build(BuildContext context) {
     // 必须调用 super.build，让 AutomaticKeepAliveClientMixin 工作
     super.build(context);
-    
+
     final hasUrl = UrlHelper.containsUrl(widget._note.content);
-    final extractedUrl = hasUrl ? UrlHelper.extractUrl(widget._note.content) : null;
+    final extractedUrl = hasUrl
+        ? UrlHelper.extractUrl(widget._note.content)
+        : null;
     final contentWithoutUrl = hasUrl
         ? UrlHelper.removeUrls(widget._note.content)
         : widget._note.content;
@@ -88,11 +89,7 @@ class _noteItemState extends ConsumerState<noteItem>
         ),
         child: Padding(
           padding: const EdgeInsets.only(right: 20),
-          child: Icon(
-            Icons.delete_outline,
-            color: colorScheme.error,
-            size: 28,
-          ),
+          child: Icon(Icons.delete_outline, color: colorScheme.error, size: 28),
         ),
       ),
       child: Container(
