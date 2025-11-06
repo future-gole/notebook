@@ -1,0 +1,15 @@
+# --- 全局忽略 ---
+
+# IDE 配置文件 (VSCode, IntelliJ, Android Studio)
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+
+# 操作系统生成的文件 (macOS, Windows)
+.DS_Store
+Thumbs.db
+
+# 通用日志文件
+*.log
