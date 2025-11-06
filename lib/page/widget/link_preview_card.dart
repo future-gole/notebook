@@ -5,10 +5,12 @@ import 'package:notebook/util/link_preview_config.dart';
 import 'package:notebook/util/link_preview_api_service.dart';
 import 'package:notebook/util/link_preview_cache.dart';
 
+import '../../util/logger_service.dart';
+
 /// 智能链接预览卡片组件
 /// - 国内网站：使用 any_link_preview + 本地缓存
 /// - 国外网站（X/Twitter/YouTube）：使用 LinkPreview.net API + 本地缓存
-/// - 本地缓存：1年持久化存储，不开代理也能查看文本内容
+/// - 本地缓存：不开代理也能查看文本内容
 final String tag = "LinkPreviewCard";
 
 class LinkPreviewCard extends StatefulWidget {
@@ -32,7 +34,7 @@ class _LinkPreviewCardState extends State<LinkPreviewCard> {
   Widget build(BuildContext context) {
     // 智能选择：国外网站用API，国内网站用any_link_preview
     final useApi = LinkPreviewConfig.shouldUseApiService(widget.url);
-    
+
     if (useApi) {
       // 国外网站：使用 API 方案（带本地缓存）
       return _ApiLinkPreview(
@@ -66,8 +68,10 @@ class _LinkPreviewCardState extends State<LinkPreviewCard> {
             : _HorizontalErrorCard(url: widget.url),
         cache: const Duration(hours: 24),
         headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+          'User-Agent':
+              'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+          'Accept':
+              'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
           'Accept-Language': 'en-US,en;q=0.9',
         },
       );
@@ -119,20 +123,32 @@ class _ApiLinkPreviewState extends State<_ApiLinkPreview> {
         }
         return;
       }
-      
+
       // 2. 从 API 获取
       final apiMetadata = await LinkPreviewApiService.fetchMetadata(widget.url);
-      
-      // 3. 转换并保存到本地缓存
-      final metadata = {
-        'title': apiMetadata.title ?? 'No title',
-        'description': apiMetadata.description ?? 'No description available',
-        'imageUrl': apiMetadata.imageUrl,
-        'url': apiMetadata.url,
-      };
-      
-      await LinkPreviewCache.saveCache(widget.url, metadata);
-      
+      final metadata;
+      // 3.1 存在数据才进行保存
+      // 3.1.1 成功
+      if (apiMetadata.success) {
+        // 3.2 转换并保存到本地缓存
+        // 3.1 如果没有拉取到正确的值，就不需要保存到本地缓存，否则会导致下次不会发起拉取请求
+        metadata = {
+          'title': apiMetadata.title ?? 'No title',
+          'description': apiMetadata.description ?? 'No description available',
+          'imageUrl': apiMetadata.imageUrl,
+          'url': apiMetadata.url,
+        };
+        await LinkPreviewCache.saveCache(widget.url, metadata);
+      }else {
+        // 3.1.1 没成功
+        metadata = {
+          'title': "预览错误",
+          'description': "请检查网络或者api是否正确",
+          'imageUrl': "",
+          'url': apiMetadata.url,
+        };
+      }
+
       if (mounted) {
         setState(() {
           _metadata = metadata;
@@ -140,7 +156,7 @@ class _ApiLinkPreviewState extends State<_ApiLinkPreview> {
         });
       }
     } catch (e) {
-      print('❌ API 获取失败: $e');
+      log.d(tag, '❌ API 获取失败: $e');
       if (mounted) {
         setState(() {
           _hasError = true;
@@ -177,13 +193,17 @@ class _ApiLinkPreviewState extends State<_ApiLinkPreview> {
         ? _VerticalPreviewCard(
             url: widget.url,
             metadata: metadata,
-            imageProvider: imageUrl != null && imageUrl.isNotEmpty ? NetworkImage(imageUrl) : null,
+            imageProvider: imageUrl != null && imageUrl.isNotEmpty
+                ? NetworkImage(imageUrl)
+                : null,
             hasContent: widget.hasContent,
           )
         : _HorizontalPreviewCard(
             url: widget.url,
             metadata: metadata,
-            imageProvider: imageUrl != null && imageUrl.isNotEmpty ? NetworkImage(imageUrl) : null,
+            imageProvider: imageUrl != null && imageUrl.isNotEmpty
+                ? NetworkImage(imageUrl)
+                : null,
           );
   }
 }
@@ -221,9 +241,9 @@ class _BaseCardContainer extends StatelessWidget {
   Widget build(BuildContext context) {
     final borderRadius = (isVertical && hasContent)
         ? const BorderRadius.only(
-      topLeft: Radius.circular(12),
-      topRight: Radius.circular(12),
-    )
+            topLeft: Radius.circular(12),
+            topRight: Radius.circular(12),
+          )
         : BorderRadius.circular(12);
 
     return InkWell(
@@ -272,21 +292,31 @@ class _VerticalPreviewCard extends StatelessWidget {
   Widget build(BuildContext context) {
     // 判断是否为空内容（真正的空数据，而不是默认的 "No Title"）
     // 只有当 metadata 完全没有有效信息时才认为是空内容
-    final bool isEmptyContent = (metadata.title == null || metadata.title!.isEmpty || metadata.title == 'No Title') &&
-        (metadata.desc == null || metadata.desc!.isEmpty || metadata.desc == 'No description available') &&
+    final bool isEmptyContent =
+        (metadata.title == null ||
+            metadata.title!.isEmpty ||
+            metadata.title == 'No Title') &&
+        (metadata.desc == null ||
+            metadata.desc!.isEmpty ||
+            metadata.desc == 'No description available') &&
         (metadata.image == null || metadata.image!.isEmpty);
-    
+
     return _BaseCardContainer(
       isVertical: true,
       hasContent: hasContent,
       // 只有空内容时才固定高度,正常内容自适应
-      height: isEmptyContent ? (_kVerticalImageHeight + _kVerticalPlaceholderContentHeight) : null,
+      height: isEmptyContent
+          ? (_kVerticalImageHeight + _kVerticalPlaceholderContentHeight)
+          : null,
       onTap: () => _launchUrl(url),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _CardImageSection(imageProvider: imageProvider, isVertical: true),
-          _VerticalContentSection(metadata: metadata, fixedHeight: isEmptyContent),
+          _VerticalContentSection(
+            metadata: metadata,
+            fixedHeight: isEmptyContent,
+          ),
         ],
       ),
     );
@@ -328,19 +358,25 @@ class _HorizontalPreviewCard extends StatelessWidget {
 class _VerticalSkeletonCard extends StatelessWidget {
   final bool hasContent;
 
-  const _VerticalSkeletonCard({Key? key, required this.hasContent}) : super(key: key);
+  const _VerticalSkeletonCard({Key? key, required this.hasContent})
+    : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return _BaseCardContainer(
       isVertical: true,
       hasContent: hasContent,
-      height: _kVerticalImageHeight + _kVerticalPlaceholderContentHeight, // 明确指定总高度
+      height:
+          _kVerticalImageHeight + _kVerticalPlaceholderContentHeight, // 明确指定总高度
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // 图片区域
-          Container(height: _kVerticalImageHeight, width: double.infinity, color: Colors.grey[200]),
+          Container(
+            height: _kVerticalImageHeight,
+            width: double.infinity,
+            color: Colors.grey[200],
+          ),
           // 内容区域 - 强制高度
           Container(
             height: _kVerticalPlaceholderContentHeight, // 固定高度
@@ -349,13 +385,21 @@ class _VerticalSkeletonCard extends StatelessWidget {
               mainAxisSize: MainAxisSize.max, // 确保 Column 填满整个容器高度
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Container(height: 15, width: double.infinity, color: Colors.grey[200]),
+                Container(
+                  height: 15,
+                  width: double.infinity,
+                  color: Colors.grey[200],
+                ),
                 const SizedBox(height: 6),
                 Container(height: 15, width: 150, color: Colors.grey[200]),
                 // 使用 Spacer 或者 Expanded 来自动填充剩余空间,或者保持固定间距
                 // 这里为了精确控制骨架形状,保持原样即可,因为外层 Container 已经固定了总高度
                 const SizedBox(height: 14),
-                Container(height: 13, width: double.infinity, color: Colors.grey[100]),
+                Container(
+                  height: 13,
+                  width: double.infinity,
+                  color: Colors.grey[100],
+                ),
                 const SizedBox(height: 4),
                 Container(height: 13, width: 100, color: Colors.grey[100]),
               ],
@@ -377,7 +421,11 @@ class _HorizontalSkeletonCard extends StatelessWidget {
       height: 120,
       child: Row(
         children: [
-          Container(width: 120, height: double.infinity, color: Colors.grey[200]),
+          Container(
+            width: 120,
+            height: double.infinity,
+            color: Colors.grey[200],
+          ),
           Expanded(
             child: Padding(
               padding: const EdgeInsets.all(12.0),
@@ -386,7 +434,11 @@ class _HorizontalSkeletonCard extends StatelessWidget {
                 children: [
                   Container(height: 16, width: 180, color: Colors.grey[200]),
                   const SizedBox(height: 10),
-                  Container(height: 13, width: double.infinity, color: Colors.grey[100]),
+                  Container(
+                    height: 13,
+                    width: double.infinity,
+                    color: Colors.grey[100],
+                  ),
                   const SizedBox(height: 4),
                   Container(height: 13, width: 120, color: Colors.grey[100]),
                 ],
@@ -407,14 +459,19 @@ class _VerticalErrorCard extends StatelessWidget {
   final String url;
   final bool hasContent;
 
-  const _VerticalErrorCard({Key? key, required this.url, required this.hasContent}) : super(key: key);
+  const _VerticalErrorCard({
+    Key? key,
+    required this.url,
+    required this.hasContent,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return _BaseCardContainer(
       isVertical: true,
       hasContent: hasContent,
-      height: _kVerticalImageHeight + _kVerticalPlaceholderContentHeight, // 明确指定总高度
+      height:
+          _kVerticalImageHeight + _kVerticalPlaceholderContentHeight, // 明确指定总高度
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -422,7 +479,11 @@ class _VerticalErrorCard extends StatelessWidget {
             height: _kVerticalImageHeight,
             width: double.infinity,
             color: Colors.grey[100],
-            child: Icon(Icons.broken_image_outlined, color: Colors.grey[300], size: 40),
+            child: Icon(
+              Icons.broken_image_outlined,
+              color: Colors.grey[300],
+              size: 40,
+            ),
           ),
           // 内容区域 - 强制高度,确保与骨架屏一致
           Container(
@@ -434,9 +495,20 @@ class _VerticalErrorCard extends StatelessWidget {
               mainAxisSize: MainAxisSize.max, // 确保 Column 填满整个容器高度
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('加载失败', style: TextStyle(color: Colors.grey[500], fontWeight: FontWeight.bold)),
+                Text(
+                  '加载失败',
+                  style: TextStyle(
+                    color: Colors.grey[500],
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
                 const SizedBox(height: 6),
-                Text(url, maxLines: 2, overflow: TextOverflow.ellipsis, style: TextStyle(color: Colors.grey[300], fontSize: 12)),
+                Text(
+                  url,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(color: Colors.grey[300], fontSize: 12),
+                ),
               ],
             ),
           ),
@@ -462,7 +534,11 @@ class _HorizontalErrorCard extends StatelessWidget {
             width: 120,
             height: double.infinity,
             color: Colors.grey[100],
-            child: Icon(Icons.broken_image_outlined, color: Colors.grey[300], size: 30),
+            child: Icon(
+              Icons.broken_image_outlined,
+              color: Colors.grey[300],
+              size: 30,
+            ),
           ),
           Expanded(
             child: Padding(
@@ -471,9 +547,20 @@ class _HorizontalErrorCard extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('加载失败', style: TextStyle(color: Colors.grey[500], fontWeight: FontWeight.bold)),
+                  Text(
+                    '加载失败',
+                    style: TextStyle(
+                      color: Colors.grey[500],
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                   const SizedBox(height: 4),
-                  Text(url, maxLines: 2, overflow: TextOverflow.ellipsis, style: TextStyle(color: Colors.grey[300], fontSize: 12)),
+                  Text(
+                    url,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(color: Colors.grey[300], fontSize: 12),
+                  ),
                 ],
               ),
             ),
@@ -505,17 +592,17 @@ class _CardImageSection extends StatelessWidget {
       height: isVertical ? _kVerticalImageHeight : double.infinity,
       decoration: imageProvider != null
           ? BoxDecoration(
-        image: DecorationImage(image: imageProvider!, fit: BoxFit.cover),
-      )
+              image: DecorationImage(image: imageProvider!, fit: BoxFit.cover),
+            )
           : BoxDecoration(color: Colors.grey[200]),
       child: imageProvider == null
           ? Center(
-        child: Icon(
-          Icons.image_not_supported_outlined,
-          size: isVertical ? 50 : 40,
-          color: Colors.grey[400],
-        ),
-      )
+              child: Icon(
+                Icons.image_not_supported_outlined,
+                size: isVertical ? 50 : 40,
+                color: Colors.grey[400],
+              ),
+            )
           : null,
     );
   }
@@ -526,7 +613,7 @@ class _VerticalContentSection extends StatelessWidget {
   final bool fixedHeight;
 
   const _VerticalContentSection({
-    Key? key, 
+    Key? key,
     required this.metadata,
     this.fixedHeight = false, // 默认不固定高度
   }) : super(key: key);
@@ -607,7 +694,8 @@ class _VerticalContentSection extends StatelessWidget {
 class _HorizontalContentSection extends StatelessWidget {
   final Metadata metadata;
 
-  const _HorizontalContentSection({Key? key, required this.metadata}) : super(key: key);
+  const _HorizontalContentSection({Key? key, required this.metadata})
+    : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -693,6 +781,6 @@ Future<void> _launchUrl(String urlString) async {
   try {
     await launchUrl(uri, mode: LaunchMode.externalApplication);
   } catch (e) {
-    debugPrint('Failed to launch URL: $e');
+    log.e(tag, '❌ URL 跳转失败: $e');
   }
 }

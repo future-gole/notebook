@@ -20,6 +20,7 @@ final ThemeData calmBeigeTheme = ThemeData(
     surfaceContainerHighest: Color(0xFFE58F6F), // 点睛色 - 赤陶色
     outline: Color(0xCCFAF9F7), // 画布遮罩 - 80%透明米白
     onSurfaceVariant: Color(0xFF9B9691), // 辅助文字（副文本）
+    outlineVariant: Color(0xFFD6D2CE), //分割线/描边颜色
   ),
   scaffoldBackgroundColor: const Color(0xFFFAF9F7), // 画布背景
   canvasColor: const Color(0xFFFAF9F7), // 画布背景
@@ -82,6 +83,7 @@ final ThemeData quietNightTheme = ThemeData(
     surfaceContainerHighest: Color(0xFFB9A389), // 点睛色 - 橄榄金
     outline: Color(0xCC2B2A28), // 画布遮罩 - 80%透明深暖灰
     onSurfaceVariant: Color(0xFFA5A19C), // 辅助文字（副文本）
+    outlineVariant: Color(0xFF4A4744), //分割线/描边颜色
   ),
   scaffoldBackgroundColor: const Color(0xFF2B2A28), // 画布背景
   canvasColor: const Color(0xFF2B2A28), // 画布背景

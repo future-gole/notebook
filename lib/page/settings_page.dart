@@ -14,6 +14,7 @@ class SettingsPage extends StatefulWidget {
 class _SettingsPageState extends State<SettingsPage> {
   final _config = AppConfig();
   final _apiKeyController = TextEditingController();
+  final _meteCacheTimeController = TextEditingController();
   final _proxyHostController = TextEditingController();
   final _proxyPortController = TextEditingController();
 
@@ -31,6 +32,7 @@ class _SettingsPageState extends State<SettingsPage> {
     _apiKeyController.dispose();
     _proxyHostController.dispose();
     _proxyPortController.dispose();
+    _meteCacheTimeController.dispose();
     super.dispose();
   }
 
@@ -44,6 +46,7 @@ class _SettingsPageState extends State<SettingsPage> {
       _proxyHostController.text = _config.proxyHost;
       _proxyPortController.text = _config.proxyPort.toString();
       _apiKeyController.text = _config.linkPreviewApiKey;
+      _meteCacheTimeController.text = _config.metaCacheTime.toString();
       _isLoading = false;
     });
   }
@@ -56,6 +59,9 @@ class _SettingsPageState extends State<SettingsPage> {
     
     // 保存 API Key
     await _config.setLinkPreviewApiKey(_apiKeyController.text);
+
+    // 保存 缓存时间
+    await _config.setMetaCacheTime(int.tryParse(_meteCacheTimeController.text) ?? 10);
 
     // 应用代理设置
     _applyProxySettings();
@@ -112,7 +118,6 @@ class _SettingsPageState extends State<SettingsPage> {
           _buildSectionTitle('LinkPreview API', theme),
           _buildApiKeyCard(theme),
           const SizedBox(height: 24),
-
           // 说明
           _buildInfoCard(theme),
         ],
@@ -228,7 +233,23 @@ class _SettingsPageState extends State<SettingsPage> {
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
-                helperText: '免费配额：240次/天',
+              ),
+              maxLines: 1,
+            ),
+            const Divider(height: 32),
+            Text(
+              '获取的meta元数据进行本地缓存,减少对应api的开销',
+              style: theme.textTheme.bodySmall,
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: _meteCacheTimeController,
+              decoration: InputDecoration(
+                hintText: '输入缓存的时间（天)',
+                prefixIcon: const Icon(Icons.timer),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
               ),
               maxLines: 1,
             ),

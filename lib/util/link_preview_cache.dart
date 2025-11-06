@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'app_config.dart';
 import 'logger_service.dart';
 
 /// 链接预览缓存管理器
@@ -8,8 +9,6 @@ import 'logger_service.dart';
 final String tag = "LinkPreviewCache";
 class LinkPreviewCache {
   static const String _cachePrefix = 'link_preview_cache_';
-  static const Duration _cacheDuration = Duration(days: 365); // 1年
-
   /// 保存缓存
   static Future<void> saveCache(String url, Map<String, dynamic> metadata) async {
     try {
@@ -24,7 +23,7 @@ class LinkPreviewCache {
       await prefs.setString(cacheKey, json.encode(cacheData));
       log.d(tag,'💾 缓存已保存: $url');
     } catch (e) {
-      log.d(tag,'❌ 缓存保存失败: $e');
+      log.e(tag,'❌ 缓存保存失败: $e');
     }
   }
 
@@ -42,10 +41,13 @@ class LinkPreviewCache {
       final cacheData = json.decode(cacheString) as Map<String, dynamic>;
       final timestamp = cacheData['timestamp'] as int;
       final cacheTime = DateTime.fromMillisecondsSinceEpoch(timestamp);
-      
+
+      final config = AppConfig();
+      final metacacheTime = config.metaCacheTime;
+
       // 检查缓存是否过期
-      if (DateTime.now().difference(cacheTime) > _cacheDuration) {
-        print('⏰ 缓存已过期: $url');
+      if (DateTime.now().difference(cacheTime) > Duration(days: metacacheTime)) {
+        log.d(tag,'💾 缓存已保存: $url');
         await clearCache(url);
         return null;
       }
@@ -54,7 +56,7 @@ class LinkPreviewCache {
       return cacheData['metadata'] as Map<String, dynamic>;
       
     } catch (e) {
-      log.d(tag,'❌ 缓存读取失败: $e');
+      log.e(tag,'❌ 缓存读取失败: $e');
       return null;
     }
   }
@@ -66,7 +68,7 @@ class LinkPreviewCache {
       final cacheKey = _getCacheKey(url);
       await prefs.remove(cacheKey);
     } catch (e) {
-      log.d(tag,'❌ 缓存清除失败: $e');
+      log.e(tag,'❌ 缓存清除失败: $e');
     }
   }
 
@@ -84,7 +86,7 @@ class LinkPreviewCache {
 
       log.d(tag,'🗑️ 所有缓存已清除');
     } catch (e) {
-      log.d(tag,'❌ 缓存清除失败: $e');
+      log.e(tag,'❌ 缓存清除失败: $e');
     }
   }
 
@@ -117,7 +119,7 @@ class LinkPreviewCache {
         'size': totalSize,
       };
     } catch (e) {
-      log.d(tag,'❌ 获取缓存统计失败: $e');
+      log.e(tag,'❌ 获取缓存统计失败: $e');
       return {'count': 0, 'size': 0};
     }
   }
