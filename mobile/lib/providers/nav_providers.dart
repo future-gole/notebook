@@ -1,8 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:isar_community/isar.dart';
-import 'package:notebook/model/nav_item.dart';
-import 'package:notebook/repository/isar_nav_item_repository.dart';
-import 'package:notebook/repository/nav_item_repository.dart';
+import 'package:pocketmind/model/nav_item.dart';
+import 'package:pocketmind/repository/isar_nav_item_repository.dart';
+import 'package:pocketmind/repository/nav_item_repository.dart';
 
 /// Isar 实例 Provider
 /// 需要在 main 中通过 overrideWithValue 提供实际的 Isar 实例

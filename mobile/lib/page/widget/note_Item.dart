@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:notebook/providers/note_providers.dart';
-import 'package:notebook/model/note.dart';
-import 'package:notebook/server/note_service.dart';
-import 'package:notebook/util/url_helper.dart';
+import 'package:pocketmind/providers/note_providers.dart';
+import 'package:pocketmind/model/note.dart';
+import 'package:pocketmind/server/note_service.dart';
+import 'package:pocketmind/util/url_helper.dart';
 import 'link_preview_card.dart';
 import 'note_editor_sheet.dart';
-import 'package:notebook/util/link_preview_cache.dart';
+import 'package:pocketmind/util/link_preview_cache.dart';
 
 String tag = "noteItem";
 

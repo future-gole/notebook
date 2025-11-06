@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:notebook/util/app_config.dart';
+import 'package:pocketmind/util/app_config.dart';
 import 'dart:io';
-import 'package:notebook/util/proxy_config.dart';
+import 'package:pocketmind/util/proxy_config.dart';
 
 /// 设置页面
 class SettingsPage extends StatefulWidget {

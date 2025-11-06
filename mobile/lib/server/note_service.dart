@@ -1,6 +1,6 @@
 import 'package:isar_community/isar.dart';
-import 'package:notebook/model/note.dart';
-import 'package:notebook/util/logger_service.dart';
+import 'package:pocketmind/model/note.dart';
+import 'package:pocketmind/util/logger_service.dart';
 
 final String NoteServiceTag = "NoteService";
 class NoteService {

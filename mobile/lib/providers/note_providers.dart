@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:notebook/model/note.dart';
-import 'package:notebook/providers/nav_providers.dart';
-import 'package:notebook/server/note_service.dart';
+import 'package:pocketmind/model/note.dart';
+import 'package:pocketmind/providers/nav_providers.dart';
+import 'package:pocketmind/server/note_service.dart';
 
 /// NoteService Provider
 final noteServiceProvider = Provider<NoteService>((ref) {
@@ -37,6 +37,12 @@ class NoteByCategory extends AsyncNotifier<List<Note>> {
     // 获取最新的导航项 List<NavItem>
     final navItem = await ref.watch(navItemsProvider.future);
 
+    // 检查 navItem 是否为空或索引超出范围
+    if (navItem.isEmpty || activeIndex >= navItem.length) {
+      // 返回默认分类的笔记
+      return noteService.findNotesWithCategory(NoteService.defaultCategory);
+    }
+
     // 获取 Category 下的 note
     return noteService.findNotesWithCategory(navItem[activeIndex].category);
   }
@@ -57,7 +63,7 @@ class NoteByCategory extends AsyncNotifier<List<Note>> {
     try {
       await ref.read(noteServiceProvider).deleteNote(noteId);
       // 成功了！UI 已经是正确的，什么都不用做。
-    } catch (e, s) {
+    } catch (e) {
       // D. (回滚) 数据库删除失败！把 UI 恢复到旧状态
       state = previousState;
     }

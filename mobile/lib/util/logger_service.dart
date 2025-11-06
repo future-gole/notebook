@@ -8,12 +8,12 @@ import 'package:logger/logger.dart'; // 导入 developer 库
 
 class DeveloperLogOutput extends LogOutput {
 
-  static const MethodChannel _androidLogChannel = MethodChannel('com.example.notebook/logger');
+  static const MethodChannel _androidLogChannel = MethodChannel('com.doublez.pocketmind/logger');
 
   @override
   void output(OutputEvent event) {
     dynamic message = event.lines.join('\n'); // 默认消息是行列表
-    String tag = 'noteBook'; // 默认 tag
+    String tag = 'pocketmind'; // 默认 tag
 
     // 从 LogEvent 中解析出原始的 Map 消息
     if (event.origin.message is Map) {

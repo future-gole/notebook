@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:notebook/util/app_config.dart';
-import 'package:notebook/util/logger_service.dart';
+import 'package:pocketmind/util/app_config.dart';
+import 'package:pocketmind/util/logger_service.dart';
 /// 使用 LinkPreview.net API 的链接预览服务
 /// 这个服务不受代理限制，直接访问第三方 API
 /// 但是图片的预览还是需要开启代理

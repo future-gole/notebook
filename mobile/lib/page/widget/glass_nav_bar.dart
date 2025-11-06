@@ -1,7 +1,7 @@
 import 'dart:ui'; // 用于 ImageFilter.blur
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:notebook/providers/nav_providers.dart';
+import 'package:pocketmind/providers/nav_providers.dart';
 import 'item_bar.dart'; // 导入我们刚创建的 ItemBar
 
 ///

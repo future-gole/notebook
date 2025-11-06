@@ -1,8 +1,8 @@
 // 路径: lib/page/widget/note_editor_sheet.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:notebook/model/note.dart';
-import 'package:notebook/providers/note_providers.dart';
+import 'package:pocketmind/model/note.dart';
+import 'package:pocketmind/providers/note_providers.dart';
 
 /// 统一的笔记编辑器底部模态框
 /// 同时支持"新建"和"编辑"模式

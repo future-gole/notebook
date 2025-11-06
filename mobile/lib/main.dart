@@ -3,19 +3,19 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:isar_community/isar.dart';
-import 'package:notebook/HomeScreen.dart';
-import 'package:notebook/page/settings_page.dart';
-import 'package:notebook/providers/nav_providers.dart';
-import 'package:notebook/services/share_background_service.dart';
-import 'package:notebook/util/proxy_config.dart';
-import 'package:notebook/util/app_config.dart';
-import 'package:notebook/util/theme_data.dart';
+import 'package:pocketmind/HomeScreen.dart';
+import 'package:pocketmind/page/settings_page.dart';
+import 'package:pocketmind/providers/nav_providers.dart';
+import 'package:pocketmind/services/share_background_service.dart';
+import 'package:pocketmind/util/proxy_config.dart';
+import 'package:pocketmind/util/app_config.dart';
+import 'package:pocketmind/util/theme_data.dart';
 import 'package:path_provider/path_provider.dart';
 import 'model/note.dart';
 
 // 这会强制构建系统将 main_share.dart 编译到应用中
 // 防止另一个入口没有被引用
-import 'package:notebook/main_share.dart' as share_entrypoint;
+import 'package:pocketmind/main_share.dart' as share_entrypoint;
 
 late Isar isar;
 
@@ -61,7 +61,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
 
-      title: 'NoteBook',
+      title: 'PocketMind',
 
       // 应用"赤陶与暖沙"主题（亮色模式）
       theme: calmBeigeTheme,

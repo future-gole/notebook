@@ -1,7 +1,7 @@
 // 路径: lib/pages/edit_note_page.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:notebook/providers/note_providers.dart';
+import 'package:pocketmind/providers/note_providers.dart';
 
 // 标签页枚举
 enum EditTab { title, content, tags, spaces }

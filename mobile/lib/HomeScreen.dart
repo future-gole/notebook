@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
-import 'package:notebook/page/widget/glass_nav_bar.dart';
-import 'package:notebook/page/widget/note_Item.dart';
-import 'package:notebook/page/widget/note_editor_sheet.dart';
-import 'package:notebook/providers/nav_providers.dart';
-import 'package:notebook/providers/note_providers.dart';
-import 'package:notebook/util/logger_service.dart';
+import 'package:pocketmind/page/widget/glass_nav_bar.dart';
+import 'package:pocketmind/page/widget/note_Item.dart';
+import 'package:pocketmind/page/widget/note_editor_sheet.dart';
+import 'package:pocketmind/providers/nav_providers.dart';
+import 'package:pocketmind/providers/note_providers.dart';
+import 'package:pocketmind/util/logger_service.dart';
 
 final String tag = "HomeScreen";
 

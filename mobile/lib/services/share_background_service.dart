@@ -2,9 +2,9 @@ import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:isar_community/isar.dart';
-import 'package:notebook/main.dart';
-import 'package:notebook/server/note_service.dart';
-import 'package:notebook/util/logger_service.dart';
+import 'package:pocketmind/main.dart';
+import 'package:pocketmind/server/note_service.dart';
+import 'package:pocketmind/util/logger_service.dart';
 
 /// Flutter 后台服务
 /// 处理来自原生 ShareActivity 的数据
@@ -12,7 +12,7 @@ import 'package:notebook/util/logger_service.dart';
 class ShareBackgroundService {
   static const String _tag = 'ShareBackgroundService';
   static const MethodChannel _channel = MethodChannel(
-    'com.example.notebook/share',
+    'com.doublez.pocketmind/share',
   );
 
   static late Isar _isar;

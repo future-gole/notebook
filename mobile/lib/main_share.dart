@@ -4,13 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:isar_community/isar.dart';
-import 'package:notebook/model/note.dart';
-import 'package:notebook/page/edit_note_page.dart';
-import 'package:notebook/page/share_success_page.dart';
-import 'package:notebook/providers/nav_providers.dart';
-import 'package:notebook/providers/note_providers.dart';
-import 'package:notebook/server/note_service.dart';
-import 'package:notebook/util/theme_data.dart';
+import 'package:pocketmind/model/note.dart';
+import 'package:pocketmind/page/edit_note_page.dart';
+import 'package:pocketmind/page/share_success_page.dart';
+import 'package:pocketmind/providers/nav_providers.dart';
+import 'package:pocketmind/providers/note_providers.dart';
+import 'package:pocketmind/server/note_service.dart';
+import 'package:pocketmind/util/theme_data.dart';
 import 'package:path_provider/path_provider.dart';
 import '../../util/logger_service.dart';
 
@@ -50,7 +50,7 @@ class MyShareApp extends ConsumerStatefulWidget {
 
 class _MyShareAppState extends ConsumerState<MyShareApp>
     with SingleTickerProviderStateMixin {
-  static const _channel = MethodChannel('com.example.notebook/share');
+  static const _channel = MethodChannel('com.doublez.pocketmind/share');
 
   // UI 状态机
   ShareUIState _currentState = ShareUIState.waiting;

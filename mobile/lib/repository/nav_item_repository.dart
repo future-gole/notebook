@@ -1,4 +1,4 @@
-import 'package:notebook/model/nav_item.dart';
+import 'package:pocketmind/model/nav_item.dart';
 
 /// 导航项仓库接口
 abstract class NavItemRepository {

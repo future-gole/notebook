@@ -1,7 +1,7 @@
 import 'package:isar_community/isar.dart';
-import 'package:notebook/model/nav_item.dart';
-import 'package:notebook/model/note.dart';
-import 'package:notebook/repository/nav_item_repository.dart';
+import 'package:pocketmind/model/nav_item.dart';
+import 'package:pocketmind/model/note.dart';
+import 'package:pocketmind/repository/nav_item_repository.dart';
 
 /// 基于 Isar Note category 的导航项仓库实现
 class IsarNavItemRepository implements NavItemRepository {

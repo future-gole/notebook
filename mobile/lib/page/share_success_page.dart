@@ -87,7 +87,7 @@ class _ShareSuccessPageState extends State<ShareSuccessPage>
 
         // 副标题
         Text(
-          "It's in your notebook.",
+          "It's in your pocketmind.",
           style: TextStyle(
             color: colorScheme.secondary,
             fontSize: 24,

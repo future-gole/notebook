@@ -1,4 +1,4 @@
-# notebook
+# pocketmind
 
 A new Flutter project.
 
