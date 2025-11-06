@@ -131,9 +131,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             final note = notes[index];
                             // 使用 RepaintBoundary 减少重绘范围
                             return RepaintBoundary(
-                              child: noteItem(
-                                note,
-                                noteService,
+                              child: NoteItem(
+                                note: note,
+                                noteService: noteService,
                                 isGridMode: true,
                                 key: ValueKey('note_${note.id}'),
                               ),
@@ -151,9 +151,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           itemBuilder: (context, index) {
                             final note = notes[index];
                             return RepaintBoundary(
-                              child: noteItem(
-                                note,
-                                noteService,
+                              child: NoteItem(
+                                note: note,
+                                noteService: noteService,
                                 isGridMode: false,
                                 key: ValueKey('note_${note.id}'),
                               ),

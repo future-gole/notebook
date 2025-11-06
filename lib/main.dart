@@ -14,7 +14,7 @@ import 'package:path_provider/path_provider.dart';
 import 'model/note.dart';
 
 // 这会强制构建系统将 main_share.dart 编译到应用中
-// 我们给它一个 "as" 别名，以防万一有命名冲突
+// 防止另一个入口没有被引用
 import 'package:notebook/main_share.dart' as share_entrypoint;
 
 late Isar isar;
@@ -59,6 +59,8 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
+
       title: 'NoteBook',
 
       // 应用"赤陶与暖沙"主题（亮色模式）

@@ -1,9 +1,11 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:notebook/util/app_config.dart';
-
+import 'package:notebook/util/logger_service.dart';
 /// 使用 LinkPreview.net API 的链接预览服务
 /// 这个服务不受代理限制，直接访问第三方 API
+/// 但是图片的预览还是需要开启代理
+final String tag = "LinkPreviewApiService";
 class LinkPreviewApiService {
   static const String _baseUrl = 'https://api.linkpreview.net';
 
@@ -30,14 +32,15 @@ class LinkPreviewApiService {
           description: data['description'],
           imageUrl: data['image'],
           url: data['url'] ?? url,
+          success: true,
         );
       } else {
-        print('❌ API 返回错误: ${response.statusCode} - ${response.body}');
-        return ApiLinkMetadata(url: url);
+        log.e(tag,'❌ API 返回错误: ${response.statusCode} - ${response.body}');
+        return ApiLinkMetadata(url: url, success: false);
       }
     } catch (e) {
-      print('❌ API 请求失败: $e');
-      return ApiLinkMetadata(url: url);
+      log.e(tag,'❌ API 请求失败: $e');
+      return ApiLinkMetadata(url: url, success: false);
     }
   }
 }
@@ -48,12 +51,14 @@ class ApiLinkMetadata {
   final String? description;
   final String? imageUrl;
   final String url;
+  final bool success;
 
   ApiLinkMetadata({
     this.title,
     this.description,
     this.imageUrl,
     required this.url,
+    required this.success,
   });
 
   bool get hasData =>

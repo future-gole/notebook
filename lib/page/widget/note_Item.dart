@@ -1,31 +1,34 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:notebook/providers/note_providers.dart';
-import '../../model/note.dart';
-import '../../server/note_service.dart';
-import '../../util/url_helper.dart';
+import 'package:notebook/model/note.dart';
+import 'package:notebook/server/note_service.dart';
+import 'package:notebook/util/url_helper.dart';
 import 'link_preview_card.dart';
 import 'note_editor_sheet.dart';
+import 'package:notebook/util/link_preview_cache.dart';
 
 String tag = "noteItem";
 
 // 改为 StatefulWidget 以支持 AutomaticKeepAliveClientMixin
-class noteItem extends ConsumerStatefulWidget {
-  final Note _note;
+class NoteItem extends ConsumerStatefulWidget {
+  final Note note;
   final bool isGridMode;
 
-  const noteItem(
-    this._note,
-    NoteService noteService, {
+  final NoteService noteService;
+
+  const NoteItem({
+    required this.note,
+    required this.noteService,
     required this.isGridMode,
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
-  ConsumerState<noteItem> createState() => _noteItemState();
+  ConsumerState<NoteItem> createState() => _NoteItemState();
 }
 
-class _noteItemState extends ConsumerState<noteItem>
+class _NoteItemState extends ConsumerState<NoteItem>
     with AutomaticKeepAliveClientMixin {
   // 保持 widget 状态，避免滚动时被销毁重建
   @override
@@ -37,7 +40,7 @@ class _noteItemState extends ConsumerState<noteItem>
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => NoteEditorSheet(note: widget._note),
+      builder: (context) => NoteEditorSheet(note: widget.note),
     );
   }
 
@@ -46,13 +49,13 @@ class _noteItemState extends ConsumerState<noteItem>
     // 必须调用 super.build，让 AutomaticKeepAliveClientMixin 工作
     super.build(context);
 
-    final hasUrl = UrlHelper.containsUrl(widget._note.content);
+    final hasUrl = UrlHelper.containsUrl(widget.note.content);
     final extractedUrl = hasUrl
-        ? UrlHelper.extractUrl(widget._note.content)
+        ? UrlHelper.extractUrl(widget.note.content)
         : null;
     final contentWithoutUrl = hasUrl
-        ? UrlHelper.removeUrls(widget._note.content)
-        : widget._note.content;
+        ? UrlHelper.removeUrls(widget.note.content)
+        : widget.note.content;
 
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
@@ -65,15 +68,19 @@ class _noteItemState extends ConsumerState<noteItem>
 
     // 使用 Dismissible 实现滑动删除
     return Dismissible(
-      key: Key(widget._note.id.toString()),
+      key: Key(widget.note.id.toString()),
       direction: DismissDirection.endToStart,
       // 动画时长：让删除过程更平滑
       movementDuration: const Duration(milliseconds: 250),
       resizeDuration: const Duration(milliseconds: 250),
       // 使用 confirmDismiss 在动画开始前就更新 UI
       confirmDismiss: (direction) async {
+        if(extractedUrl != null){
+          // 删除对应的链接缓存
+          await LinkPreviewCache.clearCache(extractedUrl);
+        }
         // 立即更新 UI（Optimistic UI）
-        ref.read(noteByCategoryProvider.notifier).deleteNote(widget._note.id);
+        ref.read(noteByCategoryProvider.notifier).deleteNote(widget.note.id);
         // 返回 true 让 Dismissible 继续完成动画
         return true;
       },
@@ -196,7 +203,7 @@ class _noteItemState extends ConsumerState<noteItem>
                     //     //   width: 1.0,
                     //     //   color: Colors.white, // 你要的白色
                     //     // ),
-                    //     // 时间信息
+                    //     // // 时间信息
                     //     // Text(
                     //     //   _formatTime(_note.time),
                     //     //   style: textTheme.bodySmall,
