@@ -179,7 +179,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       // FAB - 使用主题样式（药丸形状）
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
-          _showAddNoteModal(context);
+          _showAddNotePage(context);
         },
         icon: const Icon(Icons.add),
         label: const Text('新建笔记'),
@@ -188,12 +188,32 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   // 显示添加笔记模态框（底部弹窗）
-  void _showAddNoteModal(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => const NoteEditorSheet(),
+  void _showAddNotePage(BuildContext context) {
+    Navigator.of(context).push(
+      PageRouteBuilder(
+        // 页面构建器
+        pageBuilder: (context, animation, secondaryAnimation) => const NoteEditorSheet(),
+        // 转场动画构建器
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          // 定义从底部 (Offset(0, 1)) 到 正常位置 (Offset.zero)
+          const begin = Offset(0.0, 1.0);
+          const end = Offset.zero;
+          // 定义动画曲线，easeInOut 比较自然
+          const curve = Curves.easeInOutCubicEmphasized;
+
+          var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+
+          return SlideTransition(
+            position: animation.drive(tween),
+            child: child,
+          );
+        },
+        // 设置为 true 表示这是一个全屏模态对话框（影响语义和某些平台的默认行为）
+        fullscreenDialog: true,
+        // 动画持续时间（可选，按需调整）
+        transitionDuration: const Duration(milliseconds: 400),
+        reverseTransitionDuration: const Duration(milliseconds: 300),
+      ),
     );
   }
 }

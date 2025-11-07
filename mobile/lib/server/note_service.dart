@@ -30,9 +30,11 @@ class NoteService {
     int resolvedCategoryId = categoryId ?? 1;
 
     final newNote = Note()
-      ..title = title // 可以为 null
+      ..title =
+          title // 可以为 null
       ..content = content
-      ..categoryId = resolvedCategoryId // 保存分类ID用于关联
+      ..categoryId =
+          resolvedCategoryId // 保存分类ID用于关联
       ..time = DateTime.now()
       ..tag = tag;
     if (id != null && id != -1) {

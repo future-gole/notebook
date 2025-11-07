@@ -23,5 +23,9 @@ class NavItem {
           categoryId == other.categoryId;
 
   @override
-  int get hashCode => svgPath.hashCode ^ text.hashCode ^ category.hashCode ^ categoryId.hashCode;
+  int get hashCode =>
+      svgPath.hashCode ^
+      text.hashCode ^
+      category.hashCode ^
+      categoryId.hashCode;
 }

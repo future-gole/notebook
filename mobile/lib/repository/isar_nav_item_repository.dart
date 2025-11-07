@@ -28,7 +28,9 @@ class IsarNavItemRepository implements NavItemRepository {
   @override
   Stream<List<NavItem>> watchNavItems() {
     // 监听 categories 变化
-    return isar.categorys.where().watch(fireImmediately: true).map((categories) {
+    return isar.categorys.where().watch(fireImmediately: true).map((
+      categories,
+    ) {
       return categories.map((category) {
         return NavItem(
           svgPath: _getIconForCategory(category.name),

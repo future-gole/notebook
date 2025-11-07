@@ -2,18 +2,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pocketmind/model/note.dart';
+import 'package:pocketmind/page/widget/categories_bar.dart' show CategoriesBar;
 import 'package:pocketmind/providers/category_providers.dart';
 import 'package:pocketmind/providers/note_providers.dart';
 import 'package:pocketmind/util/app_config.dart';
 
 /// 统一的笔记编辑器底部模态框
 /// 同时支持"新建"和"编辑"模式
-/// 与分享页 EditNotePage 保持一致的 UI 风格
 class NoteEditorSheet extends ConsumerStatefulWidget {
   final Note? note; // null = 新建模式，非null = 编辑模式
-  final String? initialContent; // 用于从分享接收内容
 
-  const NoteEditorSheet({super.key, this.note, this.initialContent});
+  const NoteEditorSheet({super.key, this.note});
 
   @override
   ConsumerState<NoteEditorSheet> createState() => _NoteEditorSheetState();
@@ -22,7 +21,7 @@ class NoteEditorSheet extends ConsumerStatefulWidget {
 class _NoteEditorSheetState extends ConsumerState<NoteEditorSheet> {
   late final TextEditingController _titleController;
   late final TextEditingController _contentController;
-  
+
   int? _selectedCategoryId;
 
   final _config = AppConfig();
@@ -36,7 +35,7 @@ class _NoteEditorSheetState extends ConsumerState<NoteEditorSheet> {
     // 根据模式初始化控制器
     _titleController = TextEditingController(text: widget.note?.title ?? '');
     _contentController = TextEditingController(
-      text: widget.note?.content ?? widget.initialContent ?? '',
+      text: widget.note?.content ?? '',
     );
     _selectedCategoryId = widget.note?.categoryId;
     _loadTitleSetting();
@@ -84,17 +83,7 @@ class _NoteEditorSheetState extends ConsumerState<NoteEditorSheet> {
       return;
     }
 
-    // 确保选择了分类
-    if (_selectedCategoryId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('请选择一个分类'),
-          backgroundColor: Theme.of(context).colorScheme.error,
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
-      return;
-    }
+    // 可以选择不分类，不分类就是默认的home
 
     final noteService = ref.read(noteServiceProvider);
 
@@ -102,14 +91,14 @@ class _NoteEditorSheetState extends ConsumerState<NoteEditorSheet> {
       // 编辑模式：更新现有笔记
       await noteService.addOrUpdateNote(
         id: widget.note!.id,
-        title: _titleEnabled ? title : null, // 根据设置决定是否保存标题
+        title: _titleEnabled ? title : null,
         content: content,
         categoryId: _selectedCategoryId,
       );
     } else {
       // 新建模式：创建新笔记
       await noteService.addOrUpdateNote(
-        title: _titleEnabled ? title : null, // 根据设置决定是否保存标题
+        title: _titleEnabled ? title : null,
         content: content,
         categoryId: _selectedCategoryId,
       );
@@ -134,100 +123,19 @@ class _NoteEditorSheetState extends ConsumerState<NoteEditorSheet> {
     Navigator.of(context).pop();
   }
 
-  Widget _buildCategorySection(ColorScheme colorScheme) {
-    final categoriesAsync = ref.watch(categoriesProvider);
-
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: colorScheme.surface,
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: categoriesAsync.when(
-        data: (categories) {
-          if (categories.isEmpty) {
-            return Text(
-              '暂无分类，请先创建分类后再添加笔记',
-              style: TextStyle(color: colorScheme.secondary),
-            );
-          }
-
-          if (_selectedCategoryId == null) {
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              if (!mounted) return;
-              setState(() {
-                _selectedCategoryId = categories.first.id;
-              });
-            });
-          }
-
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                '选择分类',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: colorScheme.onSurface,
-                ),
-              ),
-              const SizedBox(height: 12),
-              Wrap(
-                spacing: 12,
-                runSpacing: 12,
-                children: categories.map((category) {
-                  final isSelected = category.id == _selectedCategoryId;
-                  final label = category.description?.isNotEmpty == true
-                      ? category.description!
-                      : category.name;
-                  return ChoiceChip(
-                    label: Text(label),
-                    selected: isSelected,
-                    onSelected: (_) {
-                      setState(() {
-                        _selectedCategoryId = category.id;
-                      });
-                    },
-                    selectedColor:
-                        colorScheme.primary.withValues(alpha: 0.12),
-                    labelStyle: TextStyle(
-                      color: isSelected
-                          ? colorScheme.primary
-                          : colorScheme.onSurface,
-                    ),
-                    side: BorderSide(
-                      color: isSelected
-                          ? colorScheme.primary
-                          : colorScheme.outlineVariant,
-                    ),
-                    backgroundColor: colorScheme.surface,
-                  );
-                }).toList(),
-              ),
-            ],
-          );
-        },
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, stack) => Text(
-          '加载分类失败: $error',
-          style: TextStyle(color: colorScheme.error),
-        ),
-      ),
-    );
-  }
-
+  /// 构建通用的文本输入框
+  /// [expands] 为 true 时，输入框会尝试填满父容器高度（需要父容器有固定高度限制，如 Expanded）
   Widget _buildTextField({
     required TextEditingController controller,
     required String hintText,
     required ColorScheme colorScheme,
-    int? maxLines,
+    int? maxLines = 1,
     bool autofocus = false,
+    bool expands = false,
+    EdgeInsetsGeometry padding = const EdgeInsets.all(20),
   }) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.all(20),
+      padding: padding,
       decoration: BoxDecoration(
         color: colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
@@ -246,7 +154,13 @@ class _NoteEditorSheetState extends ConsumerState<NoteEditorSheet> {
           color: colorScheme.onSurface,
           height: 1.5,
         ),
-        maxLines: maxLines,
+        // 当 expands 为 true 时，maxLines 必须为 null，minLines 必须为 null
+        maxLines: expands ? null : maxLines,
+        minLines: null,
+        expands: expands,
+        textAlignVertical: expands
+            ? TextAlignVertical.top
+            : TextAlignVertical.center,
         autofocus: autofocus,
       ),
     );
@@ -254,88 +168,75 @@ class _NoteEditorSheetState extends ConsumerState<NoteEditorSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final bottomInset = MediaQuery.of(context).viewInsets.bottom;
     final colorScheme = Theme.of(context).colorScheme;
 
-    return Container(
-      decoration: BoxDecoration(
-        color: colorScheme.surface.withValues(alpha: 0.95),
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      child: Padding(
-        padding: EdgeInsets.only(bottom: bottomInset),
-        child: SingleChildScrollView(
+    return Scaffold(
+      // 确保键盘弹出时布局能调整
+      resizeToAvoidBottomInset: true,
+      backgroundColor: Colors.transparent,
+      body: Container(
+        constraints: const BoxConstraints.expand(),
+        decoration: BoxDecoration(
+          color: colorScheme.surface.withValues(alpha: 0.95),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        child: SafeArea(
           child: Padding(
             padding: const EdgeInsets.all(20),
             child: Column(
-              mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // 顶部标题栏
+                // --- 顶部标题栏 ---
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      _isEditMode ? '编辑笔记' : '新建笔记',
-                      style: Theme.of(context).textTheme.titleMedium,
-                    ),
                     IconButton(
-                      icon: const Icon(Icons.close),
+                      iconSize: 35,
+                      icon: const Icon(Icons.keyboard_arrow_down),
                       onPressed: () => Navigator.of(context).pop(),
                       color: colorScheme.secondary,
+                      tooltip: '取消',
+                    ),
+                    // 分类选择条，使用 Expanded 避免溢出，居中显示
+                    const Expanded(
+                      child: CategoriesBar(),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.check),
+                      onPressed: _onSave,
+                      color: colorScheme.primary,
+                      tooltip: '保存',
                     ),
                   ],
                 ),
 
                 const SizedBox(height: 20),
 
-                // 标题输入框 - 只在启用时显示
+                // --- 标题输入框 (仅在启用时显示) ---
                 if (_titleEnabled)
-                  _buildTextField(
-                    controller: _titleController,
-                    hintText: '给你的笔记起个名字...',
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 16),
+                    child: _buildTextField(
+                      controller: _titleController,
+                      hintText: '给你的笔记起个名字...',
+                      colorScheme: colorScheme,
+                      maxLines: 1,
+                      autofocus: !_isEditMode, // 新建时聚焦标题
+                    ),
+                  ),
+
+                // --- 内容输入框 (占据剩余空间) ---
+                Expanded(
+                  child: _buildTextField(
+                    controller: _contentController,
+                    hintText: '记录你的想法...',
                     colorScheme: colorScheme,
-                    maxLines: 1,
-                    autofocus: !_isEditMode && widget.initialContent == null,
-                  ),
-
-                _buildCategorySection(colorScheme),
-
-                // 内容输入框
-                _buildTextField(
-                  controller: _contentController,
-                  hintText: '记录你的想法...',
-                  colorScheme: colorScheme,
-                  maxLines: 8,
-                  autofocus: widget.initialContent != null,
-                ),
-
-                const SizedBox(height: 8),
-
-                // "Save" 药丸按钮 - 使用主题颜色
-                ElevatedButton(
-                  onPressed: _onSave,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: colorScheme.tertiary,
-                    foregroundColor: colorScheme.onTertiary,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 64,
-                      vertical: 16,
-                    ),
-                    shape: const StadiumBorder(),
-                    elevation: 0,
-                  ),
-                  child: const Text(
-                    "Save",
-                    style: TextStyle(
-                      fontWeight: FontWeight.w600,
-                      fontSize: 17,
-                      letterSpacing: 0.3,
-                    ),
+                    maxLines: null, // 允许无限换行
+                    expands: true, // 强制填满 Expanded 提供的空间
+                    autofocus: !_titleEnabled && !_isEditMode, // 如果没标题且是新建，聚焦内容
+                    padding: const EdgeInsets.all(20),
                   ),
                 ),
-
-                SizedBox(height: bottomInset > 0 ? 16 : 24),
               ],
             ),
           ),

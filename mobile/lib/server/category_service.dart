@@ -12,7 +12,7 @@ class CategoryService {
   /// 初始化默认分类
   Future<void> initDefaultCategories() async {
     final existingCategories = await isar.categorys.count();
-    
+
     // 如果已有分类，不再初始化
     if (existingCategories > 0) {
       log.d(CategoryServiceTag, '分类已存在，跳过初始化');
@@ -53,10 +53,7 @@ class CategoryService {
   }
 
   /// 添加分类
-  Future<int> addCategory({
-    required String name,
-    String? description,
-  }) async {
+  Future<int> addCategory({required String name, String? description}) async {
     final newCategory = Category()
       ..name = name
       ..description = description

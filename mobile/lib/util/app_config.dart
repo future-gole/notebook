@@ -26,7 +26,7 @@ class AppConfig {
   String get proxyHost => _prefs?.getString(_keyProxyHost) ?? '127.0.0.1';
   int get proxyPort => _prefs?.getInt(_keyProxyPort) ?? 7890;
   int get metaCacheTime => _prefs?.getInt(_metaCacheTime) ?? 10;
-  
+
   /// Title 显示配置
   bool get titleEnabled => _prefs?.getBool(_keyTitleEnabled) ?? false; // 默认不开启
 
@@ -44,14 +44,13 @@ class AppConfig {
 
   /// LinkPreview API 配置
   String get linkPreviewApiKey =>
-      _prefs?.getString(_keyLinkPreviewApiKey) ??
-      ''; // 默认值
+      _prefs?.getString(_keyLinkPreviewApiKey) ?? ''; // 默认值
 
   Future<void> setLinkPreviewApiKey(String apiKey) async {
     await _prefs?.setString(_keyLinkPreviewApiKey, apiKey);
   }
 
-  Future<void> setMetaCacheTime(int day) async{
+  Future<void> setMetaCacheTime(int day) async {
     await _prefs?.setInt(_metaCacheTime, day);
   }
 

@@ -2,8 +2,9 @@ import 'package:isar_community/isar.dart';
 import 'category.dart';
 
 part 'note.g.dart';
+
 @collection
-class Note{
+class Note {
   Id id = Isar.autoIncrement;
 
   String? title;
@@ -19,5 +20,4 @@ class Note{
   final category = IsarLink<Category>();
 
   String? tag;
-
 }

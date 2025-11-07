@@ -36,7 +36,7 @@ class EditNotePageState extends ConsumerState<EditNotePage> {
   bool _titleEnabled = false;
 
   EditTab _currentTab = EditTab.content; // 默认从内容标签开始
-  
+
   String _selectedCategory = 'home';
   int? _selectedCategoryId;
 
@@ -242,7 +242,7 @@ class EditNotePageState extends ConsumerState<EditNotePage> {
   Widget _buildCategoryContent(ColorScheme colorScheme) {
     // 使用 AsyncValue 处理异步分类数据
     final categoriesAsync = ref.watch(categoriesProvider);
-    
+
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 20),
       padding: const EdgeInsets.all(20),
@@ -344,15 +344,16 @@ class EditNotePageState extends ConsumerState<EditNotePage> {
             Expanded(
               child: AnimatedSwitcher(
                 duration: const Duration(milliseconds: 300),
-                layoutBuilder: (Widget? currentChild, List<Widget> previousChildren) {
-                  return Stack(
-                    alignment: Alignment.topCenter, // 靠上对齐
-                    children: <Widget>[
-                      ...previousChildren,
-                      if (currentChild != null) currentChild,
-                    ],
-                  );
-                },
+                layoutBuilder:
+                    (Widget? currentChild, List<Widget> previousChildren) {
+                      return Stack(
+                        alignment: Alignment.topCenter, // 靠上对齐
+                        children: <Widget>[
+                          ...previousChildren,
+                          if (currentChild != null) currentChild,
+                        ],
+                      );
+                    },
                 child: Container(
                   key: ValueKey(_currentTab),
                   child:
@@ -361,8 +362,8 @@ class EditNotePageState extends ConsumerState<EditNotePage> {
                       ? _buildNotesContent(colorScheme)
                       : SingleChildScrollView(
                           child: _currentTab == EditTab.tags
-                          ? _buildTagsContent(colorScheme)
-                          : _buildCategoryContent(colorScheme),
+                              ? _buildTagsContent(colorScheme)
+                              : _buildCategoryContent(colorScheme),
                         ),
                 ),
               ),
