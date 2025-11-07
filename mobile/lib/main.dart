@@ -6,15 +6,19 @@ import 'package:isar_community/isar.dart';
 import 'package:pocketmind/HomeScreen.dart';
 import 'package:pocketmind/page/settings_page.dart';
 import 'package:pocketmind/providers/nav_providers.dart';
+// ignore: unused_import
 import 'package:pocketmind/services/share_background_service.dart';
 import 'package:pocketmind/util/proxy_config.dart';
 import 'package:pocketmind/util/app_config.dart';
 import 'package:pocketmind/util/theme_data.dart';
 import 'package:path_provider/path_provider.dart';
+import 'model/category.dart';
 import 'model/note.dart';
+import 'server/category_service.dart';
 
 // 这会强制构建系统将 main_share.dart 编译到应用中
 // 防止另一个入口没有被引用
+// ignore: unused_import
 import 'package:pocketmind/main_share.dart' as share_entrypoint;
 
 late Isar isar;
@@ -39,9 +43,13 @@ Future<void> main() async {
   final dir = await getApplicationDocumentsDirectory();
   // 打开 Isar 实例
   isar = await Isar.open(
-    [NoteSchema], // 传入您所有模型的 Schema
+    [NoteSchema, CategorySchema], // 传入您所有模型的 Schema
     directory: dir.path,
   );
+
+  // 确保初始化默认分类数据
+  final categoryService = CategoryService(isar);
+  await categoryService.initDefaultCategories();
 
   runApp(
     // 使用 ProviderScope 包裹应用，并 override isarProvider

@@ -1,4 +1,5 @@
 import 'package:isar_community/isar.dart';
+import 'package:pocketmind/model/category.dart';
 import 'package:pocketmind/model/note.dart';
 import 'package:pocketmind/util/logger_service.dart';
 
@@ -15,21 +16,25 @@ class NoteService {
   // 增添/更新笔记，返回id，-1 为插入失败
   Future<int> addOrUpdateNote({
     int? id,
-    String title = defaultTitle,
+    String? title, // 改为可空，允许不设置标题
     String content = defaultContent,
-    String? category,
+    String? category, // 分类名称（用于UI显示和查询）
+    int? categoryId, // 分类ID（用于categories数据库关联）
     String? tag,
   }) async {
     log.d(
       NoteServiceTag,
-      'Note added: title: $title, content: $content, category: $category ',
+      'Note added: title: $title, content: $content, category: $category, categoryId: $categoryId',
     );
+    // 确保至少都是在 home 目录下
+    int resolvedCategoryId = categoryId ?? 1;
+
     final newNote = Note()
-      ..title = title
+      ..title = title // 可以为 null
       ..content = content
-      ..category = category ?? defaultCategory
+      ..categoryId = resolvedCategoryId // 保存分类ID用于关联
       ..time = DateTime.now()
-      ..tag;
+      ..tag = tag;
     if (id != null && id != -1) {
       log.d(NoteServiceTag, "id:${id},进行更新操作");
       newNote.id = id;
@@ -37,8 +42,13 @@ class NoteService {
     try {
       int resultId = -1;
       await isar.writeTxn(() async {
+        // 建立笔记与分类的关联
+        final linkedCategory = await isar.categorys.get(resolvedCategoryId);
+        newNote.category.value = linkedCategory;
+
         // 这里需要获取id，因为用户可能点击detail进行更新
         resultId = await isar.notes.put(newNote);
+        await newNote.category.save();
       });
       return resultId;
     } catch (e) {
@@ -89,14 +99,15 @@ class NoteService {
         .findAll();
   }
 
-  // 根据 category 查询笔记
-  Future<List<Note>> findNotesWithCategory(String query) async {
-    if (query == defaultCategory) {
+  // 根据 categoryId 查询笔记
+  Future<List<Note>> findNotesWithCategory(int? categoryId) async {
+    // 1 代表 home 直接返回全部
+    if (categoryId == 1) {
       return await getAllNotes();
     }
     return await isar.notes
         .filter()
-        .categoryEqualTo(query, caseSensitive: false)
+        .categoryIdEqualTo(categoryId)
         .sortByTimeDesc()
         .findAll();
   }

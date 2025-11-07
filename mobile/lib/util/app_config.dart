@@ -7,6 +7,7 @@ class AppConfig {
   static const String _keyProxyPort = 'proxy_port';
   static const String _keyLinkPreviewApiKey = 'linkpreview_api_key';
   static const String _metaCacheTime = 'meta_cache_time';
+  static const String _keyTitleEnabled = 'title_enabled';
 
   // 单例模式
   static final AppConfig _instance = AppConfig._internal();
@@ -25,6 +26,9 @@ class AppConfig {
   String get proxyHost => _prefs?.getString(_keyProxyHost) ?? '127.0.0.1';
   int get proxyPort => _prefs?.getInt(_keyProxyPort) ?? 7890;
   int get metaCacheTime => _prefs?.getInt(_metaCacheTime) ?? 10;
+  
+  /// Title 显示配置
+  bool get titleEnabled => _prefs?.getBool(_keyTitleEnabled) ?? false; // 默认不开启
 
   Future<void> setProxyEnabled(bool enabled) async {
     await _prefs?.setBool(_keyProxyEnabled, enabled);
@@ -49,6 +53,10 @@ class AppConfig {
 
   Future<void> setMetaCacheTime(int day) async{
     await _prefs?.setInt(_metaCacheTime, day);
+  }
+
+  Future<void> setTitleEnabled(bool enabled) async {
+    await _prefs?.setBool(_keyTitleEnabled, enabled);
   }
 
   /// 清除所有配置

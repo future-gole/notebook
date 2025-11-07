@@ -1,9 +1,9 @@
 import 'package:isar_community/isar.dart';
 import 'package:pocketmind/model/nav_item.dart';
-import 'package:pocketmind/model/note.dart';
+import 'package:pocketmind/model/category.dart';
 import 'package:pocketmind/repository/nav_item_repository.dart';
 
-/// 基于 Isar Note category 的导航项仓库实现
+/// 基于 Isar Category 的导航项仓库实现
 class IsarNavItemRepository implements NavItemRepository {
   final Isar isar;
 
@@ -11,43 +11,30 @@ class IsarNavItemRepository implements NavItemRepository {
 
   @override
   Future<List<NavItem>> getNavItems() async {
-    // 从 Isar 获取所有不重复的 category
-    final notes = await isar.notes.where().findAll();
-    final categories = <String>{};
+    // 从 Isar 获取所有分类
+    final categories = await isar.categorys.where().findAll();
 
-    for (var note in notes) {
-      if (note.category != null && note.category!.isNotEmpty) {
-        categories.add(note.category!);
-      }
-    }
-
-    // 将 category 转换为 NavItem
+    // 将 Category 转换为 NavItem
     return categories.map((category) {
       return NavItem(
-        svgPath: _getIconForCategory(category),
-        text: category,
-        category: category,
+        svgPath: _getIconForCategory(category.name),
+        text: category.name,
+        category: category.name,
+        categoryId: category.id,
       );
     }).toList();
   }
 
   @override
   Stream<List<NavItem>> watchNavItems() {
-    // 监听 notes 变化，并提取不重复的 categories
-    return isar.notes.where().watch(fireImmediately: true).map((notes) {
-      final categories = <String>{};
-
-      for (var note in notes) {
-        if (note.category != null && note.category!.isNotEmpty) {
-          categories.add(note.category!);
-        }
-      }
-
+    // 监听 categories 变化
+    return isar.categorys.where().watch(fireImmediately: true).map((categories) {
       return categories.map((category) {
         return NavItem(
-          svgPath: _getIconForCategory(category),
-          text: category,
-          category: category,
+          svgPath: _getIconForCategory(category.name),
+          text: category.name,
+          category: category.name,
+          categoryId: category.id,
         );
       }).toList();
     });

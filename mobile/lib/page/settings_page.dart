@@ -19,6 +19,7 @@ class _SettingsPageState extends State<SettingsPage> {
   final _proxyPortController = TextEditingController();
 
   bool _proxyEnabled = false;
+  bool _titleEnabled = false;
   bool _isLoading = true;
 
   @override
@@ -43,6 +44,7 @@ class _SettingsPageState extends State<SettingsPage> {
 
     setState(() {
       _proxyEnabled = _config.proxyEnabled;
+      _titleEnabled = _config.titleEnabled;
       _proxyHostController.text = _config.proxyHost;
       _proxyPortController.text = _config.proxyPort.toString();
       _apiKeyController.text = _config.linkPreviewApiKey;
@@ -56,6 +58,9 @@ class _SettingsPageState extends State<SettingsPage> {
     await _config.setProxyEnabled(_proxyEnabled);
     await _config.setProxyHost(_proxyHostController.text);
     await _config.setProxyPort(int.tryParse(_proxyPortController.text) ?? 7890);
+
+    // 保存 Title 显示设置
+    await _config.setTitleEnabled(_titleEnabled);
 
     // 保存 API Key
     await _config.setLinkPreviewApiKey(_apiKeyController.text);
@@ -108,6 +113,11 @@ class _SettingsPageState extends State<SettingsPage> {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
+          // Title 显示设置
+          _buildSectionTitle('显示设置', theme),
+          _buildTitleSettingCard(theme),
+          const SizedBox(height: 24),
+
           // 网络代理设置
           _buildSectionTitle('网络代理', theme),
           _buildProxyCard(theme),
@@ -128,6 +138,32 @@ class _SettingsPageState extends State<SettingsPage> {
     return Padding(
       padding: const EdgeInsets.only(left: 4, bottom: 12),
       child: Text(title, style: theme.textTheme.titleMedium),
+    );
+  }
+
+  Widget _buildTitleSettingCard(ThemeData theme) {
+    return Card(
+      color: theme.cardColor,
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(color: theme.dividerColor.withOpacity(0.1)),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: SwitchListTile(
+          contentPadding: EdgeInsets.zero,
+          title: Text('显示标题字段', style: theme.textTheme.bodyLarge),
+          subtitle: Text(
+            _titleEnabled ? '笔记卡片和编辑时将显示标题' : '隐藏标题，仅保留内容',
+            style: theme.textTheme.bodySmall,
+          ),
+          value: _titleEnabled,
+          onChanged: (value) {
+            setState(() => _titleEnabled = value);
+          },
+        ),
+      ),
     );
   }
 

@@ -27,7 +27,7 @@ final noteByCategoryProvider =
     });
 
 class NoteByCategory extends AsyncNotifier<List<Note>> {
-  // 1. build 方法负责异步获取数据（和你旧的 FutureProvider 逻辑一样）
+  // 1. build 方法负责异步获取数据
   @override
   Future<List<Note>> build() async {
     // 获取激活的下标
@@ -38,13 +38,13 @@ class NoteByCategory extends AsyncNotifier<List<Note>> {
     final navItem = await ref.watch(navItemsProvider.future);
 
     // 检查 navItem 是否为空或索引超出范围
-    if (navItem.isEmpty || activeIndex >= navItem.length) {
-      // 返回默认分类的笔记
-      return noteService.findNotesWithCategory(NoteService.defaultCategory);
+    if (navItem.isEmpty || activeIndex >= navItem.length || activeIndex == 1) {
+      // 返回所有笔记
+      return noteService.findNotesWithCategory(null);
     }
 
-    // 获取 Category 下的 note
-    return noteService.findNotesWithCategory(navItem[activeIndex].category);
+    // 获取 Category 下的 note（使用 categoryId）
+    return noteService.findNotesWithCategory(navItem[activeIndex].categoryId);
   }
 
   // 2. 关键：一个同步修改状态的方法

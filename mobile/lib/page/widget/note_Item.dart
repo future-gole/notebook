@@ -7,6 +7,7 @@ import 'package:pocketmind/util/url_helper.dart';
 import 'link_preview_card.dart';
 import 'note_editor_sheet.dart';
 import 'package:pocketmind/util/link_preview_cache.dart';
+import 'package:pocketmind/util/app_config.dart';
 
 String tag = "noteItem";
 
@@ -33,6 +34,24 @@ class _NoteItemState extends ConsumerState<NoteItem>
   // 保持 widget 状态，避免滚动时被销毁重建
   @override
   bool get wantKeepAlive => true;
+
+  final _config = AppConfig();
+  bool _titleEnabled = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadTitleSetting();
+  }
+
+  Future<void> _loadTitleSetting() async {
+    await _config.init();
+    if (mounted) {
+      setState(() {
+        _titleEnabled = _config.titleEnabled;
+      });
+    }
+  }
 
   // 显示编辑笔记模态框
   void _showEditNoteModal(BuildContext context) {
@@ -122,27 +141,67 @@ class _NoteItemState extends ConsumerState<NoteItem>
               // 1. 纯文本模式：
               ? Container(
                   // (关键!) 给卡片一个最小高度，比如 80
-                  // 这样它就有了“填充”的视觉效果
+                  // 这样它就有了"填充"的视觉效果
                   constraints: const BoxConstraints(minHeight: 80.0),
 
-                  // (关键!) 自动在垂直和水平方向上居中 child (Text)
-                  alignment: Alignment.center,
-
                   // 只需要水平 padding 来防止文字碰到左右边缘
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
-
-                  child: Text(
-                    contentWithoutUrl ?? "",
-                    textAlign: TextAlign.center, // 确保多行文本也居中
-                    style: TextStyle(
-                      fontSize: 25,
-                      fontWeight: FontWeight.w300,
-                      color: colorScheme.primary,
-                      height: 1.7,
-                    ),
-                    maxLines: 8,
-                    overflow: TextOverflow.ellipsis,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16.0,
+                    vertical: 16.0,
                   ),
+
+                  child: _titleEnabled && widget.note.title != null
+                      // 启用标题且标题存在时，显示标题+内容
+                      ? Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // 标题
+                            Text(
+                              widget.note.title!,
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.w600,
+                                color: colorScheme.primary,
+                              ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: 8),
+                            // 分割线
+                            Divider(
+                              color: colorScheme.primary.withValues(alpha: 0.2),
+                              thickness: 1,
+                            ),
+                            const SizedBox(height: 8),
+                            // 内容
+                            Text(
+                              contentWithoutUrl ?? "",
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w300,
+                                color: colorScheme.onSurface,
+                                height: 1.5,
+                              ),
+                              maxLines: 5,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
+                        )
+                      // 不显示标题时，居中显示内容
+                      : Center(
+                          child: Text(
+                            contentWithoutUrl ?? "",
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 25,
+                              fontWeight: FontWeight.w300,
+                              color: colorScheme.primary,
+                              height: 1.7,
+                            ),
+                            maxLines: 8,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
                 )
               // 链接模式
               : Column(

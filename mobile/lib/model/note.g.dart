@@ -17,10 +17,10 @@ const NoteSchema = CollectionSchema(
   name: r'Note',
   id: 6284318083599466921,
   properties: {
-    r'category': PropertySchema(
+    r'categoryId': PropertySchema(
       id: 0,
-      name: r'category',
-      type: IsarType.string,
+      name: r'categoryId',
+      type: IsarType.long,
     ),
     r'content': PropertySchema(id: 1, name: r'content', type: IsarType.string),
     r'tag': PropertySchema(id: 2, name: r'tag', type: IsarType.string),
@@ -34,7 +34,14 @@ const NoteSchema = CollectionSchema(
   deserializeProp: _noteDeserializeProp,
   idName: r'id',
   indexes: {},
-  links: {},
+  links: {
+    r'category': LinkSchema(
+      id: -4613188024707996117,
+      name: r'category',
+      target: r'Category',
+      single: true,
+    ),
+  },
   embeddedSchemas: {},
 
   getId: _noteGetId,
@@ -49,12 +56,6 @@ int _noteEstimateSize(
   Map<Type, List<int>> allOffsets,
 ) {
   var bytesCount = offsets.last;
-  {
-    final value = object.category;
-    if (value != null) {
-      bytesCount += 3 + value.length * 3;
-    }
-  }
   {
     final value = object.content;
     if (value != null) {
@@ -82,7 +83,7 @@ void _noteSerialize(
   List<int> offsets,
   Map<Type, List<int>> allOffsets,
 ) {
-  writer.writeString(offsets[0], object.category);
+  writer.writeLong(offsets[0], object.categoryId);
   writer.writeString(offsets[1], object.content);
   writer.writeString(offsets[2], object.tag);
   writer.writeDateTime(offsets[3], object.time);
@@ -96,7 +97,7 @@ Note _noteDeserialize(
   Map<Type, List<int>> allOffsets,
 ) {
   final object = Note();
-  object.category = reader.readStringOrNull(offsets[0]);
+  object.categoryId = reader.readLongOrNull(offsets[0]);
   object.content = reader.readStringOrNull(offsets[1]);
   object.id = id;
   object.tag = reader.readStringOrNull(offsets[2]);
@@ -113,7 +114,7 @@ P _noteDeserializeProp<P>(
 ) {
   switch (propertyId) {
     case 0:
-      return (reader.readStringOrNull(offset)) as P;
+      return (reader.readLongOrNull(offset)) as P;
     case 1:
       return (reader.readStringOrNull(offset)) as P;
     case 2:
@@ -132,11 +133,12 @@ Id _noteGetId(Note object) {
 }
 
 List<IsarLinkBase<dynamic>> _noteGetLinks(Note object) {
-  return [];
+  return [object.category];
 }
 
 void _noteAttach(IsarCollection<dynamic> col, Id id, Note object) {
   object.id = id;
+  object.category.attach(col, col.isar.collection<Category>(), r'category', id);
 }
 
 extension NoteQueryWhereSort on QueryBuilder<Note, Note, QWhere> {
@@ -218,164 +220,77 @@ extension NoteQueryWhere on QueryBuilder<Note, Note, QWhereClause> {
 }
 
 extension NoteQueryFilter on QueryBuilder<Note, Note, QFilterCondition> {
-  QueryBuilder<Note, Note, QAfterFilterCondition> categoryIsNull() {
+  QueryBuilder<Note, Note, QAfterFilterCondition> categoryIdIsNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        const FilterCondition.isNull(property: r'category'),
+        const FilterCondition.isNull(property: r'categoryId'),
       );
     });
   }
 
-  QueryBuilder<Note, Note, QAfterFilterCondition> categoryIsNotNull() {
+  QueryBuilder<Note, Note, QAfterFilterCondition> categoryIdIsNotNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        const FilterCondition.isNotNull(property: r'category'),
+        const FilterCondition.isNotNull(property: r'categoryId'),
       );
     });
   }
 
-  QueryBuilder<Note, Note, QAfterFilterCondition> categoryEqualTo(
-    String? value, {
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<Note, Note, QAfterFilterCondition> categoryIdEqualTo(
+    int? value,
+  ) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.equalTo(
-          property: r'category',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
+        FilterCondition.equalTo(property: r'categoryId', value: value),
       );
     });
   }
 
-  QueryBuilder<Note, Note, QAfterFilterCondition> categoryGreaterThan(
-    String? value, {
+  QueryBuilder<Note, Note, QAfterFilterCondition> categoryIdGreaterThan(
+    int? value, {
     bool include = false,
-    bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         FilterCondition.greaterThan(
           include: include,
-          property: r'category',
+          property: r'categoryId',
           value: value,
-          caseSensitive: caseSensitive,
         ),
       );
     });
   }
 
-  QueryBuilder<Note, Note, QAfterFilterCondition> categoryLessThan(
-    String? value, {
+  QueryBuilder<Note, Note, QAfterFilterCondition> categoryIdLessThan(
+    int? value, {
     bool include = false,
-    bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         FilterCondition.lessThan(
           include: include,
-          property: r'category',
+          property: r'categoryId',
           value: value,
-          caseSensitive: caseSensitive,
         ),
       );
     });
   }
 
-  QueryBuilder<Note, Note, QAfterFilterCondition> categoryBetween(
-    String? lower,
-    String? upper, {
+  QueryBuilder<Note, Note, QAfterFilterCondition> categoryIdBetween(
+    int? lower,
+    int? upper, {
     bool includeLower = true,
     bool includeUpper = true,
-    bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         FilterCondition.between(
-          property: r'category',
+          property: r'categoryId',
           lower: lower,
           includeLower: includeLower,
           upper: upper,
           includeUpper: includeUpper,
-          caseSensitive: caseSensitive,
         ),
-      );
-    });
-  }
-
-  QueryBuilder<Note, Note, QAfterFilterCondition> categoryStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.startsWith(
-          property: r'category',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<Note, Note, QAfterFilterCondition> categoryEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.endsWith(
-          property: r'category',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<Note, Note, QAfterFilterCondition> categoryContains(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.contains(
-          property: r'category',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<Note, Note, QAfterFilterCondition> categoryMatches(
-    String pattern, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.matches(
-          property: r'category',
-          wildcard: pattern,
-          caseSensitive: caseSensitive,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<Note, Note, QAfterFilterCondition> categoryIsEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'category', value: ''),
-      );
-    });
-  }
-
-  QueryBuilder<Note, Note, QAfterFilterCondition> categoryIsNotEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(property: r'category', value: ''),
       );
     });
   }
@@ -999,18 +914,32 @@ extension NoteQueryFilter on QueryBuilder<Note, Note, QFilterCondition> {
 
 extension NoteQueryObject on QueryBuilder<Note, Note, QFilterCondition> {}
 
-extension NoteQueryLinks on QueryBuilder<Note, Note, QFilterCondition> {}
-
-extension NoteQuerySortBy on QueryBuilder<Note, Note, QSortBy> {
-  QueryBuilder<Note, Note, QAfterSortBy> sortByCategory() {
+extension NoteQueryLinks on QueryBuilder<Note, Note, QFilterCondition> {
+  QueryBuilder<Note, Note, QAfterFilterCondition> category(
+    FilterQuery<Category> q,
+  ) {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'category', Sort.asc);
+      return query.link(q, r'category');
     });
   }
 
-  QueryBuilder<Note, Note, QAfterSortBy> sortByCategoryDesc() {
+  QueryBuilder<Note, Note, QAfterFilterCondition> categoryIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'category', Sort.desc);
+      return query.linkLength(r'category', 0, true, 0, true);
+    });
+  }
+}
+
+extension NoteQuerySortBy on QueryBuilder<Note, Note, QSortBy> {
+  QueryBuilder<Note, Note, QAfterSortBy> sortByCategoryId() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'categoryId', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Note, Note, QAfterSortBy> sortByCategoryIdDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'categoryId', Sort.desc);
     });
   }
 
@@ -1064,15 +993,15 @@ extension NoteQuerySortBy on QueryBuilder<Note, Note, QSortBy> {
 }
 
 extension NoteQuerySortThenBy on QueryBuilder<Note, Note, QSortThenBy> {
-  QueryBuilder<Note, Note, QAfterSortBy> thenByCategory() {
+  QueryBuilder<Note, Note, QAfterSortBy> thenByCategoryId() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'category', Sort.asc);
+      return query.addSortBy(r'categoryId', Sort.asc);
     });
   }
 
-  QueryBuilder<Note, Note, QAfterSortBy> thenByCategoryDesc() {
+  QueryBuilder<Note, Note, QAfterSortBy> thenByCategoryIdDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'category', Sort.desc);
+      return query.addSortBy(r'categoryId', Sort.desc);
     });
   }
 
@@ -1138,11 +1067,9 @@ extension NoteQuerySortThenBy on QueryBuilder<Note, Note, QSortThenBy> {
 }
 
 extension NoteQueryWhereDistinct on QueryBuilder<Note, Note, QDistinct> {
-  QueryBuilder<Note, Note, QDistinct> distinctByCategory({
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<Note, Note, QDistinct> distinctByCategoryId() {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'category', caseSensitive: caseSensitive);
+      return query.addDistinctBy(r'categoryId');
     });
   }
 
@@ -1184,9 +1111,9 @@ extension NoteQueryProperty on QueryBuilder<Note, Note, QQueryProperty> {
     });
   }
 
-  QueryBuilder<Note, String?, QQueryOperations> categoryProperty() {
+  QueryBuilder<Note, int?, QQueryOperations> categoryIdProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'category');
+      return query.addPropertyName(r'categoryId');
     });
   }
 

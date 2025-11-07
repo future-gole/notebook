@@ -2,7 +2,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pocketmind/model/note.dart';
+import 'package:pocketmind/providers/category_providers.dart';
 import 'package:pocketmind/providers/note_providers.dart';
+import 'package:pocketmind/util/app_config.dart';
 
 /// 统一的笔记编辑器底部模态框
 /// 同时支持"新建"和"编辑"模式
@@ -20,7 +22,11 @@ class NoteEditorSheet extends ConsumerStatefulWidget {
 class _NoteEditorSheetState extends ConsumerState<NoteEditorSheet> {
   late final TextEditingController _titleController;
   late final TextEditingController _contentController;
-  late final TextEditingController _categoryController;
+  
+  int? _selectedCategoryId;
+
+  final _config = AppConfig();
+  bool _titleEnabled = false;
 
   bool get _isEditMode => widget.note != null;
 
@@ -32,29 +38,57 @@ class _NoteEditorSheetState extends ConsumerState<NoteEditorSheet> {
     _contentController = TextEditingController(
       text: widget.note?.content ?? widget.initialContent ?? '',
     );
-    _categoryController = TextEditingController(
-      text: widget.note?.category ?? 'home',
-    );
+    _selectedCategoryId = widget.note?.categoryId;
+    _loadTitleSetting();
+  }
+
+  Future<void> _loadTitleSetting() async {
+    await _config.init();
+    setState(() {
+      _titleEnabled = _config.titleEnabled;
+    });
   }
 
   @override
   void dispose() {
     _titleController.dispose();
     _contentController.dispose();
-    _categoryController.dispose();
     super.dispose();
   }
 
   Future<void> _onSave() async {
     final title = _titleController.text.trim();
     final content = _contentController.text.trim();
-    final category = _categoryController.text.trim();
 
-    if (title.isEmpty || content.isEmpty) {
-      // 提示用户填写必填字段
+    // 如果未启用标题，只检查内容
+    if (content.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text('标题和内容不能为空'),
+          content: const Text('内容不能为空'),
+          backgroundColor: Theme.of(context).colorScheme.error,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+
+    // 如果启用标题，也检查标题
+    if (_titleEnabled && title.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('标题不能为空'),
+          backgroundColor: Theme.of(context).colorScheme.error,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+
+    // 确保选择了分类
+    if (_selectedCategoryId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('请选择一个分类'),
           backgroundColor: Theme.of(context).colorScheme.error,
           behavior: SnackBarBehavior.floating,
         ),
@@ -68,16 +102,16 @@ class _NoteEditorSheetState extends ConsumerState<NoteEditorSheet> {
       // 编辑模式：更新现有笔记
       await noteService.addOrUpdateNote(
         id: widget.note!.id,
-        title: title,
+        title: _titleEnabled ? title : null, // 根据设置决定是否保存标题
         content: content,
-        category: category,
+        categoryId: _selectedCategoryId,
       );
     } else {
       // 新建模式：创建新笔记
       await noteService.addOrUpdateNote(
-        title: title,
+        title: _titleEnabled ? title : null, // 根据设置决定是否保存标题
         content: content,
-        category: category,
+        categoryId: _selectedCategoryId,
       );
     }
 
@@ -98,6 +132,90 @@ class _NoteEditorSheetState extends ConsumerState<NoteEditorSheet> {
 
     // 关闭模态框
     Navigator.of(context).pop();
+  }
+
+  Widget _buildCategorySection(ColorScheme colorScheme) {
+    final categoriesAsync = ref.watch(categoriesProvider);
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: colorScheme.surface,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: categoriesAsync.when(
+        data: (categories) {
+          if (categories.isEmpty) {
+            return Text(
+              '暂无分类，请先创建分类后再添加笔记',
+              style: TextStyle(color: colorScheme.secondary),
+            );
+          }
+
+          if (_selectedCategoryId == null) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (!mounted) return;
+              setState(() {
+                _selectedCategoryId = categories.first.id;
+              });
+            });
+          }
+
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                '选择分类',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: colorScheme.onSurface,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Wrap(
+                spacing: 12,
+                runSpacing: 12,
+                children: categories.map((category) {
+                  final isSelected = category.id == _selectedCategoryId;
+                  final label = category.description?.isNotEmpty == true
+                      ? category.description!
+                      : category.name;
+                  return ChoiceChip(
+                    label: Text(label),
+                    selected: isSelected,
+                    onSelected: (_) {
+                      setState(() {
+                        _selectedCategoryId = category.id;
+                      });
+                    },
+                    selectedColor:
+                        colorScheme.primary.withValues(alpha: 0.12),
+                    labelStyle: TextStyle(
+                      color: isSelected
+                          ? colorScheme.primary
+                          : colorScheme.onSurface,
+                    ),
+                    side: BorderSide(
+                      color: isSelected
+                          ? colorScheme.primary
+                          : colorScheme.outlineVariant,
+                    ),
+                    backgroundColor: colorScheme.surface,
+                  );
+                }).toList(),
+              ),
+            ],
+          );
+        },
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (error, stack) => Text(
+          '加载分类失败: $error',
+          style: TextStyle(color: colorScheme.error),
+        ),
+      ),
+    );
   }
 
   Widget _buildTextField({
@@ -171,22 +289,17 @@ class _NoteEditorSheetState extends ConsumerState<NoteEditorSheet> {
 
                 const SizedBox(height: 20),
 
-                // 标题输入框
-                _buildTextField(
-                  controller: _titleController,
-                  hintText: '给你的笔记起个名字...',
-                  colorScheme: colorScheme,
-                  maxLines: 1,
-                  autofocus: !_isEditMode && widget.initialContent == null,
-                ),
+                // 标题输入框 - 只在启用时显示
+                if (_titleEnabled)
+                  _buildTextField(
+                    controller: _titleController,
+                    hintText: '给你的笔记起个名字...',
+                    colorScheme: colorScheme,
+                    maxLines: 1,
+                    autofocus: !_isEditMode && widget.initialContent == null,
+                  ),
 
-                // 分类输入框
-                _buildTextField(
-                  controller: _categoryController,
-                  hintText: '选择一个分类',
-                  colorScheme: colorScheme,
-                  maxLines: 1,
-                ),
+                _buildCategorySection(colorScheme),
 
                 // 内容输入框
                 _buildTextField(
