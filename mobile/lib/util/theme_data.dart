@@ -1,6 +1,22 @@
 // 主题定义 - "亮色模式" (赤陶与暖沙)
 import 'package:flutter/material.dart';
 
+// 流动背景颜色 - 亮色模式
+class LightFlowingBackgroundColors {
+  static const Color blob1 = Color(0xFFE58F6F); // 赤陶橙
+  static const Color blob2 = Color(0xFFF4A261); // 温暖杏色
+  static const Color blob3 = Color(0xFFE76F51); // 珊瑚橙
+  static const Color blob4 = Color(0xFF2A9D8F); // 青绿色
+}
+
+// 流动背景颜色 - 暗色模式
+class DarkFlowingBackgroundColors {
+  static const Color blob1 = Color(0xFFFF6B35); // 明亮橙红
+  static const Color blob2 = Color(0xFF8B5CF6); // 紫色
+  static const Color blob3 = Color(0xFF3B82F6); // 蓝色
+  static const Color blob4 = Color(0xFFF59E0B); // 金色
+}
+
 final ThemeData calmBeigeTheme = ThemeData(
   useMaterial3: true,
   brightness: Brightness.light,

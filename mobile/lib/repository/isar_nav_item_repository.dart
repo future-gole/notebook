@@ -14,7 +14,7 @@ class IsarNavItemRepository implements NavItemRepository {
     // 从 Isar 获取所有不重复的 category
     final notes = await isar.notes.where().findAll();
     final categories = <String>{};
-    
+
     for (var note in notes) {
       if (note.category != null && note.category!.isNotEmpty) {
         categories.add(note.category!);
@@ -36,7 +36,7 @@ class IsarNavItemRepository implements NavItemRepository {
     // 监听 notes 变化，并提取不重复的 categories
     return isar.notes.where().watch(fireImmediately: true).map((notes) {
       final categories = <String>{};
-      
+
       for (var note in notes) {
         if (note.category != null && note.category!.isNotEmpty) {
           categories.add(note.category!);
@@ -63,9 +63,9 @@ class IsarNavItemRepository implements NavItemRepository {
       '学习': 'assets/icons/study.svg',
       '生活': 'assets/icons/life.svg',
       '娱乐': 'assets/icons/entertainment.svg',
-      'b站': 'assets/icons/bilibili.svg'
+      'b站': 'assets/icons/bilibili.svg',
     };
-    
+
     return iconMap[category] ?? 'assets/icons/bilibili.svg';
   }
 }

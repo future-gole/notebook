@@ -75,7 +75,7 @@ class _NoteItemState extends ConsumerState<NoteItem>
       resizeDuration: const Duration(milliseconds: 250),
       // 使用 confirmDismiss 在动画开始前就更新 UI
       confirmDismiss: (direction) async {
-        if(extractedUrl != null){
+        if (extractedUrl != null) {
           // 删除对应的链接缓存
           await LinkPreviewCache.clearCache(extractedUrl);
         }

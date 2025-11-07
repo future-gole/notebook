@@ -7,6 +7,7 @@ import 'package:isar_community/isar.dart';
 import 'package:pocketmind/model/note.dart';
 import 'package:pocketmind/page/edit_note_page.dart';
 import 'package:pocketmind/page/share_success_page.dart';
+import 'package:pocketmind/page/widget/flowing_background.dart';
 import 'package:pocketmind/providers/nav_providers.dart';
 import 'package:pocketmind/providers/note_providers.dart';
 import 'package:pocketmind/server/note_service.dart';
@@ -153,9 +154,9 @@ class _MyShareAppState extends ConsumerState<MyShareApp>
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      theme: calmBeigeTheme, // 使用 Light 主题
-      darkTheme: quietNightTheme, // 使用 Dark 主题
-      themeMode: ThemeMode.system, // 跟随系统
+      theme: calmBeigeTheme,
+      darkTheme: quietNightTheme,
+      themeMode: ThemeMode.system,
       home: Material(
         type: MaterialType.transparency,
         child: _buildStage(context),
@@ -165,20 +166,30 @@ class _MyShareAppState extends ConsumerState<MyShareApp>
 
   // "舞台" - 统一的背景画布
   Widget _buildStage(BuildContext context) {
-    return BackdropFilter(
-      filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
-      child: Container(
-        color: Theme.of(context).colorScheme.outline, // 使用主题的画布遮罩色
-        child: Center(
-          child: AnimatedSwitcher(
-            duration: const Duration(milliseconds: 600),
-            switchInCurve: Curves.easeOutCubic,
-            switchOutCurve: Curves.easeInCubic,
-            transitionBuilder: _buildTransition,
-            child: _buildCurrentView(context),
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        Container(
+          // todo 这边还需要细调先这样吧
+          color: Colors.black.withOpacity(0.77),
+        ),
+
+        // --- 层 1: 流动的渐变背景 ---
+        const FlowingBackground(),
+
+        // --- 层 2: 实际页面内容 ---
+        SafeArea(
+          child: Center(
+            child: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 600),
+              switchInCurve: Curves.easeOutCubic,
+              switchOutCurve: Curves.easeInCubic,
+              transitionBuilder: _buildTransition,
+              child: _buildCurrentView(context),
+            ),
           ),
         ),
-      ),
+      ],
     );
   }
 

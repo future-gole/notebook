@@ -75,9 +75,7 @@ class MyApp extends StatelessWidget {
       home: HomeScreen(),
 
       // 配置路由
-      routes: {
-        '/settings': (context) => const SettingsPage(),
-      },
+      routes: {'/settings': (context) => const SettingsPage()},
     );
   }
 }

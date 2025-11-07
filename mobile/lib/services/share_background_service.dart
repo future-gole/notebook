@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:isar_community/isar.dart';
+// ignore: unused_import
 import 'package:pocketmind/main.dart';
 import 'package:pocketmind/server/note_service.dart';
 import 'package:pocketmind/util/logger_service.dart';
@@ -9,6 +10,7 @@ import 'package:pocketmind/util/logger_service.dart';
 /// Flutter 后台服务
 /// 处理来自原生 ShareActivity 的数据
 /// 不显示任何 UI，只处理业务逻辑
+/// 待删除，先保留着可能有用
 class ShareBackgroundService {
   static const String _tag = 'ShareBackgroundService';
   static const MethodChannel _channel = MethodChannel(
@@ -76,10 +78,11 @@ class ShareBackgroundService {
 
   /// 保存到本地 Isar 数据库
   static Future<void> _saveToLocal(
-      String title,
-      String content,
-      String? category,
-      String? tag) async {
+    String title,
+    String content,
+    String? category,
+    String? tag,
+  ) async {
     try {
       final noteService = NoteService(_isar);
       await noteService.addOrUpdateNote(
@@ -97,11 +100,11 @@ class ShareBackgroundService {
 
   /// 同步到后端服务器
   static Future<void> _syncToBackend(
-      String title,
-      String content,
-      String? category,
-      String? tag,
-      int timestamp,
+    String title,
+    String content,
+    String? category,
+    String? tag,
+    int timestamp,
   ) async {
     try {
       // TODO: 替换为你的实际后端 API 地址

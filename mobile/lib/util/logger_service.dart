@@ -7,8 +7,9 @@ import 'package:flutter/services.dart';
 import 'package:logger/logger.dart'; // 导入 developer 库
 
 class DeveloperLogOutput extends LogOutput {
-
-  static const MethodChannel _androidLogChannel = MethodChannel('com.doublez.pocketmind/logger');
+  static const MethodChannel _androidLogChannel = MethodChannel(
+    'com.doublez.pocketmind/logger',
+  );
 
   @override
   void output(OutputEvent event) {

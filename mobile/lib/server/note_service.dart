@@ -3,6 +3,7 @@ import 'package:pocketmind/model/note.dart';
 import 'package:pocketmind/util/logger_service.dart';
 
 final String NoteServiceTag = "NoteService";
+
 class NoteService {
   final Isar isar;
   static const String defaultCategory = "home";
@@ -19,26 +20,29 @@ class NoteService {
     String? category,
     String? tag,
   }) async {
-    log.d(NoteServiceTag, 'Note added: title: $title, content: $content, category: $category ');
+    log.d(
+      NoteServiceTag,
+      'Note added: title: $title, content: $content, category: $category ',
+    );
     final newNote = Note()
       ..title = title
       ..content = content
       ..category = category ?? defaultCategory
       ..time = DateTime.now()
       ..tag;
-    if(id != null && id != -1){
+    if (id != null && id != -1) {
       log.d(NoteServiceTag, "id:${id},进行更新操作");
-      newNote.id  = id;
+      newNote.id = id;
     }
     try {
       int resultId = -1;
       await isar.writeTxn(() async {
-            // 这里需要获取id，因为用户可能点击detail进行更新
-            resultId = await isar.notes.put(newNote);
-          });
+        // 这里需要获取id，因为用户可能点击detail进行更新
+        resultId = await isar.notes.put(newNote);
+      });
       return resultId;
     } catch (e) {
-      log.e(NoteServiceTag,"插入/更新数据失败: $e");
+      log.e(NoteServiceTag, "插入/更新数据失败: $e");
       return -1;
     }
   }
@@ -62,10 +66,10 @@ class NoteService {
   Future<void> deleteNote(Id noteId) async {
     try {
       await isar.writeTxn(() async {
-            await isar.notes.delete(noteId);
-          });
+        await isar.notes.delete(noteId);
+      });
     } catch (e) {
-      log.e(NoteServiceTag,"删除数据失败: $e");
+      log.e(NoteServiceTag, "删除数据失败: $e");
     }
   }
 
@@ -87,21 +91,21 @@ class NoteService {
 
   // 根据 category 查询笔记
   Future<List<Note>> findNotesWithCategory(String query) async {
-    if(query == defaultCategory){
+    if (query == defaultCategory) {
       return await getAllNotes();
     }
     return await isar.notes
-      .filter()
-      .categoryEqualTo(query, caseSensitive: false)
-      .sortByTimeDesc()
-      .findAll();
+        .filter()
+        .categoryEqualTo(query, caseSensitive: false)
+        .sortByTimeDesc()
+        .findAll();
   }
 
   // 根据 tag 查询笔记
   Future<List<Note>> findNotesWithTag(String query) async {
     return await isar.notes
         .filter()
-        .tagContains(query,caseSensitive: false)
+        .tagContains(query, caseSensitive: false)
         .findAll();
   }
 }

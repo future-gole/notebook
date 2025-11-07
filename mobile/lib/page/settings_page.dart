@@ -38,9 +38,9 @@ class _SettingsPageState extends State<SettingsPage> {
 
   Future<void> _loadSettings() async {
     setState(() => _isLoading = true);
-    
+
     await _config.init();
-    
+
     setState(() {
       _proxyEnabled = _config.proxyEnabled;
       _proxyHostController.text = _config.proxyHost;
@@ -56,20 +56,22 @@ class _SettingsPageState extends State<SettingsPage> {
     await _config.setProxyEnabled(_proxyEnabled);
     await _config.setProxyHost(_proxyHostController.text);
     await _config.setProxyPort(int.tryParse(_proxyPortController.text) ?? 7890);
-    
+
     // 保存 API Key
     await _config.setLinkPreviewApiKey(_apiKeyController.text);
 
     // 保存 缓存时间
-    await _config.setMetaCacheTime(int.tryParse(_meteCacheTimeController.text) ?? 10);
+    await _config.setMetaCacheTime(
+      int.tryParse(_meteCacheTimeController.text) ?? 10,
+    );
 
     // 应用代理设置
     _applyProxySettings();
 
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('设置已保存')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('设置已保存')));
     }
   }
 
@@ -87,7 +89,7 @@ class _SettingsPageState extends State<SettingsPage> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    
+
     if (_isLoading) {
       return Scaffold(
         appBar: AppBar(title: const Text('设置')),
@@ -100,10 +102,7 @@ class _SettingsPageState extends State<SettingsPage> {
       appBar: AppBar(
         title: const Text('设置'),
         actions: [
-          TextButton(
-            onPressed: _saveSettings,
-            child: const Text('保存'),
-          ),
+          TextButton(onPressed: _saveSettings, child: const Text('保存')),
         ],
       ),
       body: ListView(
@@ -128,10 +127,7 @@ class _SettingsPageState extends State<SettingsPage> {
   Widget _buildSectionTitle(String title, ThemeData theme) {
     return Padding(
       padding: const EdgeInsets.only(left: 4, bottom: 12),
-      child: Text(
-        title,
-        style: theme.textTheme.titleMedium,
-      ),
+      child: Text(title, style: theme.textTheme.titleMedium),
     );
   }
 
@@ -151,10 +147,7 @@ class _SettingsPageState extends State<SettingsPage> {
             // 启用开关
             SwitchListTile(
               contentPadding: EdgeInsets.zero,
-              title: Text(
-                '启用代理',
-                style: theme.textTheme.bodyLarge,
-              ),
+              title: Text('启用代理', style: theme.textTheme.bodyLarge),
               subtitle: Text(
                 _proxyEnabled ? '代理已启用' : '代理已禁用',
                 style: theme.textTheme.bodySmall,
@@ -164,10 +157,10 @@ class _SettingsPageState extends State<SettingsPage> {
                 setState(() => _proxyEnabled = value);
               },
             ),
-            
+
             if (_proxyEnabled) ...[
               const Divider(height: 32),
-              
+
               // 代理主机
               TextField(
                 controller: _proxyHostController,
@@ -181,7 +174,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 ),
               ),
               const SizedBox(height: 16),
-              
+
               // 代理端口
               TextField(
                 controller: _proxyPortController,
@@ -215,10 +208,7 @@ class _SettingsPageState extends State<SettingsPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'API Key',
-              style: theme.textTheme.bodyLarge,
-            ),
+            Text('API Key', style: theme.textTheme.bodyLarge),
             const SizedBox(height: 8),
             Text(
               '用于国外网站（X/Twitter/YouTube）链接预览',
@@ -263,9 +253,7 @@ class _SettingsPageState extends State<SettingsPage> {
     return Card(
       color: theme.colorScheme.surfaceContainerHighest.withOpacity(0.1),
       elevation: 0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -288,11 +276,7 @@ class _SettingsPageState extends State<SettingsPage> {
               ],
             ),
             const SizedBox(height: 12),
-            _buildInfoItem(
-              '• 代理设置',
-              '启用代理后，国外网站（X/Twitter）的图片才能正常显示',
-              theme,
-            ),
+            _buildInfoItem('• 代理设置', '启用代理后，国外网站（X/Twitter）的图片才能正常显示', theme),
             const SizedBox(height: 8),
             _buildInfoItem(
               '• API Key',
@@ -300,11 +284,7 @@ class _SettingsPageState extends State<SettingsPage> {
               theme,
             ),
             const SizedBox(height: 8),
-            _buildInfoItem(
-              '• 国内网站',
-              '国内网站无需代理，自动使用直连方式',
-              theme,
-            ),
+            _buildInfoItem('• 国内网站', '国内网站无需代理，自动使用直连方式', theme),
           ],
         ),
       ),
@@ -323,10 +303,7 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
         ),
         const SizedBox(height: 4),
-        Text(
-          content,
-          style: theme.textTheme.bodySmall,
-        ),
+        Text(content, style: theme.textTheme.bodySmall),
       ],
     );
   }

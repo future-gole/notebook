@@ -139,7 +139,7 @@ class _ApiLinkPreviewState extends State<_ApiLinkPreview> {
           'url': apiMetadata.url,
         };
         await LinkPreviewCache.saveCache(widget.url, metadata);
-      }else {
+      } else {
         // 3.1.1 没成功
         metadata = {
           'title': "预览错误",

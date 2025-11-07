@@ -21,12 +21,12 @@ final noteByIdProvider = FutureProvider.family<Note?, int>((ref, id) async {
   return noteService.getNoteById(id);
 });
 
-final noteByCategoryProvider = AsyncNotifierProvider<NoteByCategory, List<Note>>(() {
-  return NoteByCategory();
-});
+final noteByCategoryProvider =
+    AsyncNotifierProvider<NoteByCategory, List<Note>>(() {
+      return NoteByCategory();
+    });
 
 class NoteByCategory extends AsyncNotifier<List<Note>> {
-
   // 1. build 方法负责异步获取数据（和你旧的 FutureProvider 逻辑一样）
   @override
   Future<List<Note>> build() async {

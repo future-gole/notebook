@@ -254,7 +254,8 @@ class EditNotePageState extends ConsumerState<EditNotePage> {
               child: Container(
                 key: ValueKey(_currentTab),
                 child:
-                    _currentTab == EditTab.content || _currentTab == EditTab.title
+                    _currentTab == EditTab.content ||
+                        _currentTab == EditTab.title
                     ? _buildNotesContent(colorScheme)
                     : _currentTab == EditTab.tags
                     ? _buildTagsContent(colorScheme)
