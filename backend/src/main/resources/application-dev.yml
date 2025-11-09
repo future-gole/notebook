@@ -7,7 +7,7 @@ spring:
       port: 6379
   ai:
     dashscope:
-      api-key: your_key_here
+      api-key: sk-e82d13dcb4ec42d79a95e26262220f51
       chat:
         options:
           model: qwen-turbo
@@ -18,16 +18,16 @@ spring:
           search:
             enabled: true
         tavilysearch:
-          api-key: your_key_here
+          api-key: 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
           enabled: true
         jinacrawler:
           enabled: true
-          api-key: your_key_here
+          api-key: jina_6dae77e988d14583b581209b3205eaeaqnJ7QnK8iqeolsV9k11MTnyyIVLB
   mail:
     host: smtp.qq.com
     port: 465
-    username: your_name
-    password: your_password
+    username: 1624475081@qq.com
+    password: gyfiybzapiamjfdf
     protocol: smtp
     properties: # 下面要用properties的写法才可以生效
       mail.smtp.auth: true
