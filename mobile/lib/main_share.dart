@@ -9,7 +9,7 @@ import 'package:pocketmind/model/note.dart';
 import 'package:pocketmind/page/edit_note_page.dart';
 import 'package:pocketmind/page/share_success_page.dart';
 import 'package:pocketmind/page/widget/flowing_background.dart';
-import 'package:pocketmind/providers/nav_providers.dart';
+import 'package:pocketmind/providers/infrastructure_providers.dart';
 import 'package:pocketmind/providers/note_providers.dart';
 import 'package:pocketmind/server/note_service.dart';
 import 'package:pocketmind/util/theme_data.dart';
@@ -30,7 +30,7 @@ Future<void> main_share() async {
   final dir = await getApplicationDocumentsDirectory();
 
   // 2. 打开 Isar 实例,和主示例相同，要不然存的地方就不一样了
-  isar = await Isar.open([NoteSchema,CategorySchema], directory: dir.path);
+  isar = await Isar.open([NoteSchema, CategorySchema], directory: dir.path);
 
   // // 3. 初始化后台服务 (并把 Isar 传给它),并不需要了，先留着
   // ShareBackgroundService.initialize(isar);

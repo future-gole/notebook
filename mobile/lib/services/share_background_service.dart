@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:isar_community/isar.dart';
 // ignore: unused_import
 import 'package:pocketmind/main.dart';
+import 'package:pocketmind/data/repositories/isar_note_repository.dart';
 import 'package:pocketmind/server/note_service.dart';
 import 'package:pocketmind/util/logger_service.dart';
 
@@ -84,7 +85,8 @@ class ShareBackgroundService {
     String? tag,
   ) async {
     try {
-      final noteService = NoteService(_isar);
+      final noteRepository = IsarNoteRepository(_isar);
+      final noteService = NoteService(noteRepository);
       await noteService.addOrUpdateNote(
         title: title,
         content: content,

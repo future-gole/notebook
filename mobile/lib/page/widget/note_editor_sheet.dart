@@ -1,16 +1,15 @@
 // 路径: lib/page/widget/note_editor_sheet.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:pocketmind/model/note.dart';
+import 'package:pocketmind/domain/entities/note_entity.dart';
 import 'package:pocketmind/page/widget/categories_bar.dart' show CategoriesBar;
-import 'package:pocketmind/providers/category_providers.dart';
 import 'package:pocketmind/providers/note_providers.dart';
 import 'package:pocketmind/util/app_config.dart';
 
 /// 统一的笔记编辑器底部模态框
 /// 同时支持"新建"和"编辑"模式
 class NoteEditorSheet extends ConsumerStatefulWidget {
-  final Note? note; // null = 新建模式，非null = 编辑模式
+  final NoteEntity? note; // null = 新建模式，非null = 编辑模式
 
   const NoteEditorSheet({super.key, this.note});
 
@@ -105,6 +104,9 @@ class _NoteEditorSheetState extends ConsumerState<NoteEditorSheet> {
     }
 
     // 刷新笔记列表
+    // 注意：由于 noteByCategoryProvider 现在使用 Stream 监听数据库变化，
+    // 这个 invalidate 调用实际上不再必要（Stream 会自动更新）
+    // 但保留它可以确保立即刷新，不会有任何副作用
     ref.invalidate(noteByCategoryProvider);
 
     if (!context.mounted) return;

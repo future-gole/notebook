@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pocketmind/providers/note_providers.dart';
-import 'package:pocketmind/model/note.dart';
+import 'package:pocketmind/domain/entities/note_entity.dart';
 import 'package:pocketmind/server/note_service.dart';
 import 'package:pocketmind/util/url_helper.dart';
 import 'link_preview_card.dart';
@@ -13,7 +13,7 @@ String tag = "noteItem";
 
 // 改为 StatefulWidget 以支持 AutomaticKeepAliveClientMixin
 class NoteItem extends ConsumerStatefulWidget {
-  final Note note;
+  final NoteEntity note;
   final bool isGridMode;
 
   final NoteService noteService;
@@ -98,8 +98,11 @@ class _NoteItemState extends ConsumerState<NoteItem>
           // 删除对应的链接缓存
           await LinkPreviewCache.clearCache(extractedUrl);
         }
-        // 立即更新 UI（Optimistic UI）
-        ref.read(noteByCategoryProvider.notifier).deleteNote(widget.note.id);
+        // 立即更新 UI
+        final noteId = widget.note.id;
+        if (noteId != null) {
+          ref.read(noteByCategoryProvider.notifier).deleteNote(noteId);
+        }
         // 返回 true 让 Dismissible 继续完成动画
         return true;
       },

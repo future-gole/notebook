@@ -1,71 +1,75 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:pocketmind/model/note.dart';
+import 'package:pocketmind/domain/entities/note_entity.dart';
+import 'package:pocketmind/domain/repositories/note_repository.dart';
+import 'package:pocketmind/data/repositories/isar_note_repository.dart';
 import 'package:pocketmind/providers/nav_providers.dart';
+import 'package:pocketmind/providers/infrastructure_providers.dart';
 import 'package:pocketmind/server/note_service.dart';
 
-/// NoteService Provider
-final noteServiceProvider = Provider<NoteService>((ref) {
+/// NoteRepository Provider - 数据层
+/// 提供 Isar 的具体实现
+final noteRepositoryProvider = Provider<NoteRepository>((ref) {
   final isar = ref.watch(isarProvider);
-  return NoteService(isar);
+  return IsarNoteRepository(isar);
+});
+
+/// NoteService Provider - 业务层
+/// 现在依赖抽象的 Repository 接口
+final noteServiceProvider = Provider<NoteService>((ref) {
+  final repository = ref.watch(noteRepositoryProvider);
+  return NoteService(repository);
 });
 
 /// 所有笔记的 Stream Provider
-final allNotesProvider = StreamProvider<List<Note>>((ref) {
+final allNotesProvider = StreamProvider<List<NoteEntity>>((ref) {
   final noteService = ref.watch(noteServiceProvider);
   return noteService.watchAllNotes();
 });
 
 /// 根据 ID 获取笔记的 Provider
-final noteByIdProvider = FutureProvider.family<Note?, int>((ref, id) async {
+final noteByIdProvider = FutureProvider.family<NoteEntity?, int>((ref, id) async {
   final noteService = ref.watch(noteServiceProvider);
   return noteService.getNoteById(id);
 });
 
 final noteByCategoryProvider =
-    AsyncNotifierProvider<NoteByCategory, List<Note>>(() {
+    StreamNotifierProvider<NoteByCategory, List<NoteEntity>>(() {
       return NoteByCategory();
     });
 
-class NoteByCategory extends AsyncNotifier<List<Note>> {
-  // 1. build 方法负责异步获取数据
+class NoteByCategory extends StreamNotifier<List<NoteEntity>> {
+  // build 方法返回 Stream，自动监听数据库变化
   @override
-  Future<List<Note>> build() async {
+  Stream<List<NoteEntity>> build() async* {
     // 获取激活的下标
     final activeIndex = ref.watch(activeNavIndexProvider);
-    // 获取service
+    // 获取 noteService
     final noteService = ref.watch(noteServiceProvider);
-    // 获取最新的导航项 List<NavItem>
-    final navItem = await ref.watch(navItemsProvider.future);
+    // 获取最新的导航项
+    final items = await ref.watch(navItemsProvider.future);
 
-    // 检查 navItem 是否为空或索引超出范围
-    if (navItem.isEmpty || activeIndex >= navItem.length || activeIndex == 1) {
-      // 返回所有笔记
-      return noteService.findNotesWithCategory(null);
+    // 计算目标分类 ID
+    int targetCategoryId;
+    if (items.isEmpty || activeIndex >= items.length || activeIndex == 1) {
+      // "全部" 分类（index=1）或索引无效时，显示 home 分类（categoryId=1）
+      targetCategoryId = 1;
+    } else {
+      // 获取当前分类的 categoryId（处理可空类型）
+      targetCategoryId = items[activeIndex].categoryId ?? 1;
     }
 
-    // 获取 Category 下的 note（使用 categoryId）
-    return noteService.findNotesWithCategory(navItem[activeIndex].categoryId);
+    // 直接转发 watchCategoryNotes 的 Stream
+    yield* noteService.watchCategoryNotes(targetCategoryId);
   }
 
-  // 2. 关键：一个同步修改状态的方法
+  // 删除笔记方法（简化版，依赖 Stream 自动更新）
   Future<void> deleteNote(int noteId) async {
-    // A. 保存旧状态，用于失败时回滚
-    final previousState = state;
-
-    // B. (关键!) 立即、同步地更新 UI 状态
-    // 我们从当前的状态(.value)中过滤掉被删除的笔记
-    // 这就是“Optimistic UI”：我们乐观地假设删除会成功
-    state = AsyncValue.data(
-      state.valueOrNull?.where((note) => note.id != noteId).toList() ?? [],
-    );
-
-    // C. 在后台异步执行真正的数据库删除
     try {
+      // 直接删除，watchCategoryNotes() 的 Stream 会自动更新 UI
       await ref.read(noteServiceProvider).deleteNote(noteId);
-      // 成功了！UI 已经是正确的，什么都不用做。
     } catch (e) {
-      // D. (回滚) 数据库删除失败！把 UI 恢复到旧状态
-      state = previousState;
+      // 可以在这里处理错误，比如显示 SnackBar
+      rethrow;
     }
   }
 }

@@ -1,91 +1,63 @@
-import 'package:isar_community/isar.dart';
-import 'package:pocketmind/model/category.dart';
+import 'package:pocketmind/domain/entities/category_entity.dart';
+import 'package:pocketmind/domain/repositories/category_repository.dart';
 import 'package:pocketmind/util/logger_service.dart';
 
 final String CategoryServiceTag = "CategoryService";
 
+/// 分类业务服务层
+/// 
+/// 现在依赖抽象的 CategoryRepository 接口，而不是具体的 Isar 实现
+/// 这使得服务层与数据库实现完全解耦
 class CategoryService {
-  final Isar isar;
+  final CategoryRepository _categoryRepository;
 
-  CategoryService(this.isar);
+  CategoryService(this._categoryRepository);
 
   /// 初始化默认分类
   Future<void> initDefaultCategories() async {
-    final existingCategories = await isar.categorys.count();
-
-    // 如果已有分类，不再初始化
-    if (existingCategories > 0) {
-      log.d(CategoryServiceTag, '分类已存在，跳过初始化');
-      return;
-    }
-
-    // 创建默认分类
-    final defaultCategories = [
-      Category()
-        ..name = 'home'
-        ..description = '首页'
-        ..createdTime = DateTime.now(),
-    ];
-
-    try {
-      await isar.writeTxn(() async {
-        await isar.categorys.putAll(defaultCategories);
-      });
-      log.d(CategoryServiceTag, '默认分类初始化成功');
-    } catch (e) {
-      log.e(CategoryServiceTag, '默认分类初始化失败: $e');
-    }
+    await _categoryRepository.initDefaultCategories();
   }
 
   /// 获取所有分类
-  Future<List<Category>> getAllCategories() async {
-    return await isar.categorys.where().sortByCreatedTime().findAll();
+  Future<List<CategoryEntity>> getAllCategories() async {
+    return await _categoryRepository.getAll();
   }
 
   /// 根据ID获取分类
-  Future<Category?> getCategoryById(Id categoryId) async {
-    return await isar.categorys.get(categoryId);
+  Future<CategoryEntity?> getCategoryById(int categoryId) async {
+    return await _categoryRepository.getById(categoryId);
   }
 
   /// 根据名称获取分类
-  Future<Category?> getCategoryByName(String name) async {
-    return await isar.categorys.filter().nameEqualTo(name).findFirst();
+  Future<CategoryEntity?> getCategoryByName(String name) async {
+    return await _categoryRepository.getByName(name);
   }
 
   /// 添加分类
   Future<int> addCategory({required String name, String? description}) async {
-    final newCategory = Category()
-      ..name = name
-      ..description = description
-      ..createdTime = DateTime.now();
+    final newCategory = CategoryEntity(
+      name: name,
+      description: description,
+      createdTime: DateTime.now(),
+    );
 
-    try {
-      int resultId = -1;
-      await isar.writeTxn(() async {
-        resultId = await isar.categorys.put(newCategory);
-      });
+    final resultId = await _categoryRepository.save(newCategory);
+    if (resultId != -1) {
       log.d(CategoryServiceTag, '分类添加成功: $name');
-      return resultId;
-    } catch (e) {
-      log.e(CategoryServiceTag, '分类添加失败: $e');
-      return -1;
+    } else {
+      log.e(CategoryServiceTag, '分类添加失败');
     }
+    return resultId;
   }
 
   /// 删除分类
-  Future<void> deleteCategory(Id categoryId) async {
-    try {
-      await isar.writeTxn(() async {
-        await isar.categorys.delete(categoryId);
-      });
-      log.d(CategoryServiceTag, '分类删除成功');
-    } catch (e) {
-      log.e(CategoryServiceTag, '分类删除失败: $e');
-    }
+  Future<void> deleteCategory(int categoryId) async {
+    await _categoryRepository.delete(categoryId);
+    log.d(CategoryServiceTag, '分类删除成功');
   }
 
   /// 监听所有分类变化
-  Stream<List<Category>> watchAllCategories() {
-    return isar.categorys.where().watch(fireImmediately: true);
+  Stream<List<CategoryEntity>> watchAllCategories() {
+    return _categoryRepository.watchAll();
   }
 }
