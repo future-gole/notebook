@@ -17,10 +17,11 @@ class HomeScreen extends ConsumerStatefulWidget {
   ConsumerState<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProviderStateMixin {
+class _HomeScreenState extends ConsumerState<HomeScreen>
+    with SingleTickerProviderStateMixin {
   // 滚动控制器，用于保持滚动位置
   final ScrollController _scrollController = ScrollController();
-  
+
   // 搜索相关
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _searchFocusNode = FocusNode();
@@ -28,38 +29,38 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
   late AnimationController _searchAnimationController;
   late Animation<Offset> _navBarSlideAnimation;
   late Animation<Offset> _searchBarSlideAnimation;
-  
+
   // 防抖计时器
   Timer? _debounceTimer;
 
   @override
   void initState() {
     super.initState();
-    
+
     // 初始化动画控制器
     _searchAnimationController = AnimationController(
       duration: const Duration(milliseconds: 300),
       vsync: this,
     );
-    
+
     // NavBar 向左滑出的动画
-    _navBarSlideAnimation = Tween<Offset>(
-      begin: Offset.zero,
-      end: const Offset(-1.0, 0.0),
-    ).animate(CurvedAnimation(
-      parent: _searchAnimationController,
-      curve: Curves.easeInOut,
-    ));
-    
+    _navBarSlideAnimation =
+        Tween<Offset>(begin: Offset.zero, end: const Offset(-1.0, 0.0)).animate(
+          CurvedAnimation(
+            parent: _searchAnimationController,
+            curve: Curves.easeInOut,
+          ),
+        );
+
     // 搜索框从右滑入的动画
-    _searchBarSlideAnimation = Tween<Offset>(
-      begin: const Offset(1.0, 0.0),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _searchAnimationController,
-      curve: Curves.easeInOut,
-    ));
-    
+    _searchBarSlideAnimation =
+        Tween<Offset>(begin: const Offset(1.0, 0.0), end: Offset.zero).animate(
+          CurvedAnimation(
+            parent: _searchAnimationController,
+            curve: Curves.easeInOut,
+          ),
+        );
+
     // 监听输入变化，实现实时搜索
     _searchController.addListener(_onSearchChanged);
   }
@@ -74,20 +75,20 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
     _debounceTimer?.cancel();
     super.dispose();
   }
-  
+
   // 监听搜索输入变化（实时搜索 + 防抖）
   void _onSearchChanged() {
     // 取消之前的计时器
     _debounceTimer?.cancel();
-    
+
     final query = _searchController.text.trim();
-    
+
     // 如果输入为空，立即清空搜索结果
     if (query.isEmpty) {
       ref.read(searchQueryProvider.notifier).state = null;
       return;
     }
-    
+
     // 设置新的防抖计时器，500ms 后执行搜索
     _debounceTimer = Timer(const Duration(milliseconds: 500), () {
       if (query.isNotEmpty) {
@@ -95,7 +96,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
       }
     });
   }
-  
+
   // 切换搜索模式
   void _toggleSearchMode() {
     setState(() {
@@ -153,9 +154,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
                       position: _navBarSlideAnimation,
                       child: Padding(
                         padding: const EdgeInsets.only(right: 8), // 添加右侧间距
-                        child: GlassNavBar(
-                          onSearchPressed: _toggleSearchMode,
-                        ),
+                        child: GlassNavBar(onSearchPressed: _toggleSearchMode),
                       ),
                     ),
                     // 搜索栏 - 从右滑入
@@ -194,55 +193,69 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
                 },
                 child: KeyedSubtree(
                   key: ValueKey(
-                    searchQuery != null 
-                      ? 'search_${searchQuery}_${searchResults.value?.length ?? 0}'
-                      : 'notes_count_${noteByCategory.value?.length ?? 0}',
+                    searchQuery != null
+                        ? 'search_${searchQuery}_${searchResults.value?.length ?? 0}'
+                        : 'notes_count_${noteByCategory.value?.length ?? 0}',
                   ),
                   child: searchQuery != null
-                    ? _buildSearchResults(searchResults, currentLayout, noteService)
-                    : noteByCategory.when(
-                    skipLoadingOnRefresh: true,
-                    data: (notes) {
-                      if (notes.isEmpty) {
-                        return Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.note_add_outlined,
-                                size: 80,
-                                color: Theme.of(context).colorScheme.secondary,
-                              ),
-                              const SizedBox(height: 16),
-                              Text(
-                                '你的思绪将汇聚于此',
-                                style: Theme.of(context).textTheme.titleMedium
-                                    ?.copyWith(
+                      ? _buildSearchResults(
+                          searchResults,
+                          currentLayout,
+                          noteService,
+                        )
+                      : noteByCategory.when(
+                          skipLoadingOnRefresh: true,
+                          data: (notes) {
+                            if (notes.isEmpty) {
+                              return Center(
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      Icons.note_add_outlined,
+                                      size: 80,
                                       color: Theme.of(
                                         context,
                                       ).colorScheme.secondary,
                                     ),
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                '点击右下角，捕捉第一个灵感',
-                                style: Theme.of(context).textTheme.bodySmall,
-                              ),
-                            ],
-                          ),
-                        );
-                      }
+                                    const SizedBox(height: 16),
+                                    Text(
+                                      '你的思绪将汇聚于此',
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .titleMedium
+                                          ?.copyWith(
+                                            color: Theme.of(
+                                              context,
+                                            ).colorScheme.secondary,
+                                          ),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Text(
+                                      '点击右下角，捕捉第一个灵感',
+                                      style: Theme.of(
+                                        context,
+                                      ).textTheme.bodySmall,
+                                    ),
+                                  ],
+                                ),
+                              );
+                            }
 
-                      // 使用共用的列表构建方法
-                      return _buildNotesList(notes, currentLayout, noteService);
-                    },
-                    error: (error, stack) {
-                      log.e(tag, "stack: $error,stack:$stack");
-                      return const Center(child: Text('加载笔记失败'));
-                    },
-                    loading: () =>
-                        const Center(child: CircularProgressIndicator()),
-                  ),
+                            // 使用共用的列表构建方法
+                            return _buildNotesList(
+                              notes,
+                              currentLayout,
+                              noteService,
+                            );
+                          },
+                          error: (error, stack) {
+                            log.e(tag, "stack: $error,stack:$stack");
+                            return const Center(child: Text('加载笔记失败'));
+                          },
+                          loading: () =>
+                              const Center(child: CircularProgressIndicator()),
+                        ),
                 ), // KeyedSubtree
               ), // AnimatedSwitcher
             ), // Expanded
@@ -266,7 +279,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
     Navigator.of(context).push(
       PageRouteBuilder(
         // 页面构建器
-        pageBuilder: (context, animation, secondaryAnimation) => const NoteEditorSheet(),
+        pageBuilder: (context, animation, secondaryAnimation) =>
+            const NoteEditorSheet(),
         // 转场动画构建器
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
           // 定义从底部 (Offset(0, 1)) 到 正常位置 (Offset.zero)
@@ -275,7 +289,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
           // 定义动画曲线，easeInOut 比较自然
           const curve = Curves.easeInOutCubicEmphasized;
 
-          var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+          var tween = Tween(
+            begin: begin,
+            end: end,
+          ).chain(CurveTween(curve: curve));
 
           return SlideTransition(
             position: animation.drive(tween),
@@ -290,12 +307,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
       ),
     );
   }
-  
+
   // 构建搜索栏
   Widget _buildSearchBar(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final colorScheme = Theme.of(context).colorScheme;
-    
+
     return Container(
       decoration: BoxDecoration(
         color: isDark
@@ -324,7 +341,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
             onPressed: _toggleSearchMode,
             color: colorScheme.primary,
           ),
-          
+
           // 搜索输入框
           Expanded(
             child: TextField(
@@ -341,7 +358,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
               // 实时搜索，不需要提交动作
             ),
           ),
-          
+
           // 清空按钮（当有输入时显示）
           ValueListenableBuilder<TextEditingValue>(
             valueListenable: _searchController,
@@ -364,7 +381,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
       ),
     );
   }
-  
+
   // 构建搜索结果列表
   Widget _buildSearchResults(
     AsyncValue<List<NoteEntity>> searchResults,
@@ -391,15 +408,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
                   ),
                 ),
                 const SizedBox(height: 8),
-                Text(
-                  '尝试使用其他关键词',
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
+                Text('尝试使用其他关键词', style: Theme.of(context).textTheme.bodySmall),
               ],
             ),
           );
         }
-        
+
         // 使用与主列表相同的布局逻辑
         return _buildNotesList(notes, currentLayout, noteService);
       },
@@ -410,7 +424,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
       loading: () => const Center(child: CircularProgressIndicator()),
     );
   }
-  
+
   // 构建笔记列表（提取共用逻辑）
   Widget _buildNotesList(
     List<NoteEntity> notes,
@@ -424,10 +438,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
         key: const PageStorageKey('masonry_grid_view'),
         crossAxisCount: 2,
         cacheExtent: 500.0,
-        padding: const EdgeInsets.symmetric(
-          horizontal: 4,
-          vertical: 8,
-        ),
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
         itemCount: notes.length,
         itemBuilder: (context, index) {
           final note = notes[index];
