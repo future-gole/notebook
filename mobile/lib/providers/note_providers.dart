@@ -20,6 +20,19 @@ final noteServiceProvider = Provider<NoteService>((ref) {
   return NoteService(repository);
 });
 
+/// 搜索查询 Provider - 用于管理当前搜索关键词
+final searchQueryProvider = StateProvider<String?>((ref) => null);
+
+/// 搜索结果 Provider - 根据搜索查询返回结果
+final searchResultsProvider = FutureProvider<List<NoteEntity>>((ref) async {
+  final query = ref.watch(searchQueryProvider);
+  if (query == null || query.isEmpty) {
+    return [];
+  }
+  final noteService = ref.watch(noteServiceProvider);
+  return await noteService.findNotesWithQuery(query);
+});
+
 /// 所有笔记的 Stream Provider
 final allNotesProvider = StreamProvider<List<NoteEntity>>((ref) {
   final noteService = ref.watch(noteServiceProvider);
@@ -27,7 +40,10 @@ final allNotesProvider = StreamProvider<List<NoteEntity>>((ref) {
 });
 
 /// 根据 ID 获取笔记的 Provider
-final noteByIdProvider = FutureProvider.family<NoteEntity?, int>((ref, id) async {
+final noteByIdProvider = FutureProvider.family<NoteEntity?, int>((
+  ref,
+  id,
+) async {
   final noteService = ref.watch(noteServiceProvider);
   return noteService.getNoteById(id);
 });

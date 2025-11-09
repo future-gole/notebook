@@ -174,4 +174,24 @@ class IsarNoteRepository implements NoteRepository {
     }
   }
 
+  @override
+  Future<List<NoteEntity>> findByQuery(String query) async {
+    try {
+      if (query.trim().isEmpty) {
+            return getAll();
+          }
+      final notes = await _isar.notes
+              .filter()
+              .titleContains(query,caseSensitive: false)
+              .or()
+              .contentContains(query,caseSensitive: false)
+              .sortByTimeDesc()
+              .findAll();
+      return NoteMapper.toDomainList(notes);
+    } catch (e) {
+      log.e(_tag, "Failed to find notes by query: $e");
+      return [];
+    }
+  }
+
 }

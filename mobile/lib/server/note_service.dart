@@ -95,4 +95,10 @@ class NoteService {
   Future<List<NoteEntity>> findNotesWithTag(String query) async {
     return await _noteRepository.findByTag(query);
   }
+
+  // 全部匹配查询
+  Future<List<NoteEntity>> findNotesWithQuery(String query) async {
+    return await _noteRepository.findByQuery(query);
+  }
+
 }
