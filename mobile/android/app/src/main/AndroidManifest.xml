@@ -3,7 +3,7 @@
     <application
         android:label="pocketmind"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/launcher_icon">
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -64,7 +64,7 @@
             android:name=".MyQSTileService"
             android:enabled="true"
             android:exported="true"
-            android:icon="@drawable/ic_qs_tile_icon"  android:label="保存mind"
+            android:icon="@mipmap/launcher_icon"  android:label="保存mind"
             android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
             <intent-filter>
                 <action android:name="android.service.quicksettings.action.QS_TILE" />
