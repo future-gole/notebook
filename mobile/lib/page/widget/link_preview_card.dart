@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:any_link_preview/any_link_preview.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:pocketmind/util/link_preview_config.dart';
 import 'package:pocketmind/util/link_preview_api_service.dart';
@@ -43,7 +44,7 @@ class _LinkPreviewCardState extends State<LinkPreviewCard> {
         hasContent: widget.hasContent,
       );
     } else {
-      // 国内网站：直接使用 any_link_preview（无缓存包装）
+      // 国内网站：直接使用 any_link_preview
       return AnyLinkPreview.builder(
         link: widget.url,
         itemBuilder: (context, metadata, imageProvider, svgPicture) {
@@ -83,7 +84,7 @@ class _LinkPreviewCardState extends State<LinkPreviewCard> {
 // API 预览组件（用于国外网站，带本地缓存）
 // =============================================================================
 
-class _ApiLinkPreview extends StatefulWidget {
+class _ApiLinkPreview extends ConsumerStatefulWidget {
   final String url;
   final bool isVertical;
   final bool hasContent;
@@ -96,10 +97,10 @@ class _ApiLinkPreview extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  State<_ApiLinkPreview> createState() => _ApiLinkPreviewState();
+  ConsumerState<_ApiLinkPreview> createState() => _ApiLinkPreviewState();
 }
 
-class _ApiLinkPreviewState extends State<_ApiLinkPreview> {
+class _ApiLinkPreviewState extends ConsumerState<_ApiLinkPreview> {
   Map<String, dynamic>? _metadata;
   bool _isLoading = true;
   bool _hasError = false;
@@ -125,13 +126,14 @@ class _ApiLinkPreviewState extends State<_ApiLinkPreview> {
       }
 
       // 2. 从 API 获取
-      final apiMetadata = await LinkPreviewApiService.fetchMetadata(widget.url);
+      final apiMetadata = await ref.read(linkPreviewServiceProvider).fetchMetadata(widget.url);
       final metadata;
       // 3.1 存在数据才进行保存
       // 3.1.1 成功
       if (apiMetadata.success) {
         // 3.2 转换并保存到本地缓存
         // 3.1 如果没有拉取到正确的值，就不需要保存到本地缓存，否则会导致下次不会发起拉取请求
+        log.d(tag, "title: ${apiMetadata.title}，description：${apiMetadata.description},imageUrl:${apiMetadata.imageUrl}");
         metadata = {
           'title': apiMetadata.title ?? 'No title',
           'description': apiMetadata.description ?? 'No description available',
@@ -182,6 +184,7 @@ class _ApiLinkPreviewState extends State<_ApiLinkPreview> {
 
     // 创建 Metadata 对象用于显示
     final metadata = Metadata();
+    log.d(tag, "title: ${_metadata!['title']}，description：${_metadata!['description']},imageUrl:${_metadata!['imageUrl']}");
     metadata.title = _metadata!['title'];
     metadata.desc = _metadata!['description'];
     metadata.image = _metadata!['imageUrl'];
