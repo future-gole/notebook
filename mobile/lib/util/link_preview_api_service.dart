@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:http/http.dart' as http;
 import 'package:pocketmind/providers/http_providers.dart';
 import 'package:pocketmind/util/app_config.dart';
 import 'package:pocketmind/util/logger_service.dart';
@@ -33,11 +32,15 @@ class LinkPreviewApiService {
       final config = AppConfig();
       final apiKey = config.linkPreviewApiKey;
 
-      final apiUrl = '$_baseUrl/?key=$apiKey&q=${Uri.encodeComponent(url)}';
+      final response = await _http.get(
+        _baseUrl,
+        queryParameters: {
+          'key': apiKey,
+          'q': url,
+        },
+      );
 
-      final response = await _http.get(apiUrl);
-
-      final data = json.decode(response.data);
+      final data = response.data;
 
       return ApiLinkMetadata(
           title: data['title'],

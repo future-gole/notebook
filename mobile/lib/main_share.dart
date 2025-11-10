@@ -14,6 +14,7 @@ import 'package:pocketmind/providers/note_providers.dart';
 import 'package:pocketmind/server/note_service.dart';
 import 'package:pocketmind/util/theme_data.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:pocketmind/util/url_helper.dart';
 import '../../util/logger_service.dart';
 
 late Isar isar; // 这个 Isar 实例专用于分享引擎
@@ -107,6 +108,13 @@ class _MyShareAppState extends ConsumerState<MyShareApp>
     });
   }
 
+  String? _extractedUrl(String content){
+    return UrlHelper.extractUrl(content);
+  }
+  String? _contentWithoutUrl(String content){
+    return UrlHelper.removeUrls(content);
+  }
+
   Future<dynamic> _handleMethodCall(MethodCall call) async {
     log.d(tag, "接收到方法: ${call.method}");
 
@@ -115,24 +123,26 @@ class _MyShareAppState extends ConsumerState<MyShareApp>
         // 显示分享 UI
         final args = call.arguments as Map;
         final title = args['title'] as String;
-        final content = args['content'] as String;
+        final content = _contentWithoutUrl(args['content'] as String);
+        final url = _extractedUrl(args['content'] as String);
 
-        log.d(tag, "showShare: title=$title");
+        log.d(tag, "showShare: title=$title, url=$url, content= $url");
 
         try {
-          // 1. 保存数据到数据库
+          // 1. 直接保存数据到数据库
           _noteId = await noteService.addOrUpdateNote(
-            title: args['title'],
-            content: args['content'],
-            category: args['category'],
-            tag: args['tag'],
+            title: title,
+            content: content,
+            url: url,
           );
-
-          // todo 发送到后端
 
           // 2. 更新 UI 状态以显示 ShareSuccessPage
           setState(() {
-            _currentShare = ShareData(title: title, content: content);
+            _currentShare = ShareData(
+              title: title,
+              content: content,
+              url: url,
+            );
             _currentState = ShareUIState.success;
           });
 
@@ -238,8 +248,6 @@ class _MyShareAppState extends ConsumerState<MyShareApp>
         // 成功状态：显示成功页面
         return ShareSuccessPage(
           key: const ValueKey('success'),
-          title: _currentShare?.title ?? '',
-          content: _currentShare?.content ?? '',
           onDismiss: _dismissUI,
           onAddDetailsClicked: _onAddDetailsClicked,
         );
@@ -251,6 +259,7 @@ class _MyShareAppState extends ConsumerState<MyShareApp>
           id: _noteId,
           initialTitle: _currentShare?.title ?? '',
           initialContent: _currentShare?.content ?? '',
+          // 不需要传url，因为原则上不会被修改
           onDone: _dismissUI,
         );
     }
@@ -258,7 +267,8 @@ class _MyShareAppState extends ConsumerState<MyShareApp>
 }
 
 class ShareData {
-  final String title;
-  final String content;
-  ShareData({required this.title, required this.content});
+  final String? title;
+  final String? content;
+  final String? url; // 添加 URL 字段
+  ShareData({required this.title, required this.content, this.url});
 }

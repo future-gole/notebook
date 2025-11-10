@@ -47,7 +47,7 @@ class LinkPreviewCache {
 
       // 检查缓存是否过期
       if (DateTime.now().difference(cacheTime) > Duration(days: metacacheTime)) {
-        log.d(tag,'💾 缓存已保存: $url');
+        log.d(tag,'💾 缓存已过期: $url');
         await clearCache(url);
         return null;
       }

@@ -20,14 +20,15 @@ class NoteService {
   Future<int> addOrUpdateNote({
     int? id,
     String? title, // 改为可空，允许不设置标题
-    String content = defaultContent,
+    String? content,// 改为可空，即用户没有设置标题
+    String? url,// 直接文本插入的话就是为空
     String? category, // 分类名称（用于UI显示和查询）
     int? categoryId, // 分类ID（用于categories数据库关联）
     String? tag,
   }) async {
     log.d(
       NoteServiceTag,
-      'Note added: title: $title, content: $content, category: $category, categoryId: $categoryId',
+      'Note added: title: $title, content: $content, url: $url, category: $category, categoryId: $categoryId',
     );
     
     // 确保至少都是在 home 目录下
@@ -38,6 +39,7 @@ class NoteService {
       id: (id != null && id != -1) ? id : null,
       title: title,
       content: content,
+      url: url,
       categoryId: resolvedCategoryId,
       time: DateTime.now(),
       tag: tag,

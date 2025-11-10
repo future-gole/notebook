@@ -11,6 +11,9 @@ class NoteEntity {
   /// 笔记内容
   final String? content;
 
+  /// url
+  final String? url;
+
   /// 创建/修改时间
   final DateTime? time;
 
@@ -24,6 +27,7 @@ class NoteEntity {
     this.id,
     this.title,
     this.content,
+    this.url,
     this.time,
     this.categoryId,
     this.tag,
@@ -34,6 +38,7 @@ class NoteEntity {
     int? id,
     String? title,
     String? content,
+    String? url,
     DateTime? time,
     int? categoryId,
     String? tag,
@@ -42,6 +47,7 @@ class NoteEntity {
       id: id ?? this.id,
       title: title ?? this.title,
       content: content ?? this.content,
+      url: url ?? this.content,
       time: time ?? this.time,
       categoryId: categoryId ?? this.categoryId,
       tag: tag ?? this.tag,
@@ -61,6 +67,7 @@ class NoteEntity {
         other.id == id &&
         other.title == title &&
         other.content == content &&
+        other.url == url &&
         other.time == time &&
         other.categoryId == categoryId &&
         other.tag == tag;
@@ -68,6 +75,6 @@ class NoteEntity {
 
   @override
   int get hashCode {
-    return Object.hash(id, title, content, time, categoryId, tag);
+    return Object.hash(id, title, content, url, time, categoryId, tag);
   }
 }

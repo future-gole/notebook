@@ -11,6 +11,8 @@ class Note {
 
   String? content;
 
+  String? url;
+
   DateTime? time;
   // 没有的话都需要默认给 1 即 home 目录
   int? categoryId;

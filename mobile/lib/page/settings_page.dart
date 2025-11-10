@@ -21,6 +21,7 @@ class _SettingsPageState extends State<SettingsPage> {
   bool _proxyEnabled = false;
   bool _titleEnabled = false;
   bool _isLoading = true;
+  Environment _currentEnvironment = Environment.development;
 
   @override
   void initState() {
@@ -45,6 +46,7 @@ class _SettingsPageState extends State<SettingsPage> {
     setState(() {
       _proxyEnabled = _config.proxyEnabled;
       _titleEnabled = _config.titleEnabled;
+      _currentEnvironment = _config.environment;
       _proxyHostController.text = _config.proxyHost;
       _proxyPortController.text = _config.proxyPort.toString();
       _apiKeyController.text = _config.linkPreviewApiKey;
@@ -61,6 +63,9 @@ class _SettingsPageState extends State<SettingsPage> {
 
     // 保存 Title 显示设置
     await _config.setTitleEnabled(_titleEnabled);
+
+    // 保存环境设置
+    await _config.setEnvironment(_currentEnvironment);
 
     // 保存 API Key
     await _config.setLinkPreviewApiKey(_apiKeyController.text);
@@ -118,6 +123,11 @@ class _SettingsPageState extends State<SettingsPage> {
           _buildTitleSettingCard(theme),
           const SizedBox(height: 24),
 
+          // API 环境设置
+          _buildSectionTitle('API 环境', theme),
+          _buildEnvironmentCard(theme),
+          const SizedBox(height: 24),
+
           // 网络代理设置
           _buildSectionTitle('网络代理', theme),
           _buildProxyCard(theme),
@@ -165,6 +175,107 @@ class _SettingsPageState extends State<SettingsPage> {
         ),
       ),
     );
+  }
+
+  Widget _buildEnvironmentCard(ThemeData theme) {
+    // 获取当前环境的显示信息
+    String getCurrentEnvDescription() {
+      switch (_currentEnvironment) {
+        case Environment.development:
+          return 'http://localhost:8080';
+        case Environment.staging:
+          return 'https://staging-api.pocketmind.com';
+        case Environment.production:
+          return 'https://api.pocketmind.com';
+      }
+    }
+
+    String getEnvLabel(Environment env) {
+      switch (env) {
+        case Environment.development:
+          return '开发环境（本地）';
+        case Environment.staging:
+          return '预发布环境';
+        case Environment.production:
+          return '生产环境';
+      }
+    }
+
+    return Card(
+      color: theme.cardColor,
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(color: theme.dividerColor.withOpacity(0.1)),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.cloud_outlined, color: theme.colorScheme.primary),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('API 环境切换', style: theme.textTheme.bodyLarge),
+                      const SizedBox(height: 4),
+                      Text(
+                        getCurrentEnvDescription(),
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: theme.colorScheme.primary,
+                          fontFamily: 'monospace',
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const Divider(height: 24),
+            // 环境选择
+            ...Environment.values.map((env) {
+              return RadioListTile<Environment>(
+                contentPadding: EdgeInsets.zero,
+                title: Text(
+                  getEnvLabel(env),
+                  style: theme.textTheme.bodyMedium,
+                ),
+                subtitle: Text(
+                  _getEnvUrl(env),
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    fontFamily: 'monospace',
+                  ),
+                ),
+                value: env,
+                groupValue: _currentEnvironment,
+                onChanged: (Environment? value) {
+                  if (value != null) {
+                    setState(() {
+                      _currentEnvironment = value;
+                    });
+                  }
+                },
+              );
+            }),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _getEnvUrl(Environment env) {
+    switch (env) {
+      case Environment.development:
+        return 'http://localhost:8080';
+      case Environment.staging:
+        return 'https://staging-api.pocketmind.com';
+      case Environment.production:
+        return 'https://api.pocketmind.com';
+    }
   }
 
   Widget _buildProxyCard(ThemeData theme) {

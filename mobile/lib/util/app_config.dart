@@ -1,5 +1,17 @@
 import 'package:shared_preferences/shared_preferences.dart';
 
+/// 环境枚举
+enum Environment {
+  /// 开发环境（本地）
+  development,
+
+  /// 预发布环境
+  staging,
+
+  /// 生产环境
+  production,
+}
+
 /// 应用配置管理类
 class AppConfig {
   static const String _keyProxyEnabled = 'proxy_enabled';
@@ -8,6 +20,7 @@ class AppConfig {
   static const String _keyLinkPreviewApiKey = 'linkpreview_api_key';
   static const String _metaCacheTime = 'meta_cache_time';
   static const String _keyTitleEnabled = 'title_enabled';
+  static const String _keyEnvironment = 'app_environment';
 
   // 单例模式
   static final AppConfig _instance = AppConfig._internal();
@@ -62,4 +75,43 @@ class AppConfig {
   Future<void> clearAll() async {
     await _prefs?.clear();
   }
+
+  // ==================== 环境配置 ====================
+
+  /// 获取当前环境
+  Environment get environment {
+    final envString = _prefs?.getString(_keyEnvironment);
+    switch (envString) {
+      case 'staging':
+        return Environment.staging;
+      case 'production':
+        return Environment.production;
+      default:
+        return Environment.development;
+    }
+  }
+
+  /// 设置环境
+  Future<void> setEnvironment(Environment env) async {
+    final envString = env.toString().split('.').last;
+    await _prefs?.setString(_keyEnvironment, envString);
+  }
+
+  /// 获取 API 基础 URL
+  String get baseUrl {
+    switch (environment) {
+      case Environment.development:
+        return 'http://localhost:8080';
+      case Environment.staging:
+        return ''; // 预发布环境，可按需修改
+      case Environment.production:
+        return ''; // 生产环境，可按需修改
+    }
+  }
+
+  /// 是否为开发环境
+  bool get isDevelopment => environment == Environment.development;
+
+  /// 是否为生产环境
+  bool get isProduction => environment == Environment.production;
 }

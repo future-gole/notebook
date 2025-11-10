@@ -11,6 +11,7 @@ class NoteMapper {
       id: note.id,
       title: note.title,
       content: note.content,
+      url: note.url,
       time: note.time,
       categoryId: note.categoryId,
       tag: note.tag,
@@ -22,6 +23,7 @@ class NoteMapper {
     final note = Note()
       ..title = entity.title
       ..content = entity.content
+      ..url = entity.url
       ..time = entity.time
       ..categoryId = entity.categoryId
       ..tag = entity.tag;

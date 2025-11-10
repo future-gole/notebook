@@ -31,7 +31,7 @@ class HttpClient {
         receiveTimeout: receiveTimeout,
         sendTimeout: sendTimeout,
         headers: {
-          HttpHeaders.contentTypeHeader: 'application/json',
+          // HttpHeaders.contentTypeHeader: 'application/json',
           HttpHeaders.acceptHeader: 'application/json',
         },
       ),
@@ -363,8 +363,7 @@ class _ErrorInterceptor extends Interceptor {
   }
 }
 
-/// 统一响应格式（可选）
-/// 根据你的后端 API 响应格式进行调整
+/// 统一响应格式
 class ApiResponse<T> {
   final int code;
   final String message;

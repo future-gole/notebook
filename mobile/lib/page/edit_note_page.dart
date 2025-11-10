@@ -9,8 +9,8 @@ import 'package:pocketmind/util/app_config.dart';
 enum EditTab { title, content, tags, spaces }
 
 class EditNotePage extends ConsumerStatefulWidget {
-  final String initialTitle;
-  final String initialContent;
+  final String? initialTitle;
+  final String? initialContent;
   final VoidCallback onDone;
   final int id;
 

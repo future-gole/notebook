@@ -1,29 +1,33 @@
 // 路径: lib/pages/share_success_page.dart
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pocketmind/providers/http_providers.dart';
+import 'package:pocketmind/server/page_analysis_service.dart';
+import 'package:pocketmind/util/logger_service.dart';
 
-class ShareSuccessPage extends StatefulWidget {
-  final String title;
-  final String content;
+final String _tag = "ShareSuccessPage";
+
+class ShareSuccessPage extends ConsumerStatefulWidget {
+
   final VoidCallback onDismiss;
   final VoidCallback onAddDetailsClicked;
 
   const ShareSuccessPage({
     super.key,
-    required this.title,
-    required this.content,
     required this.onDismiss,
     required this.onAddDetailsClicked,
   });
 
   @override
-  State<ShareSuccessPage> createState() => _ShareSuccessPageState();
+  ConsumerState<ShareSuccessPage> createState() => _ShareSuccessPageState();
 }
 
-class _ShareSuccessPageState extends State<ShareSuccessPage>
+class _ShareSuccessPageState extends ConsumerState<ShareSuccessPage>
     with SingleTickerProviderStateMixin {
   Timer? _countdownTimer;
   late AnimationController _progressController;
+  bool _isAnalyzing = false;
 
   @override
   void initState() {
@@ -33,7 +37,70 @@ class _ShareSuccessPageState extends State<ShareSuccessPage>
       duration: const Duration(seconds: 3),
     );
     _startCountdown();
+
+    // // 如果有 URL，自动触发页面分析
+    // if (widget.url != null && widget.url!.isNotEmpty) {
+    //   _analyzePageAutomatically();
+    // }
   }
+
+  // /// 自动分析页面
+  // Future<void> _analyzePageAutomatically() async {
+  //   if (_isAnalyzing || widget.url == null) return;
+  //
+  //   setState(() {
+  //     _isAnalyzing = true;
+  //   });
+  //
+  //   try {
+  //     log.d(_tag, "开始自动分析页面: ${widget.url}");
+  //
+  //     final pageAnalysisService = ref.read(pageAnalysisServiceProvider);
+  //
+  //     // 获取用户邮箱（这里需要根据你的实际情况获取）
+  //     // 可以从 AppConfig 或用户登录信息中获取
+  //     final userEmail = "double2z2@163.com"; // 临时硬编码，实际应该从配置中读取
+  //
+  //     final result = await pageAnalysisService.analyzePage(
+  //       userQuery: "总结这个页面",
+  //       url: widget.url!,
+  //       userEmail: userEmail,
+  //     );
+  //
+  //     log.d(_tag, "页面分析成功: ${result.summary}");
+  //
+  //     // 这里可以处理分析结果
+  //     // 例如：显示一个 SnackBar 或更新 UI
+  //     if (mounted) {
+  //       _showAnalysisResult(result);
+  //     }
+  //   } catch (e) {
+  //     log.e(_tag, "页面分析失败: $e");
+  //     // 错误处理：可以显示错误提示
+  //     if (mounted) {
+  //       _showErrorMessage(e.toString());
+  //     }
+  //   } finally {
+  //     if (mounted) {
+  //       setState(() {
+  //         _isAnalyzing = false;
+  //       });
+  //     }
+  //   }
+  // }
+  //
+  // /// 显示分析结果
+  // void _showAnalysisResult(PageAnalysisResult result) {
+  //   // 可以使用 SnackBar 或其他方式显示结果
+  //   log.d(_tag, "显示分析结果: ${result.summary}");
+  //   // TODO: 根据需求显示分析结果，例如添加到笔记内容中
+  // }
+  //
+  // /// 显示错误信息
+  // void _showErrorMessage(String message) {
+  //   log.e(_tag, "显示错误信息: $message");
+  //   // TODO: 显示错误提示
+  // }
 
   void _startCountdown() {
     _progressController.forward();

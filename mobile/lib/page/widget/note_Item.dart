@@ -68,19 +68,13 @@ class _NoteItemState extends ConsumerState<NoteItem>
     // 必须调用 super.build，让 AutomaticKeepAliveClientMixin 工作
     super.build(context);
 
-    final hasUrl = UrlHelper.containsUrl(widget.note.content);
-    final extractedUrl = hasUrl
-        ? UrlHelper.extractUrl(widget.note.content)
-        : null;
-    final contentWithoutUrl = hasUrl
-        ? UrlHelper.removeUrls(widget.note.content)
-        : widget.note.content;
-
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
     // 判断是否为纯文本笔记
-    final isTextOnly = !hasUrl;
+    final isTextOnly = widget.note.url == null ? true : false;
+
+    final content = widget.note.content;
 
     // 使用传入的 isGridMode 参数，而不是 watch provider
     // 这样可以避免不必要的 rebuild, 和 构建参数异常
@@ -94,9 +88,9 @@ class _NoteItemState extends ConsumerState<NoteItem>
       resizeDuration: const Duration(milliseconds: 250),
       // 使用 confirmDismiss 在动画开始前就更新 UI
       confirmDismiss: (direction) async {
-        if (extractedUrl != null) {
+        if (!isTextOnly) {
           // 删除对应的链接缓存
-          await LinkPreviewCache.clearCache(extractedUrl);
+          await LinkPreviewCache.clearCache(widget.note.url!);
         }
         // 立即更新 UI
         final noteId = widget.note.id;
@@ -178,7 +172,7 @@ class _NoteItemState extends ConsumerState<NoteItem>
                             const SizedBox(height: 8),
                             // 内容
                             Text(
-                              contentWithoutUrl ?? "",
+                              content ?? "",
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w300,
@@ -193,7 +187,7 @@ class _NoteItemState extends ConsumerState<NoteItem>
                       // 不显示标题时，居中显示内容
                       : Center(
                           child: Text(
-                            contentWithoutUrl ?? "",
+                            content ?? "",
                             textAlign: TextAlign.center,
                             style: TextStyle(
                               fontSize: 25,
@@ -212,15 +206,15 @@ class _NoteItemState extends ConsumerState<NoteItem>
                   children: [
                     // 链接卡片部分
                     Container(
-                      child: (hasUrl && extractedUrl != null)
+                      child: (!isTextOnly)
                           ? Column(
                               children: [
                                 LinkPreviewCard(
-                                  url: extractedUrl,
+                                  url: widget.note.url!,
                                   isVertical: widget.isGridMode,
                                   hasContent:
-                                      contentWithoutUrl != null &&
-                                      contentWithoutUrl.isNotEmpty,
+                                  content != null &&
+                                      content.isNotEmpty,
                                 ),
                               ],
                             )
@@ -230,8 +224,8 @@ class _NoteItemState extends ConsumerState<NoteItem>
                     // 链接卡片下面的文字部分
                     Visibility(
                       visible:
-                          contentWithoutUrl != null &&
-                          contentWithoutUrl.isNotEmpty,
+                      content != null &&
+                          content.isNotEmpty,
                       child: Padding(
                         padding: const EdgeInsets.only(
                           left: 12,
@@ -240,7 +234,7 @@ class _NoteItemState extends ConsumerState<NoteItem>
                           bottom: 12,
                         ),
                         child: Text(
-                          contentWithoutUrl ?? "",
+                          content ?? "",
                           style: textTheme.bodyMedium,
                           maxLines: 3,
                           overflow: TextOverflow.ellipsis,

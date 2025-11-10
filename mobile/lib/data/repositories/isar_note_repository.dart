@@ -104,6 +104,8 @@ class IsarNoteRepository implements NoteRepository {
     return _isar.notes
         .filter()
         .categoryIdEqualTo(category)
+        .or()
+        .categoryIdEqualTo(null)
         .sortByTimeDesc()  // 添加排序（最新的在前）
         .watch(fireImmediately: true)
         .map((notes) => NoteMapper.toDomainList(notes));
