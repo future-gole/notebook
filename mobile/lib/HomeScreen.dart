@@ -5,7 +5,7 @@ import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:pocketmind/domain/entities/note_entity.dart';
 import 'package:pocketmind/page/widget/glass_nav_bar.dart';
 import 'package:pocketmind/page/widget/note_Item.dart';
-import 'package:pocketmind/page/home/note_editor_sheet.dart';
+import 'package:pocketmind/page/home/note_add_sheet.dart';
 import 'package:pocketmind/providers/nav_providers.dart';
 import 'package:pocketmind/providers/note_providers.dart';
 import 'package:pocketmind/util/logger_service.dart';
@@ -264,13 +264,39 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       ),
 
       // FAB - 使用主题样式（药丸形状）
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          _showAddNotePage(context);
-        },
-        icon: const Icon(Icons.add),
-        label: const Text('新建笔记'),
-      ),
+        floatingActionButton: FloatingActionButton(
+          onPressed: () {
+            _showAddNotePage(context);
+          },
+          elevation: 12,
+          child: Container(
+            width: 56,
+            height: 56,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Theme.of(context).colorScheme.tertiary,
+                  Theme.of(context).colorScheme.tertiary.withValues(alpha: 0.85),
+                ],
+              ),
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: Theme.of(context).colorScheme.tertiary.withValues(alpha: 0.4),
+                  blurRadius: 16,
+                  offset: const Offset(0, 6),
+                ),
+              ],
+            ),
+            child: const Icon(
+              Icons.add,
+              size: 28,
+              color: Colors.black,
+            ),
+          ),
+        )
     );
   }
 

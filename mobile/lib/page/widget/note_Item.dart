@@ -5,7 +5,8 @@ import 'package:pocketmind/domain/entities/note_entity.dart';
 import 'package:pocketmind/server/note_service.dart';
 import 'package:pocketmind/util/url_helper.dart';
 import 'link_preview_card.dart';
-import '../home/note_editor_sheet.dart';
+import '../home/note_add_sheet.dart';
+import '../note/note_detail_page.dart';
 import 'package:pocketmind/util/link_preview_cache.dart';
 import 'package:pocketmind/util/app_config.dart';
 
@@ -53,13 +54,12 @@ class _NoteItemState extends ConsumerState<NoteItem>
     }
   }
 
-  // 显示编辑笔记模态框
-  void _showEditNoteModal(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => NoteEditorSheet(note: widget.note),
+  // 显示笔记详情页
+  void _showNoteDetail(BuildContext context) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => NoteDetailPage(note: widget.note),
+      ),
     );
   }
 
@@ -132,7 +132,7 @@ class _NoteItemState extends ConsumerState<NoteItem>
           ],
         ),
         child: InkWell(
-          onTap: () => _showEditNoteModal(context),
+          onTap: () => _showNoteDetail(context),
           borderRadius: BorderRadius.circular(16),
           child: isTextOnly
               // 1. 纯文本模式：

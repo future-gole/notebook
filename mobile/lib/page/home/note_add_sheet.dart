@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:pocketmind/domain/entities/note_entity.dart';
+import 'package:pocketmind/page/widget/TextField.dart';
 import 'package:pocketmind/page/widget/categories_bar.dart' show CategoriesBar;
 import 'package:pocketmind/providers/category_providers.dart';
 import 'package:pocketmind/providers/nav_providers.dart';
@@ -179,48 +181,6 @@ class _NoteEditorSheetState extends ConsumerState<NoteEditorSheet>
     Navigator.of(context).pop();
   }
 
-  /// 构建通用的文本输入框
-  /// [expands] 为 true 时，输入框会尝试填满父容器高度（需要父容器有固定高度限制，如 Expanded）
-  Widget _buildTextField({
-    required TextEditingController controller,
-    required String hintText,
-    required ColorScheme colorScheme,
-    int? maxLines = 1,
-    bool autofocus = false,
-    bool expands = false,
-    EdgeInsetsGeometry padding = const EdgeInsets.all(20),
-  }) {
-    return Container(
-      padding: padding,
-      decoration: BoxDecoration(
-        color: colorScheme.surface,
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: TextField(
-        controller: controller,
-        decoration: InputDecoration(
-          hintText: hintText,
-          hintStyle: TextStyle(color: colorScheme.secondary, fontSize: 16),
-          border: InputBorder.none,
-          isDense: true,
-          contentPadding: EdgeInsets.zero,
-        ),
-        style: TextStyle(
-          fontSize: 16,
-          color: colorScheme.onSurface,
-          height: 1.5,
-        ),
-        // 当 expands 为 true 时，maxLines 必须为 null，minLines 必须为 null
-        maxLines: expands ? null : maxLines,
-        minLines: null,
-        expands: expands,
-        textAlignVertical: expands
-            ? TextAlignVertical.top
-            : TextAlignVertical.center,
-        autofocus: autofocus,
-      ),
-    );
-  }
 
   // 构建搜索栏
   Widget _buildAddCategoryBar() {
@@ -239,13 +199,6 @@ class _NoteEditorSheetState extends ConsumerState<NoteEditorSheet>
               : Colors.black.withValues(alpha: 0.08),
           width: 1.0,
         ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.08),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
       ),
       child: Row(
         children: [
@@ -312,23 +265,19 @@ class _NoteEditorSheetState extends ConsumerState<NoteEditorSheet>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Stack(
-                  children: [
-                    SlideTransition(
+                ClipRect(
+                  child: Stack(
+                    children: [
+                      SlideTransition(
                         position: _appBarSlideAnimation,
-                        child: Padding(
-                            padding: const EdgeInsets.only(right: 8),
-                            child: _appBar(),
-                        )
-                    ),
-                    SlideTransition(
+                        child: _appBar(),
+                      ),
+                      SlideTransition(
                         position: _addCategoryBarSlideAnimation,
-                        child: Padding(
-                          padding: const EdgeInsets.only(right: 8),
-                          child: _buildAddCategoryBar(),
-                        )
-                    )
-                  ],
+                        child: _buildAddCategoryBar(),
+                      )
+                    ],
+                  ),
                 ),
                 // --- 顶部标题栏 ---
 
@@ -338,7 +287,7 @@ class _NoteEditorSheetState extends ConsumerState<NoteEditorSheet>
                 if (_titleEnabled)
                   Padding(
                     padding: const EdgeInsets.only(bottom: 16),
-                    child: _buildTextField(
+                    child: MyTextField(
                       controller: _titleController,
                       hintText: '给你的笔记起个名字...',
                       colorScheme: colorScheme,
@@ -349,7 +298,7 @@ class _NoteEditorSheetState extends ConsumerState<NoteEditorSheet>
 
                 // --- 内容输入框 (占据剩余空间) ---
                 Expanded(
-                  child: _buildTextField(
+                  child: MyTextField(
                     controller: _contentController,
                     hintText: '记录你的想法...',
                     colorScheme: colorScheme,
@@ -381,11 +330,11 @@ class _NoteEditorSheetState extends ConsumerState<NoteEditorSheet>
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         IconButton(
-          iconSize: 35,
-          icon: const Icon(Icons.add_card_outlined),
+          icon: SvgPicture.asset(
+            "assets/icons/category.svg",
+            colorFilter: ColorFilter.mode(colorScheme.primary, BlendMode.srcIn),
+          ),
           onPressed: _toggleAddCategoryMode,
-          color: colorScheme.secondary,
-          tooltip: '添加分类',
         ),
         // 分类选择条，使用 Expanded 避免溢出，居中显示
         const Expanded(
