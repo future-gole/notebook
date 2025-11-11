@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:isar_community/isar.dart';
 import 'package:pocketmind/HomeScreen.dart';
-import 'package:pocketmind/page/settings_page.dart';
+import 'package:pocketmind/page/home/settings_page.dart';
 import 'package:pocketmind/providers/infrastructure_providers.dart';
 // ignore: unused_import
 import 'package:pocketmind/services/share_background_service.dart';

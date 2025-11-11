@@ -5,7 +5,7 @@ import 'package:pocketmind/domain/entities/note_entity.dart';
 import 'package:pocketmind/server/note_service.dart';
 import 'package:pocketmind/util/url_helper.dart';
 import 'link_preview_card.dart';
-import 'note_editor_sheet.dart';
+import '../home/note_editor_sheet.dart';
 import 'package:pocketmind/util/link_preview_cache.dart';
 import 'package:pocketmind/util/app_config.dart';
 

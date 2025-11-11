@@ -5,7 +5,7 @@ import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:pocketmind/domain/entities/note_entity.dart';
 import 'package:pocketmind/page/widget/glass_nav_bar.dart';
 import 'package:pocketmind/page/widget/note_Item.dart';
-import 'package:pocketmind/page/widget/note_editor_sheet.dart';
+import 'package:pocketmind/page/home/note_editor_sheet.dart';
 import 'package:pocketmind/providers/nav_providers.dart';
 import 'package:pocketmind/providers/note_providers.dart';
 import 'package:pocketmind/util/logger_service.dart';
@@ -162,7 +162,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                       position: _searchBarSlideAnimation,
                       child: Padding(
                         padding: const EdgeInsets.only(left: 8), // 添加左侧间距
-                        child: _buildSearchBar(context),
+                        child: _buildSearchBar(),
                       ),
                     ),
                   ],
@@ -276,40 +276,28 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 
   // 显示添加笔记模态框（底部弹窗）
   void _showAddNotePage(BuildContext context) {
-    Navigator.of(context).push(
-      PageRouteBuilder(
-        // 页面构建器
-        pageBuilder: (context, animation, secondaryAnimation) =>
-            const NoteEditorSheet(),
-        // 转场动画构建器
-        transitionsBuilder: (context, animation, secondaryAnimation, child) {
-          // 定义从底部 (Offset(0, 1)) 到 正常位置 (Offset.zero)
-          const begin = Offset(0.0, 1.0);
-          const end = Offset.zero;
-          // 定义动画曲线，easeInOut 比较自然
-          const curve = Curves.easeInOutCubicEmphasized;
+    showModalBottomSheet(
+      context: context,
 
-          var tween = Tween(
-            begin: begin,
-            end: end,
-          ).chain(CurveTween(curve: curve));
+      // 允许模态框占据全屏高度，并且能响应键盘
+      isScrollControlled: true,
 
-          return SlideTransition(
-            position: animation.drive(tween),
-            child: child,
-          );
-        },
-        // 设置为 true 表示这是一个全屏模态对话框（影响语义和某些平台的默认行为）
-        fullscreenDialog: true,
-        // 动画持续时间（可选，按需调整）
-        transitionDuration: const Duration(milliseconds: 400),
-        reverseTransitionDuration: const Duration(milliseconds: 300),
-      ),
+      // 将 BottomSheet 的背景设为透明
+      // 这样 NoteEditorSheet 内部 Container 的圆角和颜色才能正常显示
+      backgroundColor: Colors.transparent,
+
+      useSafeArea: true,
+
+      builder: (context) {
+        return Padding(
+            padding: EdgeInsets.only(top:MediaQuery.of(context).size.height * 0.10),
+            child: NoteEditorSheet());
+      },
     );
   }
 
   // 构建搜索栏
-  Widget _buildSearchBar(BuildContext context) {
+  Widget _buildSearchBar() {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final colorScheme = Theme.of(context).colorScheme;
 
@@ -425,7 +413,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     );
   }
 
-  // 构建笔记列表（提取共用逻辑）
+  // 构建笔记列表
   Widget _buildNotesList(
     List<NoteEntity> notes,
     NoteLayout currentLayout,

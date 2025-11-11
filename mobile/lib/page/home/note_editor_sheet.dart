@@ -1,9 +1,11 @@
-// 路径: lib/page/widget/note_editor_sheet.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pocketmind/domain/entities/note_entity.dart';
 import 'package:pocketmind/page/widget/categories_bar.dart' show CategoriesBar;
+import 'package:pocketmind/providers/category_providers.dart';
+import 'package:pocketmind/providers/nav_providers.dart';
 import 'package:pocketmind/providers/note_providers.dart';
+import 'package:pocketmind/server/category_service.dart';
 import 'package:pocketmind/util/app_config.dart';
 
 /// 统一的笔记编辑器底部模态框
@@ -17,11 +19,20 @@ class NoteEditorSheet extends ConsumerStatefulWidget {
   ConsumerState<NoteEditorSheet> createState() => _NoteEditorSheetState();
 }
 
-class _NoteEditorSheetState extends ConsumerState<NoteEditorSheet> {
+class _NoteEditorSheetState extends ConsumerState<NoteEditorSheet>
+    with SingleTickerProviderStateMixin {
   late final TextEditingController _titleController;
   late final TextEditingController _contentController;
 
+  late AnimationController _addCategoryAnimationController;
+  late Animation<Offset> _appBarSlideAnimation;
+  late Animation<Offset> _addCategoryBarSlideAnimation;
+  final FocusNode _addCategoryFocusNode = FocusNode();
+  bool _isAddCategoryMode = false;
+  final TextEditingController _addCategoryController = TextEditingController();
+
   int? _selectedCategoryId;
+
 
   final _config = AppConfig();
   bool _titleEnabled = false;
@@ -38,6 +49,28 @@ class _NoteEditorSheetState extends ConsumerState<NoteEditorSheet> {
     );
     _selectedCategoryId = widget.note?.categoryId;
     _loadTitleSetting();
+
+    _addCategoryAnimationController = AnimationController(
+        vsync: this,
+        duration: const Duration(milliseconds: 300),
+    );
+
+    _appBarSlideAnimation =
+        Tween<Offset>(begin: Offset.zero, end: const Offset(-1.0, 0.0)).animate(
+          CurvedAnimation(
+            parent: _addCategoryAnimationController,
+            curve: Curves.easeInOut,
+          ),
+        );
+
+    // 搜索框从右滑入的动画
+    _addCategoryBarSlideAnimation =
+        Tween<Offset>(begin: const Offset(1.0, 0.0), end: Offset.zero).animate(
+          CurvedAnimation(
+            parent: _addCategoryAnimationController,
+            curve: Curves.easeInOut,
+          ),
+        );
   }
 
   Future<void> _loadTitleSetting() async {
@@ -51,7 +84,28 @@ class _NoteEditorSheetState extends ConsumerState<NoteEditorSheet> {
   void dispose() {
     _titleController.dispose();
     _contentController.dispose();
+    _addCategoryAnimationController.dispose();
     super.dispose();
+  }
+
+  // 切换搜索模式
+  void _toggleAddCategoryMode() {
+    setState(() {
+      _isAddCategoryMode = !_isAddCategoryMode;
+      if (_isAddCategoryMode) {
+        _addCategoryAnimationController.forward();
+        // 延迟一点让动画先执行，然后再聚焦
+        Future.delayed(const Duration(milliseconds: 100), () {
+          _addCategoryFocusNode.requestFocus();
+        });
+      } else {
+        _addCategoryAnimationController.reverse();
+        _addCategoryController.clear();
+        _addCategoryFocusNode.unfocus();
+        // 清空搜索，返回到分类视图
+        ref.read(searchQueryProvider.notifier).state = null;
+      }
+    });
   }
 
   Future<void> _onSave() async {
@@ -168,6 +222,76 @@ class _NoteEditorSheetState extends ConsumerState<NoteEditorSheet> {
     );
   }
 
+  // 构建搜索栏
+  Widget _buildAddCategoryBar() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: isDark
+            ? Colors.white.withValues(alpha: 0.1)
+            : Colors.black.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(28),
+        border: Border.all(
+          color: isDark
+              ? Colors.white.withValues(alpha: 0.2)
+              : Colors.black.withValues(alpha: 0.08),
+          width: 1.0,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.08),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          const SizedBox(width: 20),
+          // 搜索输入框
+          Expanded(
+            child: TextField(
+              controller: _addCategoryController,
+              focusNode: _addCategoryFocusNode,
+              decoration: InputDecoration(
+                hintText: '添加分类',
+                border: InputBorder.none,
+                hintStyle: TextStyle(
+                  color: colorScheme.onSurface.withValues(alpha: 0.5),
+                ),
+              ),
+              style: TextStyle(color: colorScheme.onSurface),
+              // 实时搜索，不需要提交动作
+            ),
+          ),
+          // 保存的按钮
+          IconButton(
+            icon: Icon(Icons.check, color: colorScheme.primary),
+            onPressed: () async {
+              final categoryName = _addCategoryController.text.trim();
+              if (categoryName.isNotEmpty) {
+                await _addCategory(categoryName);
+                // 保存后，切换回 _appBar
+                _toggleAddCategoryMode();
+                // 分类的下标变为保存的下标
+              }
+            },
+            tooltip: '保存分类',
+          ),
+
+          // “取消”按钮
+          IconButton(
+            icon: Icon(Icons.close, color: colorScheme.secondary),
+            onPressed: _toggleAddCategoryMode, // 只切换，不保存
+            tooltip: '取消',
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
@@ -179,7 +303,7 @@ class _NoteEditorSheetState extends ConsumerState<NoteEditorSheet> {
       body: Container(
         constraints: const BoxConstraints.expand(),
         decoration: BoxDecoration(
-          color: colorScheme.surface.withValues(alpha: 0.95),
+          color: colorScheme.surface,
           borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
         ),
         child: SafeArea(
@@ -188,29 +312,25 @@ class _NoteEditorSheetState extends ConsumerState<NoteEditorSheet> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // --- 顶部标题栏 ---
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                Stack(
                   children: [
-                    IconButton(
-                      iconSize: 35,
-                      icon: const Icon(Icons.keyboard_arrow_down),
-                      onPressed: () => Navigator.of(context).pop(),
-                      color: colorScheme.secondary,
-                      tooltip: '取消',
+                    SlideTransition(
+                        position: _appBarSlideAnimation,
+                        child: Padding(
+                            padding: const EdgeInsets.only(right: 8),
+                            child: _appBar(),
+                        )
                     ),
-                    // 分类选择条，使用 Expanded 避免溢出，居中显示
-                    const Expanded(
-                      child: CategoriesBar(),
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.check),
-                      onPressed: _onSave,
-                      color: colorScheme.primary,
-                      tooltip: '保存',
-                    ),
+                    SlideTransition(
+                        position: _addCategoryBarSlideAnimation,
+                        child: Padding(
+                          padding: const EdgeInsets.only(right: 8),
+                          child: _buildAddCategoryBar(),
+                        )
+                    )
                   ],
                 ),
+                // --- 顶部标题栏 ---
 
                 const SizedBox(height: 20),
 
@@ -244,6 +364,40 @@ class _NoteEditorSheetState extends ConsumerState<NoteEditorSheet> {
           ),
         ),
       ),
+    );
+  }
+
+  Future<void> _addCategory(String name) async {
+    CategoryService service = ref.read(categoryServiceProvider);
+    await service.addCategory(name: name);
+    // 自动激活为最新的
+    final int newIndex = ref.read(navItemsProvider).value?.length ?? 0;
+    ref.read(activeNavIndexProvider.notifier).state = newIndex;
+  }
+
+  Widget _appBar() {
+    ColorScheme colorScheme = Theme.of(context).colorScheme;
+    return  Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        IconButton(
+          iconSize: 35,
+          icon: const Icon(Icons.add_card_outlined),
+          onPressed: _toggleAddCategoryMode,
+          color: colorScheme.secondary,
+          tooltip: '添加分类',
+        ),
+        // 分类选择条，使用 Expanded 避免溢出，居中显示
+        const Expanded(
+          child: CategoriesBar(),
+        ),
+        IconButton(
+          icon: const Icon(Icons.check),
+          onPressed: _onSave,
+          color: colorScheme.primary,
+          tooltip: '保存',
+        ),
+      ],
     );
   }
 }
