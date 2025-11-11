@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pocketmind/providers/note_providers.dart';
 import 'package:pocketmind/providers/category_providers.dart';
+import 'package:pocketmind/server/category_service.dart';
 import 'package:pocketmind/util/app_config.dart';
 
 // 标签页枚举
@@ -39,6 +40,7 @@ class EditNotePageState extends ConsumerState<EditNotePage> {
 
   String _selectedCategory = 'home';
   int? _selectedCategoryId;
+  bool _isAddingCategory = false;
 
   @override
   void initState() {
@@ -238,6 +240,36 @@ class EditNotePageState extends ConsumerState<EditNotePage> {
     );
   }
 
+  Future<void> _addCategory(String name) async {
+    CategoryService service = ref.read(categoryServiceProvider);
+    await service.addCategory(name: name);
+  }
+
+  void _startAddingCategory() {
+    setState(() {
+      _isAddingCategory = true;
+    });
+  }
+
+  void _cancelAddingCategory() {
+    setState(() {
+      _isAddingCategory = false;
+      _categoryController.clear();
+    });
+  }
+
+  Future<void> _confirmAddCategory() async {
+    final name = _categoryController.text.trim();
+    if (name.isNotEmpty) {
+      await _addCategory(name);
+      ref.invalidate(categoriesProvider);
+    }
+    setState(() {
+      _isAddingCategory = false;
+      _categoryController.clear();
+    });
+  }
+
   // 构建 Category 页面内容
   Widget _buildCategoryContent(ColorScheme colorScheme) {
     // 使用 AsyncValue 处理异步分类数据
@@ -284,27 +316,142 @@ class EditNotePageState extends ConsumerState<EditNotePage> {
 
               return Column(
                 mainAxisSize: MainAxisSize.min,
-                children: categories.map((category) {
-                  return RadioListTile<String>(
-                    contentPadding: EdgeInsets.zero,
-                    title: Text(
-                      category.name,
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: colorScheme.onSurface,
+                children: [
+                  ...categories.map((category) {
+                    return RadioListTile<String>(
+                      contentPadding: EdgeInsets.zero,
+                      title: Text(
+                        category.name,
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: colorScheme.onSurface,
+                        ),
+                      ),
+                      value: category.name,
+                      groupValue: _selectedCategory,
+                      onChanged: (value) {
+                        setState(() {
+                          _selectedCategory = value!;
+                          _selectedCategoryId = category.id;
+                        });
+                      },
+                      activeColor: colorScheme.primary,
+                    );
+                  }),
+                  if (_isAddingCategory) ...[
+                    const SizedBox(height: 16),
+                    Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 10),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
+                      ),
+                      decoration: BoxDecoration(
+                        color: colorScheme.surface.withValues(alpha: 0.9),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: colorScheme.primary.withValues(alpha: 0.3),
+                          width: 1,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: colorScheme.primary.withValues(alpha: 0.1),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 4,
+                            height: 20,
+                            decoration: BoxDecoration(
+                              color: colorScheme.primary,
+                              borderRadius: BorderRadius.circular(2),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: TextField(
+                              controller: _categoryController,
+                              autofocus: true,
+                              decoration: InputDecoration(
+                                hintText: '新分类',
+                                hintStyle: TextStyle(
+                                  color: colorScheme.secondary.withValues(
+                                    alpha: 0.4,
+                                  ),
+                                  fontSize: 16,
+                                  fontStyle: FontStyle.italic,
+                                ),
+                                border: InputBorder.none,
+                                isDense: true,
+                                contentPadding: EdgeInsets.zero,
+                              ),
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: colorScheme.onSurface,
+                                fontWeight: FontWeight.w500,
+                              ),
+                              onSubmitted: (_) => _confirmAddCategory(),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          GestureDetector(
+                            onTap: _confirmAddCategory,
+                            child: Container(
+                              padding: const EdgeInsets.all(4),
+                              decoration: BoxDecoration(
+                                color: colorScheme.primary.withValues(
+                                  alpha: 0.1,
+                                ),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Icon(
+                                Icons.check,
+                                color: colorScheme.primary,
+                                size: 20,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          GestureDetector(
+                            onTap: _cancelAddingCategory,
+                            child: Icon(
+                              Icons.close,
+                              color: colorScheme.secondary.withValues(
+                                alpha: 0.6,
+                              ),
+                              size: 20,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                    value: category.name,
-                    groupValue: _selectedCategory,
-                    onChanged: (value) {
-                      setState(() {
-                        _selectedCategory = value!;
-                        _selectedCategoryId = category.id;
-                      });
-                    },
-                    activeColor: colorScheme.primary,
-                  );
-                }).toList(),
+                  ] else ...[
+                    const SizedBox(height: 16),
+                    GestureDetector(
+                      onTap: _startAddingCategory,
+                      child: Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: colorScheme.primary.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(50),
+                          border: Border.all(
+                            color: colorScheme.primary.withValues(alpha: 0.2),
+                            width: 1,
+                          ),
+                        ),
+                        child: Icon(
+                          Icons.add,
+                          color: colorScheme.primary,
+                          size: 24,
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
               );
             },
             loading: () => const Center(child: CircularProgressIndicator()),
