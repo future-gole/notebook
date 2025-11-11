@@ -13,3 +13,18 @@ Thumbs.db
 
 # 通用日志文件
 *.log
+
+# 敏感配置文件
+.env
+android/key.properties
+key.properties
+ios/ExportOptions.plist
+
+# 密钥库文件
+*.jks
+*.keystore
+*.p12
+*.mobileprovision
+
+# 混淆符号文件
+/debug-info/
