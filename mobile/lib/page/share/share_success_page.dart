@@ -2,9 +2,11 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lottie/lottie.dart';
 import 'package:pocketmind/providers/http_providers.dart';
 import 'package:pocketmind/server/page_analysis_service.dart';
 import 'package:pocketmind/util/logger_service.dart';
+import 'package:pocketmind/util/theme_data.dart' show sharePageColors, SharePageThemeColors;
 
 final String _tag = "ShareSuccessPage";
 
@@ -128,15 +130,19 @@ class _ShareSuccessPageState extends ConsumerState<ShareSuccessPage>
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final shareColors = Theme.of(context).extension<SharePageThemeColors>();
 
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         // Logo/Icon - 使用点睛色
-        Icon(
-          Icons.check_circle_outline,
-          color: colorScheme.surfaceContainerHighest, // 点睛色
-          size: 48,
+        Lottie.asset(
+          'assets/lottie/success.json',
+          width: 200,
+          height: 200,
+          fit: BoxFit.contain,
+          repeat: false,
+          animate: true,
         ),
         const SizedBox(height: 24),
 
@@ -144,7 +150,7 @@ class _ShareSuccessPageState extends ConsumerState<ShareSuccessPage>
         Text(
           "Good find!",
           style: TextStyle(
-            color: colorScheme.primary,
+            color: shareColors?.primary,
             fontSize: 32,
             fontWeight: FontWeight.bold,
             letterSpacing: -0.5,
@@ -156,7 +162,7 @@ class _ShareSuccessPageState extends ConsumerState<ShareSuccessPage>
         Text(
           "It's in your pocketmind.",
           style: TextStyle(
-            color: colorScheme.secondary,
+            color: shareColors?.secondary,
             fontSize: 24,
             fontWeight: FontWeight.normal,
             letterSpacing: -0.3,
@@ -168,12 +174,22 @@ class _ShareSuccessPageState extends ConsumerState<ShareSuccessPage>
         GestureDetector(
           onTap: _onUserInteraction,
           child: Container(
+            decoration: BoxDecoration(
+              // 设置边框
+              border: Border.all(
+                color: shareColors?.secondary ?? Colors.white,
+                width: 1.0, // 边框的宽度
+              ),
+              // 设置圆角
+              borderRadius: BorderRadius.circular(30.0),
+            ),
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
             child: Text(
               "Add Details",
               style: TextStyle(
-                color: colorScheme.primary,
+                color: shareColors?.secondary,
                 fontSize: 16,
+                fontFamily: "Poppins",
                 fontWeight: FontWeight.w600,
                 letterSpacing: 0.5,
               ),
@@ -188,7 +204,7 @@ class _ShareSuccessPageState extends ConsumerState<ShareSuccessPage>
           builder: (context, child) {
             return Container(
               height: 2,
-              width: 150 * _progressController.value,
+              width: MediaQuery.of(context).size.width * _progressController.value,
               decoration: BoxDecoration(
                 color: colorScheme.surfaceContainerHighest, // 点睛色
                 borderRadius: BorderRadius.circular(1),

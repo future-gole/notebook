@@ -17,6 +17,52 @@ class DarkFlowingBackgroundColors {
   static const Color blob4 = Color(0xFFF59E0B); // 金色
 }
 
+class SharePageThemeColors extends ThemeExtension<SharePageThemeColors> {
+  const SharePageThemeColors({
+    required this.primary,
+    required this.secondary,
+  });
+
+  final Color? primary;
+  final Color? secondary;
+
+  @override
+  SharePageThemeColors copyWith({Color? primary, Color? secondary}) {
+    // 覆盖原本的颜色
+    return SharePageThemeColors(
+      primary: primary ?? this.primary,
+      secondary: secondary ?? this.secondary,
+    );
+  }
+
+  @override
+  SharePageThemeColors lerp(ThemeExtension<SharePageThemeColors>? other, double t) {
+    // (This is used for animating theme changes)
+    if (other is! SharePageThemeColors) {
+      return this;
+    }
+    return SharePageThemeColors(
+      primary: Color.lerp(primary, other.primary, t),
+      secondary: Color.lerp(secondary, other.secondary, t),
+    );
+  }
+
+  static SharePageThemeColors? of(BuildContext context) {
+    return Theme.of(context).extension<SharePageThemeColors>();
+  }
+}
+
+const lightShareColors = SharePageThemeColors(
+  primary: Color(0xFFFFFFFF), // 亮色模式下的分享主色
+  secondary: Color(0xFFEAE5E0), // 亮色模式下的分享次色
+);
+
+const darkShareColors = SharePageThemeColors(
+  primary: Color(0xFFFFFFFF), // 暗色模式下的分享主色
+  secondary: Color(0xFFEAE5E0), // 暗色模式下的分享 次色
+);
+
+
 final ThemeData calmBeigeTheme = ThemeData(
   useMaterial3: true,
   brightness: Brightness.light,
@@ -41,7 +87,7 @@ final ThemeData calmBeigeTheme = ThemeData(
   scaffoldBackgroundColor: const Color(0xFFFAF9F7), // 画布背景
   canvasColor: const Color(0xFFFAF9F7), // 画布背景
   cardColor: Colors.white, // 卡片在画布上"浮"起来
-  shadowColor: Colors.black.withOpacity(0.05), // 柔和的阴影
+  shadowColor: Colors.black.withOpacity(0.05), // 柔和的阴影\
   fontFamily: 'SF Pro',
   textTheme: const TextTheme(
     // 标题样式
@@ -77,6 +123,11 @@ final ThemeData calmBeigeTheme = ThemeData(
     shape: StadiumBorder(),
     elevation: 4,
   ),
+
+  // 添加亮色自定义颜色扩展
+  extensions: const <ThemeExtension<dynamic>>[
+    lightShareColors,
+  ],
 );
 
 // 主题定义 - "暗色模式" (静谧之夜与橄榄金)
@@ -94,8 +145,8 @@ final ThemeData quietNightTheme = ThemeData(
     error: Color(0xFFFFB4AB),
     onError: Color(0xFF690005),
     // 自定义颜色
-    tertiary: Color(0xFFEAE5E0), // Done/FAB按钮背景 - 使用主文本色（反转设计）
-    onTertiary: Color(0xFF2B2A28), // Done/FAB按钮文本 - 使用画布色
+    tertiary: Color(0xFFEAE5E0), // Done按钮背景 - 使用主文本色（反转设计）
+    onTertiary: Color(0xFF2B2A28), // Done按钮文本 - 使用画布色
     surfaceContainerHighest: Color(0xFFB9A389), // 点睛色 - 橄榄金
     outline: Color(0xCC2B2A28), // 画布遮罩 - 80%透明深暖灰
     onSurfaceVariant: Color(0xFFA5A19C), // 辅助文字（副文本）
@@ -140,4 +191,8 @@ final ThemeData quietNightTheme = ThemeData(
     shape: StadiumBorder(),
     elevation: 4,
   ),
+  // 添加自定义颜色扩展
+  extensions: const <ThemeExtension<dynamic>>[
+    darkShareColors,
+  ],
 );
