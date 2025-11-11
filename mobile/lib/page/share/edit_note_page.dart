@@ -56,11 +56,8 @@ class EditNotePageState extends ConsumerState<EditNotePage> {
     await _config.init();
     setState(() {
       _titleEnabled = _config.titleEnabled;
-      if (!_titleEnabled) {
-        _currentTab = EditTab.content; // 如果标题禁用，从内容开始
-      } else {
-        _currentTab = EditTab.title; // 如果标题启用，从标题开始
-      }
+      // 根据标题启用状态选择初始标签页
+      _currentTab = _titleEnabled ? EditTab.title : EditTab.content;
     });
   }
 
@@ -84,8 +81,6 @@ class EditNotePageState extends ConsumerState<EditNotePage> {
       tag: _tagController.text,
     );
 
-    // todo 发送至后端
-
     widget.onDone();
   }
 
@@ -93,7 +88,8 @@ class EditNotePageState extends ConsumerState<EditNotePage> {
   Widget _buildTopNavBar() {
     final colorScheme = Theme.of(context).colorScheme;
 
-    return Padding(
+    return Container(
+      color: Colors.transparent, // 透明背景以显示底层 FlowingBackground
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -163,47 +159,41 @@ class EditNotePageState extends ConsumerState<EditNotePage> {
     );
   }
 
-  // 构建 Notes 页面内容
+  // 构建内容/标题编辑页面
   Widget _buildNotesContent(ColorScheme colorScheme) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Container(
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: colorScheme.surface,
-          borderRadius: BorderRadius.circular(16),
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: colorScheme.surface,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      alignment: Alignment.topLeft,
+      child: TextField(
+        controller: _currentTab == EditTab.content
+            ? _contentController
+            : _titleController,
+        decoration: InputDecoration(
+          hintText: "Start typing here...",
+          hintStyle: TextStyle(color: colorScheme.secondary, fontSize: 16),
+          border: InputBorder.none,
+          isDense: true,
+          contentPadding: EdgeInsets.zero,
         ),
-        // 强制对齐到顶部
-        alignment: Alignment.topLeft,
-        child: TextField(
-          controller: _currentTab == EditTab.content
-              ? _contentController
-              : _titleController,
-          decoration: InputDecoration(
-            hintText: "Start typing here...",
-            hintStyle: TextStyle(color: colorScheme.secondary, fontSize: 16),
-            border: InputBorder.none,
-            isDense: true,
-            contentPadding: EdgeInsets.zero,
-          ),
-          style: TextStyle(
-            fontSize: 16,
-            color: colorScheme.onSurface,
-            height: 1.5,
-          ),
-          maxLines: null, // 允许无限行
-          expands: true, // 关键：让TextField扩展填充可用空间
-          textAlignVertical: TextAlignVertical.top, // 文本从顶部开始
-          textAlign: TextAlign.left, // 文本左对齐
+        style: TextStyle(
+          fontSize: 16,
+          color: colorScheme.onSurface,
+          height: 1.5,
         ),
+        maxLines: null,
+        expands: true,
+        textAlignVertical: TextAlignVertical.top,
+        textAlign: TextAlign.left,
       ),
     );
   }
 
-  // 构建 Tags 页面内容
   Widget _buildTagsContent(ColorScheme colorScheme) {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 20),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: colorScheme.surface,
@@ -216,6 +206,7 @@ class EditNotePageState extends ConsumerState<EditNotePage> {
           TextField(
             controller: _tagController,
             decoration: InputDecoration(
+              hintText: "添加标签...",
               hintStyle: TextStyle(color: colorScheme.secondary, fontSize: 16),
               border: InputBorder.none,
               isDense: true,
@@ -234,7 +225,13 @@ class EditNotePageState extends ConsumerState<EditNotePage> {
             ),
           ),
           const SizedBox(height: 12),
-          // todo 这里添加标签列表
+          Text(
+            "暂无最近使用的标签",
+            style: TextStyle(
+              color: colorScheme.secondary.withValues(alpha: 0.4),
+              fontSize: 14,
+            ),
+          ),
         ],
       ),
     );
@@ -270,13 +267,11 @@ class EditNotePageState extends ConsumerState<EditNotePage> {
     });
   }
 
-  // 构建 Category 页面内容
+  // 构建分类选择页面
   Widget _buildCategoryContent(ColorScheme colorScheme) {
-    // 使用 AsyncValue 处理异步分类数据
     final categoriesAsync = ref.watch(categoriesProvider);
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 20),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: colorScheme.surface,
@@ -286,10 +281,8 @@ class EditNotePageState extends ConsumerState<EditNotePage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          // 根据异步状态显示内容
           categoriesAsync.when(
             data: (categories) {
-              // 数据加载成功，显示分类列表
               if (categories.isEmpty) {
                 return Text(
                   '暂无分类',
@@ -297,13 +290,14 @@ class EditNotePageState extends ConsumerState<EditNotePage> {
                 );
               }
 
-              // 如果当前未选择分类，或默认分类名称找不到，选中第一个分类
+              // 如果当前未选择分类，或默认分类找不到，选中第一个分类
               final fallbackCategory = categories.first;
               final matchedCategory = categories.firstWhere(
                 (category) => category.name == _selectedCategory,
                 orElse: () => fallbackCategory,
               );
 
+              // 异步更新选中的分类ID
               if (_selectedCategoryId != matchedCategory.id) {
                 WidgetsBinding.instance.addPostFrameCallback((_) {
                   if (!mounted) return;
@@ -468,82 +462,104 @@ class EditNotePageState extends ConsumerState<EditNotePage> {
   @override
   Widget build(BuildContext context) {
     final bottomInset = MediaQuery.of(context).viewInsets.bottom;
-    final screenHeight = MediaQuery.of(context).size.height;
+    final bottomPadding = MediaQuery.of(context).padding.bottom;
+    final topPadding = MediaQuery.of(context).padding.top;
     final colorScheme = Theme.of(context).colorScheme;
 
-    return Container(
-      height: screenHeight * 0.85, // 占屏幕85%高度
-      decoration: BoxDecoration(
-        color: colorScheme.surface.withValues(alpha: 0.95),
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+    return Padding(
+      padding: EdgeInsets.only(
+        left: 20,
+        right: 20,
+        top: topPadding, // 从系统状态栏下方开始
       ),
-      child: Padding(
-        padding: EdgeInsets.only(bottom: bottomInset),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // 顶部导航栏
-            _buildTopNavBar(),
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          // 浮动透明导航栏
+          Positioned(top: 0, left: 0, right: 0, child: _buildTopNavBar()),
 
-            const SizedBox(height: 8),
-
-            // 当前标签页内容
-            Expanded(
-              child: AnimatedSwitcher(
-                duration: const Duration(milliseconds: 300),
-                layoutBuilder:
-                    (Widget? currentChild, List<Widget> previousChildren) {
-                      return Stack(
-                        alignment: Alignment.topCenter, // 靠上对齐
-                        children: <Widget>[
-                          ...previousChildren,
-                          if (currentChild != null) currentChild,
-                        ],
-                      );
-                    },
-                child: Container(
-                  key: ValueKey(_currentTab),
-                  child:
-                      _currentTab == EditTab.content ||
-                          _currentTab == EditTab.title
-                      ? _buildNotesContent(colorScheme)
-                      : SingleChildScrollView(
-                          child: _currentTab == EditTab.tags
-                              ? _buildTagsContent(colorScheme)
-                              : _buildCategoryContent(colorScheme),
+          // 背景容器（从导航栏下方开始）
+          Positioned(
+            top: 72, // 导航栏高度
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: Container(
+              decoration: BoxDecoration(
+                color: colorScheme.surface.withValues(alpha: 0.95),
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(24),
+                ),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // 当前标签页内容区域
+                  Expanded(
+                    child: Padding(
+                      padding: EdgeInsets.only(bottom: bottomInset, top: 8),
+                      child: AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 300),
+                        layoutBuilder:
+                            (
+                              Widget? currentChild,
+                              List<Widget> previousChildren,
+                            ) {
+                              return Stack(
+                                alignment: Alignment.topCenter,
+                                children: <Widget>[
+                                  ...previousChildren,
+                                  if (currentChild != null) currentChild,
+                                ],
+                              );
+                            },
+                        child: Container(
+                          key: ValueKey(_currentTab),
+                          child:
+                              _currentTab == EditTab.content ||
+                                  _currentTab == EditTab.title
+                              ? _buildNotesContent(colorScheme)
+                              : SingleChildScrollView(
+                                  child: _currentTab == EditTab.tags
+                                      ? _buildTagsContent(colorScheme)
+                                      : _buildCategoryContent(colorScheme),
+                                ),
                         ),
-                ),
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  // Done 按钮
+                  ElevatedButton(
+                    onPressed: _onDone,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: colorScheme.tertiary,
+                      foregroundColor: colorScheme.onTertiary,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 64,
+                        vertical: 16,
+                      ),
+                      shape: const StadiumBorder(),
+                      elevation: 0,
+                    ),
+                    child: const Text(
+                      "Done",
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 17,
+                        letterSpacing: 0.3,
+                      ),
+                    ),
+                  ),
+
+                  SizedBox(height: bottomPadding > 0 ? bottomPadding : 40),
+                ],
               ),
             ),
-
-            const SizedBox(height: 24),
-
-            // "Done" 药丸按钮 - 使用主题颜色
-            ElevatedButton(
-              onPressed: _onDone,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: colorScheme.tertiary,
-                foregroundColor: colorScheme.onTertiary,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 64,
-                  vertical: 16,
-                ),
-                shape: const StadiumBorder(),
-                elevation: 0,
-              ),
-              child: const Text(
-                "Done",
-                style: TextStyle(
-                  fontWeight: FontWeight.w600,
-                  fontSize: 17,
-                  letterSpacing: 0.3,
-                ),
-              ),
-            ),
-
-            SizedBox(height: bottomInset > 0 ? 16 : 40),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
