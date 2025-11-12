@@ -3,13 +3,13 @@ class NavItem {
   final String svgPath;
   final String text;
   final String category; // 用于显示，
-  final int? categoryId; // 用于查询
+  final int categoryId; // 用于查询
 
   const NavItem({
     required this.svgPath,
     required this.text,
     required this.category,
-    this.categoryId,
+    this.categoryId = 1,
   });
 
   @override

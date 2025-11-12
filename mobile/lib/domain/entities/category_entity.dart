@@ -2,8 +2,7 @@
 /// 
 /// 这是纯净的业务对象，只包含业务逻辑需要的数据字段
 class CategoryEntity {
-  /// 分类ID，null 表示尚未持久化的新分类
-  final int? id;
+  final int id;
 
   /// 分类名称（唯一）
   final String name;
@@ -15,7 +14,7 @@ class CategoryEntity {
   final DateTime? createdTime;
 
   const CategoryEntity({
-    this.id,
+    this.id = 1,
     required this.name,
     this.description,
     this.createdTime,

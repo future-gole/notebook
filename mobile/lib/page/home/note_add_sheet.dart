@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:pocketmind/domain/entities/note_entity.dart';
-import 'package:pocketmind/page/widget/TextField.dart';
+import 'package:pocketmind/page/widget/text_field.dart';
 import 'package:pocketmind/page/widget/categories_bar.dart' show CategoriesBar;
 import 'package:pocketmind/providers/category_providers.dart';
 import 'package:pocketmind/providers/nav_providers.dart';
@@ -10,12 +10,10 @@ import 'package:pocketmind/providers/note_providers.dart';
 import 'package:pocketmind/server/category_service.dart';
 import 'package:pocketmind/util/app_config.dart';
 
-/// 统一的笔记编辑器底部模态框
-/// 同时支持"新建"和"编辑"模式
+// 主页笔记新建界面
 class NoteEditorSheet extends ConsumerStatefulWidget {
-  final NoteEntity? note; // null = 新建模式，非null = 编辑模式
 
-  const NoteEditorSheet({super.key, this.note});
+  const NoteEditorSheet({super.key});
 
   @override
   ConsumerState<NoteEditorSheet> createState() => _NoteEditorSheetState();
@@ -33,23 +31,19 @@ class _NoteEditorSheetState extends ConsumerState<NoteEditorSheet>
   bool _isAddCategoryMode = false;
   final TextEditingController _addCategoryController = TextEditingController();
 
-  int? _selectedCategoryId;
+  late int _selectedCategoryId;
 
 
   final _config = AppConfig();
   bool _titleEnabled = false;
 
-  bool get _isEditMode => widget.note != null;
-
   @override
   void initState() {
     super.initState();
     // 根据模式初始化控制器
-    _titleController = TextEditingController(text: widget.note?.title ?? '');
-    _contentController = TextEditingController(
-      text: widget.note?.content ?? '',
-    );
-    _selectedCategoryId = widget.note?.categoryId;
+    _titleController = TextEditingController();
+    _contentController = TextEditingController();
+    _selectedCategoryId = 1;
     _loadTitleSetting();
 
     _addCategoryAnimationController = AnimationController(
@@ -142,35 +136,22 @@ class _NoteEditorSheetState extends ConsumerState<NoteEditorSheet>
 
     final noteService = ref.read(noteServiceProvider);
 
-    if (_isEditMode) {
-      // 编辑模式：更新现有笔记
-      await noteService.addOrUpdateNote(
-        id: widget.note!.id,
-        title: _titleEnabled ? title : null,
-        content: content,
-        categoryId: _selectedCategoryId,
-      );
-    } else {
-      // 新建模式：创建新笔记
-      await noteService.addOrUpdateNote(
-        title: _titleEnabled ? title : null,
-        content: content,
-        categoryId: _selectedCategoryId,
-      );
-    }
+    // 新建模式：创建新笔记
+    await noteService.addOrUpdateNote(
+      title: _titleEnabled ? title : null,
+      content: content,
+      categoryId: _selectedCategoryId,
+    );
 
     // 刷新笔记列表
-    // 注意：由于 noteByCategoryProvider 现在使用 Stream 监听数据库变化，
-    // 这个 invalidate 调用实际上不再必要（Stream 会自动更新）
-    // 但保留它可以确保立即刷新，不会有任何副作用
-    ref.invalidate(noteByCategoryProvider);
+    // noteByCategoryProvider 现在使用 Stream 监听数据库变化，不需要自己刷新了
 
     if (!context.mounted) return;
 
     // 显示成功提示
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(_isEditMode ? '笔记已更新' : '笔记已保存'),
+        content: Text('笔记已保存'),
         backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
         behavior: SnackBarBehavior.floating,
         duration: const Duration(seconds: 2),
@@ -292,7 +273,7 @@ class _NoteEditorSheetState extends ConsumerState<NoteEditorSheet>
                       hintText: '给你的笔记起个名字...',
                       colorScheme: colorScheme,
                       maxLines: 1,
-                      autofocus: !_isEditMode, // 新建时聚焦标题
+                      autofocus: true, // 新建时聚焦标题
                     ),
                   ),
 
@@ -304,7 +285,7 @@ class _NoteEditorSheetState extends ConsumerState<NoteEditorSheet>
                     colorScheme: colorScheme,
                     maxLines: null, // 允许无限换行
                     expands: true, // 强制填满 Expanded 提供的空间
-                    autofocus: !_titleEnabled && !_isEditMode, // 如果没标题且是新建，聚焦内容
+                    autofocus: !_titleEnabled, // 如果没标题且是新建，聚焦内容
                     padding: const EdgeInsets.all(20),
                   ),
                 ),

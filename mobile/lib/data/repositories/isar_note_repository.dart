@@ -28,10 +28,6 @@ class IsarNoteRepository implements NoteRepository {
       // 转换为 Isar 模型
       final isarNote = NoteMapper.fromDomain(note);
       
-      // 确保至少有默认分类（categoryId = 1）
-      final resolvedCategoryId = note.categoryId ?? 1;
-      isarNote.categoryId = resolvedCategoryId;
-      
       // 如果没有设置时间，使用当前时间
       if (isarNote.time == null) {
         isarNote.time = DateTime.now();
@@ -39,7 +35,7 @@ class IsarNoteRepository implements NoteRepository {
 
       await _isar.writeTxn(() async {
         // 建立笔记与分类的关联（保持 IsarLink 用于数据库关系）
-        final linkedCategory = await _isar.categorys.get(resolvedCategoryId);
+        final linkedCategory = await _isar.categorys.get(note.categoryId);
         isarNote.category.value = linkedCategory;
 
         // 保存笔记
@@ -104,8 +100,6 @@ class IsarNoteRepository implements NoteRepository {
     return _isar.notes
         .filter()
         .categoryIdEqualTo(category)
-        .or()
-        .categoryIdEqualTo(null)
         .sortByTimeDesc()  // 添加排序（最新的在前）
         .watch(fireImmediately: true)
         .map((notes) => NoteMapper.toDomainList(notes));
@@ -142,7 +136,7 @@ class IsarNoteRepository implements NoteRepository {
   }
 
   @override
-  Future<List<NoteEntity>> findByCategoryId(int? categoryId) async {
+  Future<List<NoteEntity>> findByCategoryId(int categoryId) async {
     try {
       // categoryId = 1 代表 home，返回所有笔记
       if (categoryId == 1) {

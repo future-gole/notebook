@@ -6,6 +6,8 @@ import 'package:pocketmind/providers/nav_providers.dart';
 import 'package:pocketmind/providers/infrastructure_providers.dart';
 import 'package:pocketmind/server/note_service.dart';
 
+import '../util/logger_service.dart';
+
 /// NoteRepository Provider - 数据层
 /// 提供 Isar 的具体实现
 final noteRepositoryProvider = Provider<NoteRepository>((ref) {
@@ -64,21 +66,18 @@ class NoteByCategory extends StreamNotifier<List<NoteEntity>> {
     // 获取最新的导航项
     final items = await ref.watch(navItemsProvider.future);
 
-    // 计算目标分类 ID
-    int targetCategoryId;
-    if (items.isEmpty || activeIndex >= items.length || activeIndex == 1) {
-      // "全部" 分类（index=1）或索引无效时，显示 home 分类（categoryId=1）
-      targetCategoryId = 1;
-    } else {
-      // 获取当前分类的 categoryId（处理可空类型）
-      targetCategoryId = items[activeIndex].categoryId ?? 1;
-    }
+    log.d("activeIndex","activeIndex: $activeIndex");
+
+    // 获取当前分类的 categoryId
+    int targetCategoryId = items[activeIndex].categoryId;
+
+    log.d("activeIndex","targetCategoryId: $targetCategoryId");
 
     // 直接转发 watchCategoryNotes 的 Stream
     yield* noteService.watchCategoryNotes(targetCategoryId);
   }
 
-  // 删除笔记方法（简化版，依赖 Stream 自动更新）
+  // 删除笔记方法
   Future<void> deleteNote(int noteId) async {
     try {
       // 直接删除，watchCategoryNotes() 的 Stream 会自动更新 UI

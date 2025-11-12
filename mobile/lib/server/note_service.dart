@@ -23,16 +23,13 @@ class NoteService {
     String? content,// 改为可空，即用户没有设置标题
     String? url,// 直接文本插入的话就是为空
     String? category, // 分类名称（用于UI显示和查询）
-    int? categoryId, // 分类ID（用于categories数据库关联）
+    int categoryId = 1, // 分类ID（用于categories数据库关联）
     String? tag,
   }) async {
     log.d(
       NoteServiceTag,
       'Note added: title: $title, content: $content, url: $url, category: $category, categoryId: $categoryId',
     );
-    
-    // 确保至少都是在 home 目录下
-    int resolvedCategoryId = categoryId ?? 1;
 
     // 创建领域实体
     final noteEntity = NoteEntity(
@@ -40,7 +37,7 @@ class NoteService {
       title: title,
       content: content,
       url: url,
-      categoryId: resolvedCategoryId,
+      categoryId: categoryId,
       time: DateTime.now(),
       tag: tag,
     );
@@ -89,7 +86,7 @@ class NoteService {
   }
 
   // 根据 categoryId 查询笔记
-  Future<List<NoteEntity>> findNotesWithCategory(int? categoryId) async {
+  Future<List<NoteEntity>> findNotesWithCategory(int categoryId) async {
     return await _noteRepository.findByCategoryId(categoryId);
   }
 

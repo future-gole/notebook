@@ -43,7 +43,7 @@ class EditNotePageState extends ConsumerState<EditNotePage> {
   EditTab _currentTab = EditTab.content; // 默认从内容标签开始
 
   String _selectedCategory = 'home';
-  int? _selectedCategoryId;
+  int _selectedCategoryId = 1;
   bool _isAddingCategory = false;
 
   @override

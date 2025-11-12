@@ -33,7 +33,7 @@ abstract class NoteRepository {
 
   /// 根据分类ID获取笔记（按时间倒序）
   /// categoryId 为 1 时返回所有笔记
-  Future<List<NoteEntity>> findByCategoryId(int? categoryId);
+  Future<List<NoteEntity>> findByCategoryId(int categoryId);
 
   /// 根据标签搜索笔记（模糊匹配，不区分大小写）
   Future<List<NoteEntity>> findByTag(String query);

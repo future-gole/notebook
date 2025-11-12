@@ -79,43 +79,7 @@ class _NoteItemState extends ConsumerState<NoteItem>
     // 使用传入的 isGridMode 参数，而不是 watch provider
     // 这样可以避免不必要的 rebuild, 和 构建参数异常
 
-    // 使用 Dismissible 实现滑动删除
-    return Dismissible(
-      key: Key(widget.note.id.toString()),
-      direction: DismissDirection.endToStart,
-      // 动画时长：让删除过程更平滑
-      movementDuration: const Duration(milliseconds: 250),
-      resizeDuration: const Duration(milliseconds: 250),
-      // 使用 confirmDismiss 在动画开始前就更新 UI
-      confirmDismiss: (direction) async {
-        if (!isTextOnly) {
-          // 删除对应的链接缓存
-          await LinkPreviewCache.clearCache(widget.note.url!);
-        }
-        // 立即更新 UI
-        final noteId = widget.note.id;
-        if (noteId != null) {
-          ref.read(noteByCategoryProvider.notifier).deleteNote(noteId);
-        }
-        // 返回 true 让 Dismissible 继续完成动画
-        return true;
-      },
-      background: Container(
-        alignment: Alignment.centerRight,
-        margin: widget.isGridMode
-            ? const EdgeInsets.symmetric(horizontal: 4.0, vertical: 4.0)
-            : const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-        decoration: BoxDecoration(
-          // 使用接近背景的颜色，减少删除时的视觉闪烁
-          color: Theme.of(context).scaffoldBackgroundColor,
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.only(right: 20),
-          child: Icon(Icons.delete_outline, color: colorScheme.error, size: 28),
-        ),
-      ),
-      child: Container(
+    return Container(
         margin: widget.isGridMode
             ? const EdgeInsets.symmetric(horizontal: 4.0, vertical: 4.0)
             : const EdgeInsets.symmetric(horizontal: 4.0, vertical: 4.0),
@@ -214,6 +178,7 @@ class _NoteItemState extends ConsumerState<NoteItem>
                                   isVertical: widget.isGridMode,
                                   hasContent:
                                       content != null && content.isNotEmpty,
+                                  onTap: () => _showNoteDetail(context),
                                 ),
                               ],
                             )
@@ -238,34 +203,9 @@ class _NoteItemState extends ConsumerState<NoteItem>
                         ),
                       ),
                     ),
-                    // Row(
-                    //   crossAxisAlignment: CrossAxisAlignment.center,
-                    //   children: [
-                    //     // // 标题 先不用了，感觉没啥用
-                    //     // Expanded(
-                    //     //   child: Text(
-                    //     //     _note.title ?? '无标题',
-                    //     //     style: textTheme.titleMedium,
-                    //     //     maxLines: 1,
-                    //     //     overflow: TextOverflow.ellipsis,
-                    //     //   ),
-                    //     // ),
-                    //     // SizedBox(width: 1),
-                    //     // Container(
-                    //     //   height: 16, // 尝试一个和 titleMedium 字体差不多的高度
-                    //     //   width: 1.0,
-                    //     //   color: Colors.white, // 你要的白色
-                    //     // ),
-                    //     // // 时间信息
-                    //     // Text(
-                    //     //   _formatTime(_note.time),
-                    //     //   style: textTheme.bodySmall,
-                    //     // ),
-                    //   ],
                   ],
                 ),
         ),
-      ),
-    );
+      );
   }
 }

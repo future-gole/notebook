@@ -18,7 +18,7 @@ class NoteEntity {
   final DateTime? time;
 
   /// 分类ID，用于关联到 CategoryEntity
-  final int? categoryId;
+  final int categoryId;
 
   /// 标签
   final String? tag;
@@ -29,7 +29,7 @@ class NoteEntity {
     this.content,
     this.url,
     this.time,
-    this.categoryId,
+    this.categoryId = 1,
     this.tag,
   });
 

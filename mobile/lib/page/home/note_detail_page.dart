@@ -5,6 +5,9 @@ import 'package:pocketmind/providers/note_providers.dart';
 import 'package:pocketmind/providers/category_providers.dart';
 import 'package:pocketmind/util/app_config.dart';
 import 'package:pocketmind/util/logger_service.dart';
+import 'package:url_launcher/url_launcher.dart';
+
+import '../../util/link_preview_cache.dart';
 
 const String _tag = "NoteDetailPage";
 
@@ -45,7 +48,7 @@ class _NoteDetailPageState extends ConsumerState<NoteDetailPage>
   bool _titleEnabled = false;
   
   // 当前选中的分类ID
-  int? _selectedCategoryId;
+  late int _selectedCategoryId;
 
   @override
   void initState() {
@@ -263,15 +266,18 @@ class _NoteDetailPageState extends ConsumerState<NoteDetailPage>
                   ),
                   const SizedBox(width: 8),
                   Expanded(
-                    child: Text(
-                      widget.note.url!,
-                      style: textTheme.bodySmall?.copyWith(
-                        color: colorScheme.surfaceContainerHighest,
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
+                      child: GestureDetector(
+                        onTap: () => _launchUrl(widget.note.url!),
+                        child: Text(
+                          widget.note.url!,
+                          style: textTheme.bodySmall?.copyWith(
+                            color: colorScheme.surfaceContainerHighest,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      )
+                  )
                 ],
               ),
             ),
@@ -610,8 +616,6 @@ class _NoteDetailPageState extends ConsumerState<NoteDetailPage>
       ),
     );
   }
-
-  // ========== 交互方法 ==========
 
   /// 保存笔记
   Future<void> _saveNote() async {
@@ -957,7 +961,12 @@ class _NoteDetailPageState extends ConsumerState<NoteDetailPage>
   Future<void> _deleteNote() async {
     final noteId = widget.note.id;
     if (noteId == null) return;
-    
+
+    if (widget.note.url != null) {
+      // 删除对应的链接缓存
+      await LinkPreviewCache.clearCache(widget.note.url!);
+    }
+
     final noteService = ref.read(noteServiceProvider);
     await noteService.deleteNote(noteId);
     
@@ -968,4 +977,14 @@ class _NoteDetailPageState extends ConsumerState<NoteDetailPage>
       );
     }
   }
+
+  Future<void> _launchUrl(String urlString) async {
+    final uri = Uri.parse(urlString);
+    try {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } catch (e) {
+      log.e(tag, '❌ URL 跳转失败: $e');
+    }
+  }
+
 }

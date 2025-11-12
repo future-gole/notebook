@@ -18,12 +18,14 @@ class LinkPreviewCard extends StatefulWidget {
   final String url;
   final bool isVertical;
   final bool hasContent;
+  final VoidCallback onTap;
 
   const LinkPreviewCard({
     Key? key,
     required this.url,
     this.isVertical = false,
     required this.hasContent,
+    required this.onTap,
   }) : super(key: key);
 
   @override
@@ -42,6 +44,7 @@ class _LinkPreviewCardState extends State<LinkPreviewCard> {
         url: widget.url,
         isVertical: widget.isVertical,
         hasContent: widget.hasContent,
+        onTap: widget.onTap,
       );
     } else {
       // 国内网站：直接使用 any_link_preview
@@ -54,11 +57,13 @@ class _LinkPreviewCardState extends State<LinkPreviewCard> {
                   metadata: metadata,
                   imageProvider: imageProvider,
                   hasContent: widget.hasContent,
+                  onTap: widget.onTap,
                 )
               : _HorizontalPreviewCard(
                   url: widget.url,
                   metadata: metadata,
                   imageProvider: imageProvider,
+                  onTap: widget.onTap,
                 );
         },
         placeholderWidget: widget.isVertical
@@ -88,12 +93,14 @@ class _ApiLinkPreview extends ConsumerStatefulWidget {
   final String url;
   final bool isVertical;
   final bool hasContent;
+  final VoidCallback onTap;
 
   const _ApiLinkPreview({
     Key? key,
     required this.url,
     required this.isVertical,
     required this.hasContent,
+    required this.onTap,
   }) : super(key: key);
 
   @override
@@ -200,6 +207,7 @@ class _ApiLinkPreviewState extends ConsumerState<_ApiLinkPreview> {
                 ? NetworkImage(imageUrl)
                 : null,
             hasContent: widget.hasContent,
+            onTap: widget.onTap,
           )
         : _HorizontalPreviewCard(
             url: widget.url,
@@ -207,23 +215,21 @@ class _ApiLinkPreviewState extends ConsumerState<_ApiLinkPreview> {
             imageProvider: imageUrl != null && imageUrl.isNotEmpty
                 ? NetworkImage(imageUrl)
                 : null,
+            onTap: widget.onTap,
           );
   }
 }
 
-// =============================================================================
+
 // 常量定义 (用于保证高度一致性)
-// =============================================================================
 
 // 垂直布局下，图片区域的固定高度
 const double _kVerticalImageHeight = 100.0;
 // 垂直布局下，骨架屏和错误卡片“内容区域”的固定高度。
 const double _kVerticalPlaceholderContentHeight = 105.0;
 
-// =============================================================================
-// 基础组件
-// =============================================================================
 
+// 基础组件
 class _BaseCardContainer extends StatelessWidget {
   final Widget child;
   final VoidCallback? onTap;
@@ -273,15 +279,13 @@ class _BaseCardContainer extends StatelessWidget {
   }
 }
 
-// =============================================================================
 // 成功状态组件
-// =============================================================================
-
 class _VerticalPreviewCard extends StatelessWidget {
   final String url;
   final Metadata metadata;
   final ImageProvider? imageProvider;
   final bool hasContent;
+  final VoidCallback onTap;
 
   const _VerticalPreviewCard({
     Key? key,
@@ -289,6 +293,7 @@ class _VerticalPreviewCard extends StatelessWidget {
     required this.metadata,
     this.imageProvider,
     required this.hasContent,
+    required this.onTap,
   }) : super(key: key);
 
   @override
@@ -311,7 +316,7 @@ class _VerticalPreviewCard extends StatelessWidget {
       height: isEmptyContent
           ? (_kVerticalImageHeight + _kVerticalPlaceholderContentHeight)
           : null,
-      onTap: () => _launchUrl(url),
+      onTap: onTap,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -330,12 +335,14 @@ class _HorizontalPreviewCard extends StatelessWidget {
   final String url;
   final Metadata metadata;
   final ImageProvider? imageProvider;
+  final VoidCallback onTap;
 
   const _HorizontalPreviewCard({
     Key? key,
     required this.url,
     required this.metadata,
     this.imageProvider,
+    required this.onTap,
   }) : super(key: key);
 
   @override
@@ -343,7 +350,7 @@ class _HorizontalPreviewCard extends StatelessWidget {
     return _BaseCardContainer(
       isVertical: false,
       height: 120,
-      onTap: () => _launchUrl(url),
+      onTap: onTap,
       child: Row(
         children: [
           _CardImageSection(imageProvider: imageProvider, isVertical: false),
@@ -354,10 +361,8 @@ class _HorizontalPreviewCard extends StatelessWidget {
   }
 }
 
-// =============================================================================
-// 骨架屏组件 (Loading States)
-// =============================================================================
 
+// 骨架屏组件 (Loading States)
 class _VerticalSkeletonCard extends StatelessWidget {
   final bool hasContent;
 
@@ -454,10 +459,8 @@ class _HorizontalSkeletonCard extends StatelessWidget {
   }
 }
 
-// =============================================================================
-// 错误状态组件 (Error States)
-// =============================================================================
 
+// 错误状态组件 (Error States)
 class _VerticalErrorCard extends StatelessWidget {
   final String url;
   final bool hasContent;
@@ -574,10 +577,8 @@ class _HorizontalErrorCard extends StatelessWidget {
   }
 }
 
-// =============================================================================
-// 通用子组件
-// =============================================================================
 
+// 通用子组件
 class _CardImageSection extends StatelessWidget {
   final ImageProvider? imageProvider;
   final bool isVertical;
