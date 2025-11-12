@@ -6,8 +6,6 @@ import 'package:isar_community/isar.dart';
 import 'package:pocketmind/HomeScreen.dart';
 import 'package:pocketmind/page/home/settings_page.dart';
 import 'package:pocketmind/providers/infrastructure_providers.dart';
-// ignore: unused_import
-import 'package:pocketmind/services/share_background_service.dart';
 import 'package:pocketmind/util/proxy_config.dart';
 import 'package:pocketmind/util/app_config.dart';
 import 'package:pocketmind/util/theme_data.dart';
@@ -18,7 +16,6 @@ import 'data/repositories/isar_category_repository.dart';
 
 // 这会强制构建系统将 main_share.dart 编译到应用中
 // 防止另一个入口没有被引用
-// ignore: unused_import
 import 'package:pocketmind/main_share.dart' as share_entrypoint;
 
 late Isar isar;

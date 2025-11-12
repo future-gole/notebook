@@ -259,7 +259,7 @@ class _MyShareAppState extends ConsumerState<MyShareApp>
           id: _noteId,
           initialTitle: _currentShare?.title ?? '',
           initialContent: _currentShare?.content ?? '',
-          // 不需要传url，因为原则上不会被修改
+          webUrl: _currentShare?.url,
           onDone: _dismissUI,
         );
     }

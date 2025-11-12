@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:pocketmind/util/logger_service.dart';
+import 'api_constants.dart';
 
 /// HTTP 客户端工具类
 /// 
@@ -18,7 +19,6 @@ class HttpClient {
   final String tag = "HttpClient";
 
   // 基础配置
-  static const String baseUrl = ""; // 设置你的 API 基础 URL
   static const Duration connectTimeout = Duration(seconds: 30);
   static const Duration receiveTimeout = Duration(seconds: 30);
   static const Duration sendTimeout = Duration(seconds: 30);
@@ -26,7 +26,6 @@ class HttpClient {
   HttpClient._internal() {
     _dio = Dio(
       BaseOptions(
-        baseUrl: baseUrl,
         connectTimeout: connectTimeout,
         receiveTimeout: receiveTimeout,
         sendTimeout: sendTimeout,
@@ -39,10 +38,11 @@ class HttpClient {
 
     // 添加拦截器
     _dio.interceptors.add(_LogInterceptor());
+    _dio.interceptors.add(_ApiTransformInterceptor());
     _dio.interceptors.add(_ErrorInterceptor());
   }
 
-  /// 获取 Dio 实例（用于高级场景）
+  /// 获取 Dio 实例
   Dio get dio => _dio;
 
   /// 设置 Token
@@ -57,52 +57,74 @@ class HttpClient {
     log.d(tag, "Token 已清除");
   }
 
-  /// GET 请求
+  /// 内部辅助函数，将 DioException 转换为自定义的 HttpException
+  HttpException _buildHttpException(DioException err) {
+    // 检查是否是 _ApiTransformInterceptor 抛出的业务异常
+    if (err.error is HttpException) {
+      return err.error as HttpException;
+    }
+    // 否则，是网络或 Dio 错误
+    return HttpException(_handleError(err), err.response?.statusCode);
+  }
+
+  /// GET 请求(返回 Future<T>)
   /// 
   /// [path] 请求路径
   /// [queryParameters] 查询参数
   /// [options] 请求选项
-  Future<Response<T>> get<T>(
-    String path, {
-    Map<String, dynamic>? queryParameters,
-    Options? options,
-    CancelToken? cancelToken,
-  }) async {
+  /// 注意：T 是你期望的 最终数据类型
+  //  1. 如果是第三方 API，T 可能是 Map<String, dynamic>
+  //  2. 如果是我们自己的 API，T 可能是 User 或 List<Note>
+  Future<T> get<T>(
+      String path, {
+        Map<String, dynamic>? queryParameters,
+        Options? options,
+        CancelToken? cancelToken,
+      }) async {
     try {
-      return await _dio.get<T>(
+
+      final response = await _dio.get<T>(
         path,
         queryParameters: queryParameters,
         options: options,
         cancelToken: cancelToken,
       );
+      return response.data as T;
+    } on DioException catch (e) {
+      // 转换为我们自己的异常并抛出
+      throw _buildHttpException(e);
     } catch (e) {
-      rethrow;
+      // 其他意外错误（例如解析错误）
+      throw HttpException(e.toString());
     }
   }
 
-  /// POST 请求
+  /// POST 请求 (返回 Future<T>)
   /// 
   /// [path] 请求路径
   /// [data] 请求体数据
   /// [queryParameters] 查询参数
   /// [options] 请求选项
-  Future<Response<T>> post<T>(
-    String path, {
-    dynamic data,
-    Map<String, dynamic>? queryParameters,
-    Options? options,
-    CancelToken? cancelToken,
-  }) async {
+  Future<T> post<T>(
+      String path, {
+        dynamic data,
+        Map<String, dynamic>? queryParameters,
+        Options? options,
+        CancelToken? cancelToken,
+      }) async {
     try {
-      return await _dio.post<T>(
+      final response = await _dio.post<T>(
         path,
         data: data,
         queryParameters: queryParameters,
         options: options,
         cancelToken: cancelToken,
       );
+      return response.data as T;
+    } on DioException catch (e) {
+      throw _buildHttpException(e);
     } catch (e) {
-      rethrow;
+      throw HttpException(e.toString());
     }
   }
 
@@ -112,7 +134,7 @@ class HttpClient {
   /// [data] 请求体数据
   /// [queryParameters] 查询参数
   /// [options] 请求选项
-  Future<Response<T>> put<T>(
+  Future<T> put<T>(
     String path, {
     dynamic data,
     Map<String, dynamic>? queryParameters,
@@ -120,15 +142,18 @@ class HttpClient {
     CancelToken? cancelToken,
   }) async {
     try {
-      return await _dio.put<T>(
+      final response =  await _dio.put<T>(
         path,
         data: data,
         queryParameters: queryParameters,
         options: options,
         cancelToken: cancelToken,
       );
+      return response.data as T;
+    } on DioException catch (e) {
+      throw _buildHttpException(e);
     } catch (e) {
-      rethrow;
+      throw HttpException(e.toString());
     }
   }
 
@@ -138,7 +163,7 @@ class HttpClient {
   /// [data] 请求体数据
   /// [queryParameters] 查询参数
   /// [options] 请求选项
-  Future<Response<T>> delete<T>(
+  Future<T> delete<T>(
     String path, {
     dynamic data,
     Map<String, dynamic>? queryParameters,
@@ -146,15 +171,18 @@ class HttpClient {
     CancelToken? cancelToken,
   }) async {
     try {
-      return await _dio.delete<T>(
+      final response =  await _dio.delete<T>(
         path,
         data: data,
         queryParameters: queryParameters,
         options: options,
         cancelToken: cancelToken,
       );
+      return response.data as T;
+    } on DioException catch (e) {
+      throw _buildHttpException(e);
     } catch (e) {
-      rethrow;
+      throw HttpException(e.toString());
     }
   }
 
@@ -164,7 +192,7 @@ class HttpClient {
   /// [data] 请求体数据
   /// [queryParameters] 查询参数
   /// [options] 请求选项
-  Future<Response<T>> patch<T>(
+  Future<T> patch<T>(
     String path, {
     dynamic data,
     Map<String, dynamic>? queryParameters,
@@ -172,15 +200,18 @@ class HttpClient {
     CancelToken? cancelToken,
   }) async {
     try {
-      return await _dio.patch<T>(
+      final response = await _dio.patch<T>(
         path,
         data: data,
         queryParameters: queryParameters,
         options: options,
         cancelToken: cancelToken,
       );
+      return response.data as T;
+    }  on DioException catch (e) {
+      throw _buildHttpException(e);
     } catch (e) {
-      rethrow;
+      throw HttpException(e.toString());
     }
   }
 
@@ -250,6 +281,49 @@ class HttpClient {
   }
 }
 
+/// 智能响应转换拦截器
+/// 这个拦截器会自动检测是否是 我们自己 的后端 API 响应 (ApiResponse<T>)
+/// 如果是，它会：
+/// 1. 成功 (code == 200): 自动解包，只返回 `data` 部分。
+/// 2. 失败 (code != 200): 抛出一个 `HttpException`，包含来自 API 的 `message`。
+///
+/// 如果不是我们的 API（例如 linkpreview.net），它会跳过处理，直接返回原始数据。
+class _ApiTransformInterceptor extends Interceptor {
+  @override
+  void onResponse(Response response, ResponseInterceptorHandler handler) {
+    // 检查是否是 我们自己 的 API (基于 baseUrl)
+    // 并且响应是 JSON (Map)
+    final isOurApi = response.requestOptions.uri.toString().startsWith(ApiConstants.pocketMindBaseUrl);
+    if (isOurApi && response.data is Map<String, dynamic>) {
+      final data = response.data as Map<String, dynamic>;
+
+      // 检查它是否符合我们的 ApiResponse 格式
+      if (data.containsKey('code') && data.containsKey('message')) {
+        final apiResponse = ApiResponse.fromJson(data, (json) => json); // (json) => json 只是为了复用逻辑
+
+        if (apiResponse.isSuccess) {
+          // 成功：用 ApiResponse.data 替换掉整个 response.data
+          response.data = apiResponse.data;
+          handler.next(response);
+        } else {
+          // 业务失败：抛出我们的 HttpException
+          final error = HttpException(apiResponse.message, apiResponse.code);
+          handler.reject(
+            DioException(
+              requestOptions: response.requestOptions,
+              error: error, // 将我们的 HttpException 放入 error 字段
+              type: DioExceptionType.badResponse,
+            ),
+          );
+        }
+        return;
+      }
+    }
+    // 如果不是我们的 API，或者格式不匹配，原样返回
+    handler.next(response);
+  }
+}
+
 /// 日志拦截器
 class _LogInterceptor extends Interceptor {
   final String tag = "HttpClient";
@@ -313,53 +387,53 @@ class _ErrorInterceptor extends Interceptor {
     
     handler.next(err);
   }
+}
 
-  String _handleError(DioException error) {
-    switch (error.type) {
-      case DioExceptionType.connectionTimeout:
-        return '连接超时，请检查网络';
-      case DioExceptionType.sendTimeout:
-        return '发送超时，请检查网络';
-      case DioExceptionType.receiveTimeout:
-        return '接收超时，请检查网络';
-      case DioExceptionType.badResponse:
-        return _handleStatusCode(error.response?.statusCode);
-      case DioExceptionType.cancel:
-        return '请求已取消';
-      case DioExceptionType.connectionError:
-        return '网络连接失败，请检查网络';
-      case DioExceptionType.badCertificate:
-        return '证书验证失败';
-      case DioExceptionType.unknown:
-        return '未知错误：${error.message}';
-    }
+String _handleError(DioException error) {
+  switch (error.type) {
+    case DioExceptionType.connectionTimeout:
+      return '连接超时，请检查网络';
+    case DioExceptionType.sendTimeout:
+      return '发送超时，请检查网络';
+    case DioExceptionType.receiveTimeout:
+      return '接收超时，请检查网络';
+    case DioExceptionType.badResponse:
+      return _handleStatusCode(error.response?.statusCode);
+    case DioExceptionType.cancel:
+      return '请求已取消';
+    case DioExceptionType.connectionError:
+      return '网络连接失败，请检查网络';
+    case DioExceptionType.badCertificate:
+      return '证书验证失败';
+    case DioExceptionType.unknown:
+      return '未知错误：${error.message}';
   }
+}
 
-  String _handleStatusCode(int? statusCode) {
-    switch (statusCode) {
-      case 400:
-        return '请求参数错误';
-      case 401:
-        return '未授权，请重新登录';
-      case 403:
-        return '拒绝访问';
-      case 404:
-        return '请求的资源不存在';
-      case 405:
-        return '请求方法不允许';
-      case 408:
-        return '请求超时';
-      case 500:
-        return '服务器内部错误';
-      case 502:
-        return '网关错误';
-      case 503:
-        return '服务不可用';
-      case 504:
-        return '网关超时';
-      default:
-        return '请求失败 ($statusCode)';
-    }
+String _handleStatusCode(int? statusCode) {
+  switch (statusCode) {
+    case 400:
+      return '请求参数错误';
+    case 401:
+      return '未授权，请重新登录';
+    case 403:
+      return '拒绝访问';
+    case 404:
+      return '请求的资源不存在';
+    case 405:
+      return '请求方法不允许';
+    case 408:
+      return '请求超时';
+    case 500:
+      return '服务器内部错误';
+    case 502:
+      return '网关错误';
+    case 503:
+      return '服务不可用';
+    case 504:
+      return '网关超时';
+    default:
+      return '请求失败 ($statusCode)';
   }
 }
 

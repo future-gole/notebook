@@ -6,7 +6,7 @@ import 'package:pocketmind/server/note_service.dart';
 import 'package:pocketmind/util/url_helper.dart';
 import 'link_preview_card.dart';
 import '../home/note_add_sheet.dart';
-import '../note/note_detail_page.dart';
+import '../home/note_detail_page.dart';
 import 'package:pocketmind/util/link_preview_cache.dart';
 import 'package:pocketmind/util/app_config.dart';
 
@@ -213,8 +213,7 @@ class _NoteItemState extends ConsumerState<NoteItem>
                                   url: widget.note.url!,
                                   isVertical: widget.isGridMode,
                                   hasContent:
-                                  content != null &&
-                                      content.isNotEmpty,
+                                      content != null && content.isNotEmpty,
                                 ),
                               ],
                             )
@@ -223,9 +222,7 @@ class _NoteItemState extends ConsumerState<NoteItem>
 
                     // 链接卡片下面的文字部分
                     Visibility(
-                      visible:
-                      content != null &&
-                          content.isNotEmpty,
+                      visible: content != null && content.isNotEmpty,
                       child: Padding(
                         padding: const EdgeInsets.only(
                           left: 12,

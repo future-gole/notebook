@@ -1,25 +1,28 @@
 // 路径: lib/pages/edit_note_page.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pocketmind/api/note_api_service.dart';
 import 'package:pocketmind/providers/note_providers.dart';
 import 'package:pocketmind/providers/category_providers.dart';
 import 'package:pocketmind/server/category_service.dart';
 import 'package:pocketmind/util/app_config.dart';
 
 // 标签页枚举
-enum EditTab { title, content, tags, spaces }
+enum EditTab { title, content, tags, category, AI }
 
 class EditNotePage extends ConsumerStatefulWidget {
   final String? initialTitle;
   final String? initialContent;
   final VoidCallback onDone;
   final int id;
+  final String? webUrl;
 
   const EditNotePage({
     super.key,
     required this.initialTitle,
     required this.initialContent,
     required this.onDone,
+    this.webUrl,
     required this.id,
   });
 
@@ -32,6 +35,7 @@ class EditNotePageState extends ConsumerState<EditNotePage> {
   late final TextEditingController _categoryController;
   late final TextEditingController _tagController;
   late final TextEditingController _titleController;
+  late final TextEditingController _aiController;
 
   final _config = AppConfig();
   bool _titleEnabled = false;
@@ -49,6 +53,7 @@ class EditNotePageState extends ConsumerState<EditNotePage> {
     _contentController = TextEditingController(text: widget.initialContent);
     _categoryController = TextEditingController();
     _tagController = TextEditingController();
+    _aiController = TextEditingController();
     _loadTitleSetting();
   }
 
@@ -67,6 +72,7 @@ class EditNotePageState extends ConsumerState<EditNotePage> {
     _categoryController.dispose();
     _tagController.dispose();
     _titleController.dispose();
+    _aiController.dispose();
     super.dispose();
   }
 
@@ -76,11 +82,18 @@ class EditNotePageState extends ConsumerState<EditNotePage> {
       id: widget.id,
       title: _titleEnabled ? _titleController.text : null, // 根据设置决定是否保存标题
       content: _contentController.text,
+      url: widget.webUrl,
       category: _selectedCategory, // 使用选中的分类名称
       categoryId: _selectedCategoryId, // 使用选中的分类ID
       tag: _tagController.text,
     );
-
+    if(_aiController.text.isNotEmpty){
+      // 直接发送不用 await
+      ref.read(noteApiServiceProvider).analyzePage(
+          userQuery: _aiController.text,
+          webUrl: widget.webUrl,
+          userEmail: "double2z2@163.com");
+    }
     widget.onDone();
   }
 
@@ -114,7 +127,7 @@ class EditNotePageState extends ConsumerState<EditNotePage> {
           _buildNavTab(
             icon: Icons.circle_outlined,
             label: '分类',
-            tab: EditTab.spaces,
+            tab: EditTab.category,
             colorScheme: colorScheme,
           ),
           const SizedBox(width: 40),
@@ -122,6 +135,13 @@ class EditNotePageState extends ConsumerState<EditNotePage> {
             icon: Icons.local_offer_outlined,
             label: '标签',
             tab: EditTab.tags,
+            colorScheme: colorScheme,
+          ),
+          const SizedBox(width: 40),
+          _buildNavTab(
+            icon: Icons.question_answer_outlined,
+            label: 'AI',
+            tab: EditTab.AI,
             colorScheme: colorScheme,
           ),
         ],
@@ -159,7 +179,7 @@ class EditNotePageState extends ConsumerState<EditNotePage> {
     );
   }
 
-  // 构建内容/标题编辑页面
+  // 构建内容/标题/AI编辑页面
   Widget _buildNotesContent(ColorScheme colorScheme) {
     return Container(
       padding: const EdgeInsets.all(20),
@@ -170,8 +190,9 @@ class EditNotePageState extends ConsumerState<EditNotePage> {
       alignment: Alignment.topLeft,
       child: TextField(
         controller: _currentTab == EditTab.content
-            ? _contentController
-            : _titleController,
+            ? _contentController :
+            _currentTab == EditTab.title ? _titleController
+            : _aiController,
         decoration: InputDecoration(
           hintText: "Start typing here...",
           hintStyle: TextStyle(color: colorScheme.secondary, fontSize: 16),
@@ -517,7 +538,8 @@ class EditNotePageState extends ConsumerState<EditNotePage> {
                           key: ValueKey(_currentTab),
                           child:
                               _currentTab == EditTab.content ||
-                                  _currentTab == EditTab.title
+                                  _currentTab == EditTab.title ||
+                            _currentTab == EditTab.AI
                               ? _buildNotesContent(colorScheme)
                               : SingleChildScrollView(
                                   child: _currentTab == EditTab.tags

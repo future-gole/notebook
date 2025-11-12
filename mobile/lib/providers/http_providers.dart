@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pocketmind/api/http_client.dart';
 import 'package:pocketmind/server/page_analysis_service.dart';
 import 'package:pocketmind/util/app_config.dart';
-import 'package:pocketmind/util/http_client.dart';
 
 /// HttpClient Provider
 ///
@@ -12,12 +12,4 @@ final httpClientProvider = Provider<HttpClient>((ref) {
   final baseUrl = AppConfig().baseUrl;
   httpClient.dio.options.baseUrl = baseUrl;
   return httpClient;
-});
-
-/// PageAnalysisService Provider
-///
-/// 提供页面分析服务
-final pageAnalysisServiceProvider = Provider<PageAnalysisService>((ref) {
-  final httpClient = ref.watch(httpClientProvider);
-  return PageAnalysisService(httpClient);
 });

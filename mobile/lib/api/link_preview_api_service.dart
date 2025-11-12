@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pocketmind/providers/http_providers.dart';
+import 'package:pocketmind/api/api_constants.dart';
 import 'package:pocketmind/util/app_config.dart';
 import 'package:pocketmind/util/logger_service.dart';
 
@@ -20,7 +21,6 @@ final linkPreviewServiceProvider = Provider<LinkPreviewApiService>((ref) {
 final String tag = "LinkPreviewApiService";
 
 class LinkPreviewApiService {
-  static const String _baseUrl = 'https://api.linkpreview.net';
 
   final HttpClient _http;
   LinkPreviewApiService(this._http);
@@ -32,15 +32,13 @@ class LinkPreviewApiService {
       final config = AppConfig();
       final apiKey = config.linkPreviewApiKey;
 
-      final response = await _http.get(
-        _baseUrl,
+      final data = await _http.get<Map<String, dynamic>>(
+        ApiConstants.linkPreviewBaseUrl,
         queryParameters: {
           'key': apiKey,
           'q': url,
         },
       );
-
-      final data = response.data;
 
       return ApiLinkMetadata(
           title: data['title'],

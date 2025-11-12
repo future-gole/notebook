@@ -3,7 +3,7 @@ import 'package:any_link_preview/any_link_preview.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:pocketmind/util/link_preview_config.dart';
-import 'package:pocketmind/util/link_preview_api_service.dart';
+import 'package:pocketmind/api/link_preview_api_service.dart';
 import 'package:pocketmind/util/link_preview_cache.dart';
 
 import '../../util/logger_service.dart';
