@@ -22,11 +22,6 @@ class CategoryMapper {
       ..description = entity.description
       ..createdTime = entity.createdTime;
 
-    // 如果实体有ID，说明是更新操作，设置ID
-    if (entity.id != null) {
-      category.id = entity.id!;
-    }
-
     return category;
   }
 

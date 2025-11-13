@@ -43,7 +43,7 @@ class CategoryService {
 
     final resultId = await _categoryRepository.save(newCategory);
     if (resultId != -1) {
-      log.d(CategoryServiceTag, '分类添加成功: $name');
+      log.d(CategoryServiceTag, '分类添加成功: id: $resultId,name: $name');
     } else {
       log.e(CategoryServiceTag, '分类添加失败');
     }

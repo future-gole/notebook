@@ -17,7 +17,6 @@ abstract class CategoryRepository {
   Future<CategoryEntity?> getByName(String name);
 
   /// 保存分类（新增或更新）
-  /// 
   /// 返回保存后的分类ID，失败返回 -1
   Future<int> save(CategoryEntity category);
 

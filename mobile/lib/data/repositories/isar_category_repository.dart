@@ -84,9 +84,7 @@ class IsarCategoryRepository implements CategoryRepository {
       final isarCategory = CategoryMapper.fromDomain(category);
       
       // 如果没有设置创建时间，使用当前时间
-      if (isarCategory.createdTime == null) {
-        isarCategory.createdTime = DateTime.now();
-      }
+      isarCategory.createdTime ??= DateTime.now();
 
       await _isar.writeTxn(() async {
         resultId = await _isar.categorys.put(isarCategory);
