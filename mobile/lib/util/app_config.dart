@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// 环境枚举
@@ -13,7 +14,8 @@ enum Environment {
 }
 
 /// 应用配置管理类
-class AppConfig {
+class AppConfig extends ChangeNotifier{
+  //todo 其他的地方可以换的都用ref换掉
   static const String _keyProxyEnabled = 'proxy_enabled';
   static const String _keyProxyHost = 'proxy_host';
   static const String _keyProxyPort = 'proxy_port';
@@ -21,6 +23,7 @@ class AppConfig {
   static const String _metaCacheTime = 'meta_cache_time';
   static const String _keyTitleEnabled = 'title_enabled';
   static const String _keyEnvironment = 'app_environment';
+  static const String _isWaterfallLayout = 'waterfall_layout';
 
   // 单例模式
   static final AppConfig _instance = AppConfig._internal();
@@ -32,6 +35,7 @@ class AppConfig {
   /// 初始化配置
   Future<void> init() async {
     _prefs = await SharedPreferences.getInstance();
+    notifyListeners();
   }
 
   /// 代理配置
@@ -43,16 +47,27 @@ class AppConfig {
   /// Title 显示配置
   bool get titleEnabled => _prefs?.getBool(_keyTitleEnabled) ?? false; // 默认不开启
 
+  /// waterfall
+  bool get waterfallLayoutEnabled => _prefs?.getBool(_isWaterfallLayout) ?? true; // 默认开启
+
   Future<void> setProxyEnabled(bool enabled) async {
     await _prefs?.setBool(_keyProxyEnabled, enabled);
+    notifyListeners();
+  }
+
+  Future<void> setWaterFallLayout(bool enabled) async {
+    await _prefs?.setBool(_isWaterfallLayout, enabled);
+    notifyListeners();
   }
 
   Future<void> setProxyHost(String host) async {
     await _prefs?.setString(_keyProxyHost, host);
+    notifyListeners();
   }
 
   Future<void> setProxyPort(int port) async {
     await _prefs?.setInt(_keyProxyPort, port);
+    notifyListeners();
   }
 
   /// LinkPreview API 配置
@@ -61,19 +76,23 @@ class AppConfig {
 
   Future<void> setLinkPreviewApiKey(String apiKey) async {
     await _prefs?.setString(_keyLinkPreviewApiKey, apiKey);
+    notifyListeners();
   }
 
   Future<void> setMetaCacheTime(int day) async {
     await _prefs?.setInt(_metaCacheTime, day);
+    notifyListeners();
   }
 
   Future<void> setTitleEnabled(bool enabled) async {
     await _prefs?.setBool(_keyTitleEnabled, enabled);
+    notifyListeners();
   }
 
   /// 清除所有配置
   Future<void> clearAll() async {
     await _prefs?.clear();
+    notifyListeners();
   }
 
   // ==================== 环境配置 ====================

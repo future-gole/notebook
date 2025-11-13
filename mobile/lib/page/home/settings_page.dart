@@ -20,6 +20,7 @@ class _SettingsPageState extends State<SettingsPage> {
 
   bool _proxyEnabled = false;
   bool _titleEnabled = false;
+  bool _isWaterfallLayout = true;
   bool _isLoading = true;
   Environment _currentEnvironment = Environment.development;
 
@@ -51,6 +52,7 @@ class _SettingsPageState extends State<SettingsPage> {
       _proxyPortController.text = _config.proxyPort.toString();
       _apiKeyController.text = _config.linkPreviewApiKey;
       _meteCacheTimeController.text = _config.metaCacheTime.toString();
+      _isWaterfallLayout = _config.waterfallLayoutEnabled;
       _isLoading = false;
     });
   }
@@ -63,6 +65,9 @@ class _SettingsPageState extends State<SettingsPage> {
 
     // 保存 Title 显示设置
     await _config.setTitleEnabled(_titleEnabled);
+
+    // 保存 布局 显示设置
+    await _config.setWaterFallLayout(_isWaterfallLayout);
 
     // 保存环境设置
     await _config.setEnvironment(_currentEnvironment);
@@ -160,20 +165,37 @@ class _SettingsPageState extends State<SettingsPage> {
         side: BorderSide(color: theme.dividerColor.withOpacity(0.1)),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: SwitchListTile(
-          contentPadding: EdgeInsets.zero,
-          title: Text('显示标题字段', style: theme.textTheme.bodyLarge),
-          subtitle: Text(
-            _titleEnabled ? '笔记卡片和编辑时将显示标题' : '隐藏标题，仅保留内容',
-            style: theme.textTheme.bodySmall,
-          ),
-          value: _titleEnabled,
-          onChanged: (value) {
-            setState(() => _titleEnabled = value);
-          },
-        ),
-      ),
+          padding: EdgeInsets.symmetric(horizontal: 16),
+          child: Column(
+              children: [
+                SwitchListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: Text('布局排版', style: theme.textTheme.bodyLarge),
+                  subtitle: Text(
+                    _isWaterfallLayout ? '瀑布流' : '传统列表',
+                    style: theme.textTheme.bodySmall,
+                  ),
+                  value: _isWaterfallLayout,
+                  onChanged: (value) {
+                    setState(() => _isWaterfallLayout = value);
+                  },
+                ),
+                const Divider(height: 10),
+                SwitchListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: Text('显示标题字段', style: theme.textTheme.bodyLarge),
+                  subtitle: Text(
+                    _titleEnabled ? '笔记卡片和编辑时将显示标题' : '隐藏标题，仅保留内容',
+                    style: theme.textTheme.bodySmall,
+                  ),
+                  value: _titleEnabled,
+                  onChanged: (value) {
+                    setState(() => _titleEnabled = value);
+                  },
+                ),
+              ],
+          )
+      )
     );
   }
 

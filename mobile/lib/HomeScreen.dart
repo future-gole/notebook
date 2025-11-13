@@ -8,6 +8,7 @@ import 'package:pocketmind/page/widget/note_Item.dart';
 import 'package:pocketmind/page/home/note_add_sheet.dart';
 import 'package:pocketmind/providers/nav_providers.dart';
 import 'package:pocketmind/providers/note_providers.dart';
+import 'package:pocketmind/util/app_config.dart';
 import 'package:pocketmind/util/logger_service.dart';
 
 final String tag = "HomeScreen";
@@ -124,7 +125,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     final noteByCategory = ref.watch(noteByCategoryProvider);
     final noteService = ref.watch(noteServiceProvider);
     // 获取当前布局模式
-    final currentLayout = ref.watch(noteLayoutProvider);
+    final currentLayout = ref.watch(appConfigProvider).waterfallLayoutEnabled ? NoteLayout.grid : NoteLayout.list;
     // 获取搜索查询
     final searchQuery = ref.watch(searchQueryProvider);
     // 获取搜索结果

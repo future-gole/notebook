@@ -17,8 +17,6 @@ class GlassNavBar extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // 获取当前布局模式
-    final currentLayout = ref.watch(noteLayoutProvider);
 
     // 获取当前主题亮度
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -29,24 +27,6 @@ class GlassNavBar extends ConsumerWidget {
         // 传递正确的宽度约束下去
         Expanded(
           child: CategoriesBar(),
-        ),
-
-        const SizedBox(width: 12),
-
-        // 布局切换按钮
-        _buildIconButton(
-          context,
-          icon: currentLayout == NoteLayout.grid
-              ? Icons.view_list
-              : Icons.view_module,
-          onPressed: () {
-            // 切换布局模式
-            final newLayout = currentLayout == NoteLayout.grid
-                ? NoteLayout.list
-                : NoteLayout.grid;
-            ref.read(noteLayoutProvider.notifier).state = newLayout;
-          },
-          isDark: isDark,
         ),
 
         const SizedBox(width: 8),

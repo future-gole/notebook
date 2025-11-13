@@ -3,6 +3,7 @@ import 'package:pocketmind/model/nav_item.dart';
 import 'package:pocketmind/repository/isar_nav_item_repository.dart';
 import 'package:pocketmind/repository/nav_item_repository.dart';
 import 'package:pocketmind/providers/infrastructure_providers.dart';
+import 'package:pocketmind/util/app_config.dart' show AppConfig;
 
 /// NavItemRepository Provider
 final navItemRepositoryProvider = Provider<NavItemRepository>((ref) {
@@ -22,5 +23,7 @@ final activeNavIndexProvider = StateProvider<int>((ref) => 0);
 /// 笔记布局模式枚举
 enum NoteLayout { list, grid }
 
-/// 笔记布局模式 Provider（默认使用瀑布流）
-final noteLayoutProvider = StateProvider<NoteLayout>((ref) => NoteLayout.grid);
+final appConfigProvider = ChangeNotifierProvider<AppConfig>((ref) {
+  return AppConfig();
+});
+
