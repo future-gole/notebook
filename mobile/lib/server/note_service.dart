@@ -75,6 +75,10 @@ class NoteService {
     await _noteRepository.delete(noteId);
   }
 
+  Future<void> deleteAllNoteByCategoryId(int categoryId) async{
+    await _noteRepository.deleteAllByCategoryId(categoryId);
+  }
+
   // 根据 title 查询笔记
   Future<List<NoteEntity>> findNotesWithTitle(String query) async {
     return await _noteRepository.findByTitle(query);

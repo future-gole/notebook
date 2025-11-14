@@ -10,6 +10,9 @@ abstract class NoteRepository {
   /// 根据ID删除笔记
   Future<void> delete(int id);
 
+  /// 根据分类ID删除笔记
+  Future<void> deleteAllByCategoryId(int categoryId);
+
   /// 根据ID获取笔记
   Future<NoteEntity?> getById(int id);
 

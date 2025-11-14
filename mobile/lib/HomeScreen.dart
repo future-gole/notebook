@@ -8,7 +8,6 @@ import 'package:pocketmind/page/widget/note_Item.dart';
 import 'package:pocketmind/page/home/note_add_sheet.dart';
 import 'package:pocketmind/providers/nav_providers.dart';
 import 'package:pocketmind/providers/note_providers.dart';
-import 'package:pocketmind/util/app_config.dart';
 import 'package:pocketmind/util/logger_service.dart';
 
 final String tag = "HomeScreen";
@@ -294,7 +293,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
             child: const Icon(
               Icons.add,
               size: 28,
-              color: Colors.black,
             ),
           ),
         )

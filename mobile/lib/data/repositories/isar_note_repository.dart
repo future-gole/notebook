@@ -64,6 +64,21 @@ class IsarNoteRepository implements NoteRepository {
     }
   }
 
+
+  @override
+  Future<void> deleteAllByCategoryId(int categoryId) async {
+    try {
+      await _isar.writeTxn(() async {
+        final query = _isar.notes.filter().categoryIdEqualTo(categoryId);
+        final deletedCount = await query.deleteAll();
+        log.d(_tag, '成功删除了 $deletedCount 条 id为 $categoryId 的笔记');
+      });
+    } catch (e) {
+      log.e(_tag, "笔记删除失败: $e");
+      rethrow;
+    }
+  }
+
   @override
   Future<NoteEntity?> getById(int id) async {
     try {

@@ -150,8 +150,8 @@ class _NoteDetailPageState extends ConsumerState<NoteDetailPage>
                     
                     const SizedBox(height: 32),
                     
-                    // 4. 用户注解区
-                    _buildUserNotesSection(colorScheme, textTheme),
+                    // // 4. 用户注解区 mymind有，但是感觉暂且没用
+                    // _buildUserNotesSection(colorScheme, textTheme),
                     
                     const SizedBox(height: 24),
                   ],
