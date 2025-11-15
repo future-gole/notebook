@@ -68,7 +68,7 @@ class MyQSTileService : TileService() {
 
         // 3. 更新磁贴的状态
         tile.state = Tile.STATE_ACTIVE // 保持激活状态，表示可点击
-        tile.label = "保存剪贴板" // 设置磁贴的标签
+        tile.label = "PocketMind" // 设置磁贴的标签
          tile.icon = Icon.createWithResource(this, R.drawable.ic_qs_tile_icon) // 设置图标
         tile.updateTile()
     }

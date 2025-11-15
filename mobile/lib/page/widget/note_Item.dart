@@ -164,99 +164,97 @@ class _NoteItemState extends ConsumerState<NoteItem>
                       ),
               )
             : isLocalImage
-                // 2. 本地图片模式
-                ? Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // 图片部分
-                      ClipRRect(
-                        borderRadius: const BorderRadius.vertical(
-                          top: Radius.circular(16),
-                        ),
-                        child: AspectRatio(
-                          aspectRatio: widget.isGridMode ? 1.0 : 16 / 9,
-                          child: LocalImageWidget(
-                            relativePath: widget.note.url!,
-                          ),
-                        ),
+            // 2. 本地图片模式
+            ? Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // 图片部分
+                  ClipRRect(
+                    borderRadius: const BorderRadius.vertical(
+                      top: Radius.circular(16),
+                    ),
+                    child: AspectRatio(
+                      aspectRatio: widget.isGridMode ? 1.0 : 16 / 9,
+                      child: LocalImageWidget(relativePath: widget.note.url!),
+                    ),
+                  ),
+                  // 图片下面的文字部分
+                  if (content != null && content.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(
+                        left: 12,
+                        right: 12,
+                        top: 8,
+                        bottom: 12,
                       ),
-                      // 图片下面的文字部分
-                      if (content != null && content.isNotEmpty)
-                        Padding(
-                          padding: const EdgeInsets.only(
-                            left: 12,
-                            right: 12,
-                            top: 8,
-                            bottom: 12,
-                          ),
-                          child: Text(
-                            content,
-                            style: textTheme.bodyMedium,
-                            maxLines: 3,
-                            overflow: TextOverflow.ellipsis,
-                          ),
+                      child: Text(
+                        content,
+                        style: textTheme.bodyMedium,
+                        maxLines: 3,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                ],
+              )
+            : isHttpsUrl
+            // 3. HTTPS 链接模式
+            ? Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // 链接卡片部分
+                  LinkPreviewCard(
+                    url: widget.note.url!,
+                    isVertical: widget.isGridMode,
+                    hasContent: content != null && content.isNotEmpty,
+                    onTap: () => _showNoteDetail(context),
+                  ),
+                  // 链接卡片下面的文字部分
+                  if (content != null && content.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(
+                        left: 12,
+                        right: 12,
+                        top: 8,
+                        bottom: 12,
+                      ),
+                      child: Text(
+                        content,
+                        style: textTheme.bodyMedium,
+                        maxLines: 3,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                ],
+              )
+            // 4. 其他URL（fallback）
+            : Container(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (widget.note.url != null)
+                      Text(
+                        widget.note.url!,
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: colorScheme.primary,
+                          decoration: TextDecoration.underline,
                         ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    if (content != null && content.isNotEmpty) ...[
+                      const SizedBox(height: 8),
+                      Text(
+                        content,
+                        style: textTheme.bodyMedium,
+                        maxLines: 5,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ],
-                  )
-                : isHttpsUrl
-                    // 3. HTTPS 链接模式
-                    ? Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // 链接卡片部分
-                          LinkPreviewCard(
-                            url: widget.note.url!,
-                            isVertical: widget.isGridMode,
-                            hasContent: content != null && content.isNotEmpty,
-                            onTap: () => _showNoteDetail(context),
-                          ),
-                          // 链接卡片下面的文字部分
-                          if (content != null && content.isNotEmpty)
-                            Padding(
-                              padding: const EdgeInsets.only(
-                                left: 12,
-                                right: 12,
-                                top: 8,
-                                bottom: 12,
-                              ),
-                              child: Text(
-                                content,
-                                style: textTheme.bodyMedium,
-                                maxLines: 3,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                        ],
-                      )
-                    // 4. 其他URL（fallback）
-                    : Container(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            if (widget.note.url != null)
-                              Text(
-                                widget.note.url!,
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  color: colorScheme.primary,
-                                  decoration: TextDecoration.underline,
-                                ),
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            if (content != null && content.isNotEmpty) ...[
-                              const SizedBox(height: 8),
-                              Text(
-                                content,
-                                style: textTheme.bodyMedium,
-                                maxLines: 5,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ],
-                          ],
-                        ),
-                      ),
+                  ],
+                ),
+              ),
       ),
     );
   }

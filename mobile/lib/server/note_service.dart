@@ -50,27 +50,27 @@ class NoteService {
     return await _noteRepository.save(noteEntity);
   }
 
-  // 根据笔记id获取笔记
+  /// 根据笔记id获取笔记
   Future<NoteEntity?> getNoteById(int noteId) async {
     return await _noteRepository.getById(noteId);
   }
 
-  // 获取所有笔记
+  /// 获取所有笔记
   Future<List<NoteEntity>> getAllNotes() async {
     return await _noteRepository.getAll();
   }
 
-  // 监听并且获取所有笔记
+  /// 监听并且获取所有笔记
   Stream<List<NoteEntity>> watchAllNotes() {
     return _noteRepository.watchAll();
   }
 
-  // 监听categories变化并且获取笔记
+  /// 监听categories变化并且获取笔记
   Stream<List<NoteEntity>> watchCategoryNotes(int category) {
     return _noteRepository.watchByCategory(category);
   }
 
-  // 删除笔记
+  /// 删除笔记
   Future<void> deleteNote(int noteId) async {
     await _noteRepository.delete(noteId);
   }
@@ -79,29 +79,29 @@ class NoteService {
     await _noteRepository.deleteAllByCategoryId(categoryId);
   }
 
-  // 根据 title 查询笔记
+  /// 根据 title 查询笔记
   Future<List<NoteEntity>> findNotesWithTitle(String query) async {
     return await _noteRepository.findByTitle(query);
   }
 
-  // 根据 content 查询笔记
+  /// 根据 content 查询笔记
   Future<List<NoteEntity>> findNotesWithContent(String query) async {
     return await _noteRepository.findByContent(query);
   }
 
-  // 根据 categoryId 查询笔记
+  /// 根据 categoryId 查询笔记
   Future<List<NoteEntity>> findNotesWithCategory(int categoryId) async {
     return await _noteRepository.findByCategoryId(categoryId);
   }
 
-  // 根据 tag 查询笔记
+  /// 根据 tag 查询笔记
   Future<List<NoteEntity>> findNotesWithTag(String query) async {
     return await _noteRepository.findByTag(query);
   }
 
-  // 全部匹配查询
-  Future<List<NoteEntity>> findNotesWithQuery(String query) async {
-    return await _noteRepository.findByQuery(query);
+  /// 全部匹配查询
+  Stream<List<NoteEntity>> findNotesWithQuery(String query) {
+    return _noteRepository.findByQuery(query);
   }
 
 }

@@ -32,7 +32,7 @@ abstract class NoteRepository {
   Future<List<NoteEntity>> findByContent(String query);
 
   /// 搜索笔记（模糊匹配，不区分大小写）
-  Future<List<NoteEntity>> findByQuery(String query);
+  Stream<List<NoteEntity>> findByQuery(String query);
 
   /// 根据分类ID获取笔记（按时间倒序）
   /// categoryId 为 1 时返回所有笔记

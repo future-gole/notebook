@@ -19,13 +19,13 @@ final categoryServiceProvider = Provider<CategoryService>((ref) {
   return CategoryService(repository);
 });
 
-// 所有分类 Stream Provider - 自动监听数据库变化
+/// 所有分类 Stream Provider - 自动监听数据库变化
 final allCategoriesProvider = StreamProvider<List<CategoryEntity>>((ref) {
   final categoryService = ref.watch(categoryServiceProvider);
   return categoryService.watchAllCategories();
 });
 
-// 所有分类 Future Provider - 一次性获取
+/// 所有分类 Future Provider - 一次性获取
 final categoriesProvider = FutureProvider<List<CategoryEntity>>((ref) async {
   final categoryService = ref.watch(categoryServiceProvider);
   return await categoryService.getAllCategories();

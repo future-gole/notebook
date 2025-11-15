@@ -186,22 +186,24 @@ class IsarNoteRepository implements NoteRepository {
   }
 
   @override
-  Future<List<NoteEntity>> findByQuery(String query) async {
+  Stream<List<NoteEntity>> findByQuery(String query) {
     try {
       if (query.trim().isEmpty) {
-            return getAll();
-          }
-      final notes = await _isar.notes
+        return _isar.notes.where().sortByTimeDesc()
+                .watch(fireImmediately: true)
+                .map((notes) => NoteMapper.toDomainList(notes));
+      }
+      return  _isar.notes
               .filter()
               .titleContains(query,caseSensitive: false)
               .or()
               .contentContains(query,caseSensitive: false)
               .sortByTimeDesc()
-              .findAll();
-      return NoteMapper.toDomainList(notes);
+              .watch(fireImmediately: true)
+              .map((notes) => NoteMapper.toDomainList(notes));
     } catch (e) {
       log.e(_tag, "Failed to find notes by query: $e");
-      return [];
+      return Stream.value([]);
     }
   }
 

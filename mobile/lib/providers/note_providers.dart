@@ -26,13 +26,13 @@ final noteServiceProvider = Provider<NoteService>((ref) {
 final searchQueryProvider = StateProvider<String?>((ref) => null);
 
 /// 搜索结果 Provider - 根据搜索查询返回结果
-final searchResultsProvider = FutureProvider<List<NoteEntity>>((ref) async {
+final searchResultsProvider = StreamProvider<List<NoteEntity>>((ref) {
   final query = ref.watch(searchQueryProvider);
   if (query == null || query.isEmpty) {
-    return [];
+    return Stream.value([]);
   }
   final noteService = ref.watch(noteServiceProvider);
-  return await noteService.findNotesWithQuery(query);
+  return noteService.findNotesWithQuery(query);
 });
 
 /// 所有笔记的 Stream Provider

@@ -129,9 +129,10 @@ class _SettingsPageState extends State<SettingsPage> {
           const SizedBox(height: 24),
 
           // API 环境设置
-          _buildSectionTitle('API 环境', theme),
-          _buildEnvironmentCard(theme),
-          const SizedBox(height: 24),
+          // todo 暂且不需要
+          // _buildSectionTitle('API 环境', theme),
+          // _buildEnvironmentCard(theme),
+          // const SizedBox(height: 24),
 
           // 网络代理设置
           _buildSectionTitle('网络代理', theme),

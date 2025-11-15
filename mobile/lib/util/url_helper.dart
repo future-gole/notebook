@@ -25,7 +25,10 @@ class UrlHelper {
   /// 移除文本中的 URL，保留其他内容
   static String removeUrls(String? text) {
     if (text == null || text.isEmpty) return '';
-    final urlPattern = RegExp(r'(https?|content|file)://[^\s]+', caseSensitive: false);
+    final urlPattern = RegExp(
+      r'(https?|content|file)://[^\s]+',
+      caseSensitive: false,
+    );
     return text.replaceAll(urlPattern, '').trim();
   }
 
@@ -51,12 +54,14 @@ class UrlHelper {
   static String? extractAnyUri(String? text) {
     if (text == null || text.isEmpty) return null;
     // 匹配 http, https, content, file 四种常见协议
-    final uriPattern = RegExp(r'(https?|content|file)://[^\s]+', caseSensitive: false);
+    final uriPattern = RegExp(
+      r'(https?|content|file)://[^\s]+',
+      caseSensitive: false,
+    );
     final match = uriPattern.firstMatch(text);
     return match?.group(0);
   }
 
-  // 本地图片路径检测
   /// 检测是否为本地图片路径（pocket_images目录下的相对路径）
   static bool isLocalImagePath(String? text) {
     if (text == null || text.isEmpty) return false;
