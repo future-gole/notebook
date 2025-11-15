@@ -23,14 +23,7 @@ class LinkPreviewConfig {
     // 国内网站和其他网站使用 any_link_preview
     return false;
   }
-  
-  /// 缓存时间：1年
-  static const Duration cacheDuration = Duration(days: 365);
-  
-  /// LinkPreview.net API 配额说明：
-  /// - 免费账户：120 次/小时，240 次/天
-  /// - 仅用于 X/Twitter 和 YouTube
-  
+
   /// 调试模式：打印详细日志
   static const bool debugMode = true;
 }

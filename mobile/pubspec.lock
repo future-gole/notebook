@@ -347,6 +347,14 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
+  flutter_uri_to_file:
+    dependency: "direct main"
+    description:
+      name: flutter_uri_to_file
+      sha256: "9fcdfe5e2927b672e65183eb78e1491d3624dfd09c8a2d601a7f0cf64738217f"
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "1.0.0+1"
   flutter_web_plugins:
     dependency: transitive
     description: flutter

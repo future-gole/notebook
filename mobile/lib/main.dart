@@ -6,6 +6,7 @@ import 'package:isar_community/isar.dart';
 import 'package:pocketmind/HomeScreen.dart';
 import 'package:pocketmind/page/home/settings_page.dart';
 import 'package:pocketmind/providers/infrastructure_providers.dart';
+import 'package:pocketmind/util/image_storage_helper.dart';
 import 'package:pocketmind/util/proxy_config.dart';
 import 'package:pocketmind/util/app_config.dart';
 import 'package:pocketmind/util/theme_data.dart';
@@ -47,7 +48,7 @@ Future<void> main() async {
   // 确保初始化默认分类数据
   final categoryRepository = IsarCategoryRepository(isar);
   await categoryRepository.initDefaultCategories();
-
+  await ImageStorageHelper().init();
   runApp(
     // 使用 ProviderScope 包裹应用，并 override isarProvider
     // 后续都使用状态管理里面的isar

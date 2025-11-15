@@ -4,10 +4,13 @@ import 'package:pocketmind/domain/entities/note_entity.dart';
 import 'package:pocketmind/providers/note_providers.dart';
 import 'package:pocketmind/providers/category_providers.dart';
 import 'package:pocketmind/util/app_config.dart';
+import 'package:pocketmind/util/image_storage_helper.dart' show ImageStorageHelper;
 import 'package:pocketmind/util/logger_service.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:pocketmind/util/url_helper.dart';
 
 import '../../util/link_preview_cache.dart';
+import '../widget/load_image_widget.dart';
 
 const String _tag = "NoteDetailPage";
 
@@ -220,11 +223,25 @@ class _NoteDetailPageState extends ConsumerState<NoteDetailPage>
 
   /// 1. 原始数据区（可编辑）
   Widget _buildOriginalDataSection(ColorScheme colorScheme, TextTheme textTheme) {
+    final isLocalImage = UrlHelper.isLocalImagePath(widget.note.url);
+    final isHttpsUrl = UrlHelper.containsHttpsUrl(widget.note.url);
+    
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // 本地图片显示（如果是本地图片）
+          if (isLocalImage) ...[
+            ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: LocalImageWidget(
+                relativePath: widget.note.url!,
+              ),
+            ),
+            const SizedBox(height: 16),
+          ],
+          
           // 内容编辑框
           TextField(
             controller: _contentController,
@@ -245,8 +262,8 @@ class _NoteDetailPageState extends ConsumerState<NoteDetailPage>
             onChanged: (_) => _saveNote(), // 自动保存
           ),
           
-          // URL（如果有）
-          if (widget.note.url != null && widget.note.url!.isNotEmpty) ...[
+          // URL链接（如果有且不是本地图片）
+          if (widget.note.url != null && widget.note.url!.isNotEmpty && !isLocalImage) ...[
             const SizedBox(height: 16),
             Container(
               padding: const EdgeInsets.all(12),
@@ -266,18 +283,19 @@ class _NoteDetailPageState extends ConsumerState<NoteDetailPage>
                   ),
                   const SizedBox(width: 8),
                   Expanded(
-                      child: GestureDetector(
-                        onTap: () => _launchUrl(widget.note.url!),
-                        child: Text(
-                          widget.note.url!,
-                          style: textTheme.bodySmall?.copyWith(
-                            color: colorScheme.surfaceContainerHighest,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
+                    child: GestureDetector(
+                      onTap: isHttpsUrl ? () => _launchUrl(widget.note.url!) : null,
+                      child: Text(
+                        widget.note.url!,
+                        style: textTheme.bodySmall?.copyWith(
+                          color: colorScheme.surfaceContainerHighest,
+                          decoration: isHttpsUrl ? TextDecoration.underline : null,
                         ),
-                      )
-                  )
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -965,6 +983,11 @@ class _NoteDetailPageState extends ConsumerState<NoteDetailPage>
     if (widget.note.url != null) {
       // 删除对应的链接缓存
       await LinkPreviewCache.clearCache(widget.note.url!);
+    }
+    // 删除图片，如果有的话
+    final imagePaths = widget.note.url;
+    if (imagePaths != null && imagePaths.isNotEmpty) {
+        await ImageStorageHelper().deleteImage(imagePaths);
     }
 
     final noteService = ref.read(noteServiceProvider);

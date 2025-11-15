@@ -1,4 +1,5 @@
 // 路径: lib/main_share.dart
+import 'dart:io';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -12,10 +13,12 @@ import 'package:pocketmind/page/widget/flowing_background.dart';
 import 'package:pocketmind/providers/infrastructure_providers.dart';
 import 'package:pocketmind/providers/note_providers.dart';
 import 'package:pocketmind/server/note_service.dart';
+import 'package:pocketmind/util/image_storage_helper.dart';
 import 'package:pocketmind/util/theme_data.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pocketmind/util/url_helper.dart';
 import '../../util/logger_service.dart';
+import 'package:flutter_uri_to_file/flutter_uri_to_file.dart';
 
 late Isar isar; // 这个 Isar 实例专用于分享引擎
 final String tag = "main_share";
@@ -32,9 +35,6 @@ Future<void> main_share() async {
 
   // 2. 打开 Isar 实例,和主示例相同，要不然存的地方就不一样了
   isar = await Isar.open([NoteSchema, CategorySchema], directory: dir.path);
-
-  // // 3. 初始化后台服务 (并把 Isar 传给它),并不需要了，先留着
-  // ShareBackgroundService.initialize(isar);
 
   // 4. 运行一个 只 包含分享 UI 的应用
   runApp(
@@ -108,8 +108,23 @@ class _MyShareAppState extends ConsumerState<MyShareApp>
     });
   }
 
-  String? _extractedUrl(String content){
-    return UrlHelper.extractUrl(content);
+  Future<String?> _extractedUrl(String content) async{
+    if(UrlHelper.containsHttpsUrl(content)){
+      return UrlHelper.extractHttpsUrl(content);
+    }
+    if(UrlHelper.containsContentUri(content)){
+      String? uri = UrlHelper.extractContentUri(content);
+      try{
+        File tempFile = await toFile(uri!);
+        // 先初始化一下
+        await ImageStorageHelper().init();
+        return await ImageStorageHelper().saveImage(tempFile);
+      } catch (e){
+        log.e(tag, "❌ URI 转换文件失败: $e");
+      }
+
+    }
+    return null;
   }
   String? _contentWithoutUrl(String content){
     return UrlHelper.removeUrls(content);
@@ -124,7 +139,7 @@ class _MyShareAppState extends ConsumerState<MyShareApp>
         final args = call.arguments as Map;
         final title = args['title'] as String;
         final content = _contentWithoutUrl(args['content'] as String);
-        final url = _extractedUrl(args['content'] as String);
+        final url = await _extractedUrl(args['content'] as String);
 
         log.d(tag, "showShare: title=$title, url=$url, content= $url");
 

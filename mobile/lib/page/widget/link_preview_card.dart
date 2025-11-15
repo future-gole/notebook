@@ -140,7 +140,7 @@ class _ApiLinkPreviewState extends ConsumerState<_ApiLinkPreview> {
       if (apiMetadata.success) {
         // 3.2 转换并保存到本地缓存
         // 3.1 如果没有拉取到正确的值，就不需要保存到本地缓存，否则会导致下次不会发起拉取请求
-        log.d(tag, "title: ${apiMetadata.title}，description：${apiMetadata.description},imageUrl:${apiMetadata.imageUrl}");
+        // log.d(tag, "title: ${apiMetadata.title}，description：${apiMetadata.description},imageUrl:${apiMetadata.imageUrl}");
         metadata = {
           'title': apiMetadata.title ?? 'No title',
           'description': apiMetadata.description ?? 'No description available',
