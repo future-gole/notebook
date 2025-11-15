@@ -29,17 +29,17 @@ Your Second Brain, One Tap Away.
 
 ---
 
-## ✨ 核心魔法 (The Magic)
+## ✨ 核心魔法
 
-### 🚀 1. 极致的无感记录 (Seamless Capture)
+### 🚀 1. 极致的无感记录
 不需要复制链接，不需要打开 PocketMind。
 在任何 App (Bilibili, 小红书, X...) 中点击 **“分享”** -> 选择 **PocketMind**。
 这就是全部。在后台，PocketMind已经为您解析了标题、封面和摘要。
 
 > *⚡️ Be lazy. Just share it.*
 
-### 🎨 2. 赏心悦目的记忆流 (Visual Flow)
-告别枯燥的列表。PocketMind 采用**沉浸式瀑布流 (Waterfall Layout)** 设计。
+### 🎨 2. 赏心悦目的记忆流
+告别枯燥的列表。PocketMind 采用**瀑布流** 设计。
 您的每一次收藏都以精美的图文卡片呈现，浏览笔记不再是查找资料，而是一种视觉享受。
 
 ### 🧠 3. AI 驱动的第二大脑 (Coming Soon)
@@ -50,15 +50,29 @@ Your Second Brain, One Tap Away.
 
 ---
 
-## 📱 预览 (Preview)
-### 如何快速分享？
+## 📱 预览
+### 如何快速分享（两种方式分享）？
 
+如果没有提供直接分享到应用入口的app（如小红书）可以添加分享到 PocketMind 的快捷方式，复制链接后点击进行分享即可：
+
+https://github.com/user-attachments/assets/7e0ad71e-72d5-4eb4-a518-f76e96105b41
+
+如果提供了分享链接到应用的app，可以直接选择 PocketMind 即可分享啦：
+
+https://github.com/user-attachments/assets/85860a47-1291-40d2-8380-09b5f2d94775
 
 | 瀑布流主页 | 搜索 | 详情 |
 |:---:|:---:|:---:|
 | ![Home](img.png) | ![search](img_2.png) | ![Detail](image.png) |
 
 ---
+
+## 开发初衷
+大概是懒癌后期😱，在X，微信公众号，B站，小红书等app查看一些文章的时候，总是收藏了但是需要的时候确不知道再哪一个app收藏夹里面了，并且也经常吃灰😥。
+
+PocketMind 是我对自己数字生活的一次重构，一次不一样的尝试。
+
+目前项目还在早期开发阶段，AI 分析和任务提醒功能正在紧锣密鼓地施工中。如果你也厌倦了收藏夹的混乱和搜藏无用，欢迎 Star 关注，见证它的成长。
 
 ## 🛠️ 快速上手 (Get Started)
 
@@ -83,10 +97,3 @@ flutter run
 cd backend
 ./mvnw spring-boot:run
 ```
-
-## 开发初衷
-写这个 App 的初衷非常个人化——因为我总是收藏了东西但是需要的时候确不知道再哪一个app收藏夹里面了，并且也经常吃灰。
-
-PocketMind 是我对自己数字生活的一次重构，一次不一样的尝试。
-
-目前项目还在早期开发阶段（Early Access），AI 分析和任务提醒功能正在紧锣密鼓地施工中。如果你也厌倦了收藏夹的混乱，欢迎 Star 关注，见证它的成长。
