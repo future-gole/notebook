@@ -66,7 +66,12 @@ https://github.com/user-attachments/assets/85860a47-1291-40d2-8380-09b5f2d94775
 | ![Home](img.png) | ![search](img_2.png) | ![Detail](image.png) |
 
 ---
-
+> 目前只支持 Android ，没有苹果设备无法适配😭
+## 当前计划
+1. 完善 AI 的支持
+2. 添加智能的提醒功能
+3. 增加 win 的适配，处理数据的传输
+4. 美化ui
 ## 开发初衷
 大概是懒癌后期😱，在X，微信公众号，B站，小红书等app查看一些文章的时候，总是收藏了但是需要的时候确不知道再哪一个app收藏夹里面了，并且也经常吃灰😥。
 
@@ -90,6 +95,31 @@ flutter pub get
 flutter run
 ```
 
+#### 项目架构
+mobile/lib/
+├── api/                 # 网络 API 服务 (Dio 封装)
+│   ├── note_api_service.dart
+│   └── link_preview_api_service.dart
+├── data/                # 数据层 (Repositories 实现 & Mappers)
+│   ├── repositories/    # Isar 数据库操作实现
+│   └── mappers/         # DTO 与 Entity 转换
+├── domain/              # 领域层 (Entities & Repository 接口)
+├── model/               # Isar 数据模型 (生成的 .g.dart 文件)
+│   ├── note.dart        # 笔记模型
+│   └── category.dart    # 分类模型
+├── page/                # UI 页面与组件
+│   ├── home/            # 主页相关 (HomeScreen, NoteDetail)
+│   ├── share/           # 分享扩展页面 (EditNotePage, ShareSuccessPage)
+│   └── widget/          # 通用组件 (GlassNavBar, LinkPreviewCard)
+├── providers/           # Riverpod Providers (状态管理定义)
+├── util/                # 工具类 (UrlHelper, Theme, Config)
+├── main.dart            # 主应用入口
+└── main_share.dart      # 分享扩展入口
+mobile/Android/
+├── src/                 
+    ├── ShareActivity.kt # 与flutter层面的分享交互
+    └── MainActivity.kt  
+    └── MyQSTileService.kt  # 与QSTile层面的分享交互
 ### 1. 启动后端（还在开发中，目前不启动也没关系）
 后端负责 AI 解析。
 
