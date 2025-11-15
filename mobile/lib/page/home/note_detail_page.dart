@@ -29,6 +29,7 @@ class NoteDetailPage extends ConsumerStatefulWidget {
 class _NoteDetailPageState extends ConsumerState<NoteDetailPage>
     with SingleTickerProviderStateMixin {
   late final ScrollController _scrollController;
+  late final TextEditingController _titleController;
   late final TextEditingController _contentController;
   late final TextEditingController _notesController;
   late final TextEditingController _newTagController;
@@ -56,10 +57,12 @@ class _NoteDetailPageState extends ConsumerState<NoteDetailPage>
     super.initState();
     _scrollController = ScrollController();
     _contentController = TextEditingController(text: widget.note.content ?? '');
+    _titleController = TextEditingController(text: widget.note.title ?? '');
     _notesController = TextEditingController();
     _newTagController = TextEditingController();
     _addCategoryController = TextEditingController();
     _addCategoryFocusNode = FocusNode();
+
 
     _selectedCategoryId = widget.note.categoryId;
 
@@ -190,7 +193,6 @@ class _NoteDetailPageState extends ConsumerState<NoteDetailPage>
           IconButton(
             icon: const Icon(Icons.arrow_back),
             onPressed: () {
-              _saveNote(); // 保存后返回
               Navigator.of(context).pop();
             },
             color: colorScheme.primary,
@@ -202,16 +204,26 @@ class _NoteDetailPageState extends ConsumerState<NoteDetailPage>
               widget.note.title!.isNotEmpty)
             Expanded(
               child: Center(
-                child: Text(
-                  widget.note.title!,
+                child: TextField(
+                  controller: _titleController,
+                  maxLines: null,
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w600,
                     color: colorScheme.primary,
                   ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+                  onChanged: (_) => _saveNote(), // 自动保存
                 ),
+                // child: Text(
+                //   widget.note.title!,
+                //   style: TextStyle(
+                //     fontSize: 18,
+                //     fontWeight: FontWeight.w600,
+                //     color: colorScheme.primary,
+                //   ),
+                //   maxLines: 1,
+                //   overflow: TextOverflow.ellipsis,
+                // ),
               ),
             )
           else
@@ -651,12 +663,13 @@ class _NoteDetailPageState extends ConsumerState<NoteDetailPage>
   /// 保存笔记
   Future<void> _saveNote() async {
     final content = _contentController.text.trim();
+    final title = _titleController.text.trim();
     final tagsString = _tags.join(',');
 
     final noteService = ref.read(noteServiceProvider);
     await noteService.addOrUpdateNote(
       id: widget.note.id,
-      title: widget.note.title,
+      title: title,
       content: content,
       url: widget.note.url,
       categoryId: _selectedCategoryId,
