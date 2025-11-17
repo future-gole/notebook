@@ -96,6 +96,8 @@ flutter run
 ```
 
 #### 项目架构
+
+```text
 mobile/lib/
 ├── api/                 # 网络 API 服务 (Dio 封装)
 │   ├── note_api_service.dart
@@ -120,7 +122,9 @@ mobile/Android/
     ├── ShareActivity.kt # 与flutter层面的分享交互
     └── MainActivity.kt  
     └── MyQSTileService.kt  # 与QSTile层面的分享交互
-### 1. 启动后端（还在开发中，目前不启动也没关系）
+```
+
+### 启动后端（还在开发中，目前不启动也没关系）
 后端负责 AI 解析。
 
 ```bash
