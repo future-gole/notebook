@@ -96,6 +96,7 @@ flutter run
 ```
 
 #### 项目架构
+```
 mobile/
 ├── android/src/main/kotlin/  # Android 原生层实现
 │   ├── ShareActivity.kt      # 处理与 Flutter 层的分享交互逻辑
@@ -128,6 +129,7 @@ mobile/
 │   │
 │   ├── main.dart             # 主应用 App 入口
 │   └── main_share.dart       # 分享扩展 (Share Extension) 入口
+```
 ### 1. 启动后端（还在开发中，目前不启动也没关系）
 后端负责 AI 解析。
 
