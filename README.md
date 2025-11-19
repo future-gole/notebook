@@ -96,30 +96,38 @@ flutter run
 ```
 
 #### 项目架构
-mobile/lib/
-├── api/                 # 网络 API 服务 (Dio 封装)
-│   ├── note_api_service.dart
-│   └── link_preview_api_service.dart
-├── data/                # 数据层 (Repositories 实现 & Mappers)
-│   ├── repositories/    # Isar 数据库操作实现
-│   └── mappers/         # DTO 与 Entity 转换
-├── domain/              # 领域层 (Entities & Repository 接口)
-├── model/               # Isar 数据模型 (生成的 .g.dart 文件)
-│   ├── note.dart        # 笔记模型
-│   └── category.dart    # 分类模型
-├── page/                # UI 页面与组件
-│   ├── home/            # 主页相关 (HomeScreen, NoteDetail)
-│   ├── share/           # 分享扩展页面 (EditNotePage, ShareSuccessPage)
-│   └── widget/          # 通用组件 (GlassNavBar, LinkPreviewCard)
-├── providers/           # Riverpod Providers (状态管理定义)
-├── util/                # 工具类 (UrlHelper, Theme, Config)
-├── main.dart            # 主应用入口
-└── main_share.dart      # 分享扩展入口
-mobile/Android/
-├── src/                 
-    ├── ShareActivity.kt # 与flutter层面的分享交互
-    └── MainActivity.kt  
-    └── MyQSTileService.kt  # 与QSTile层面的分享交互
+mobile/
+├── android/src/main/kotlin/  # Android 原生层实现
+│   ├── ShareActivity.kt      # 处理与 Flutter 层的分享交互逻辑
+│   ├── MainActivity.kt       # Android 主应用入口
+│   └── MyQSTileService.kt    # 快捷设置磁贴 (Quick Settings Tile) 服务
+│
+├── lib/
+│   ├── api/                  # 网络层 (Dio 服务封装)
+│   │   ├── note_api_service.dart
+│   │   └── link_preview_api_service.dart
+│   │
+│   ├── data/                 # 数据层 (Repository 实现 & Mappers)
+│   │   ├── repositories/     # Isar 数据库操作的具体实现
+│   │   └── mappers/          # DTO 与 Entity 数据转换类
+│   │
+│   ├── domain/               # 领域层 (业务实体 & Repository 接口定义)
+│   │
+│   ├── model/                # 数据库模型 (Isar Schema 定义)
+│   │   ├── note.dart         # 笔记数据模型
+│   │   └── category.dart     # 分类数据模型
+│   │
+│   ├── page/                 # UI 表现层 (页面 & 组件)
+│   │   ├── home/             # 主业务页面 (主页, 笔记详情)
+│   │   ├── share/            # 分享扩展页面 (编辑笔记, 分享成功页)
+│   │   └── widget/           # 通用 UI 组件 (毛玻璃导航栏, 链接预览卡片)
+│   │
+│   ├── providers/            # 状态管理 (Riverpod Providers 定义)
+│   │
+│   ├── util/                 # 工具类 (Url 处理, 主题, 全局配置)
+│   │
+│   ├── main.dart             # 主应用 App 入口
+│   └── main_share.dart       # 分享扩展 (Share Extension) 入口
 ### 1. 启动后端（还在开发中，目前不启动也没关系）
 后端负责 AI 解析。
 
