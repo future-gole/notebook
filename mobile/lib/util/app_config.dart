@@ -24,6 +24,7 @@ class AppConfig extends ChangeNotifier{
   static const String _keyTitleEnabled = 'title_enabled';
   static const String _keyEnvironment = 'app_environment';
   static const String _isWaterfallLayout = 'waterfall_layout';
+  static const String _keySyncAutoStart = 'sync_auto_start';
 
   // 单例模式
   static final AppConfig _instance = AppConfig._internal();
@@ -49,6 +50,14 @@ class AppConfig extends ChangeNotifier{
 
   /// waterfall
   bool get waterfallLayoutEnabled => _prefs?.getBool(_isWaterfallLayout) ?? true; // 默认开启
+
+  /// 同步服务自动启动
+  bool get syncAutoStart => _prefs?.getBool(_keySyncAutoStart) ?? false; // 默认关闭
+
+  Future<void> setSyncAutoStart(bool enabled) async {
+    await _prefs?.setBool(_keySyncAutoStart, enabled);
+    notifyListeners();
+  }
 
   Future<void> setProxyEnabled(bool enabled) async {
     await _prefs?.setBool(_keyProxyEnabled, enabled);

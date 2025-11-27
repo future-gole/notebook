@@ -194,7 +194,7 @@ class EditNotePageState extends ConsumerState<EditNotePage> {
             _currentTab == EditTab.title ? _titleController
             : _aiController,
         decoration: InputDecoration(
-          hintText: "Start typing here...",
+          hintText: _currentTab == EditTab.AI ? "敬请期待" : "Start typing here...",
           hintStyle: TextStyle(color: colorScheme.secondary, fontSize: 16),
           border: InputBorder.none,
           isDense: true,

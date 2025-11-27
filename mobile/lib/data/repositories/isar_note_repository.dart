@@ -1,4 +1,5 @@
 import 'package:isar_community/isar.dart';
+import 'package:uuid/uuid.dart';
 import '../../domain/entities/note_entity.dart';
 import '../../domain/repositories/note_repository.dart';
 import '../../model/note.dart';
@@ -12,6 +13,7 @@ import '../../util/logger_service.dart';
 class IsarNoteRepository implements NoteRepository {
   final Isar _isar;
   static const String _tag = "IsarNoteRepository";
+  static const _uuid = Uuid();
 
   IsarNoteRepository(this._isar);
 
@@ -31,6 +33,15 @@ class IsarNoteRepository implements NoteRepository {
       // 如果没有设置时间，使用当前时间
       if (isarNote.time == null) {
         isarNote.time = DateTime.now();
+      }
+
+      // 设置同步字段
+      final now = DateTime.now().millisecondsSinceEpoch;
+      isarNote.updatedAt = now;
+      
+      // 如果是新记录，生成 UUID
+      if (note.id == null) {
+        isarNote.uuid = _uuid.v4();
       }
 
       await _isar.writeTxn(() async {
@@ -54,10 +65,16 @@ class IsarNoteRepository implements NoteRepository {
   @override
   Future<void> delete(int id) async {
     try {
+      // 使用软删除代替物理删除
       await _isar.writeTxn(() async {
-        await _isar.notes.delete(id);
+        final note = await _isar.notes.get(id);
+        if (note != null) {
+          note.isDeleted = true;
+          note.updatedAt = DateTime.now().millisecondsSinceEpoch;
+          await _isar.notes.put(note);
+        }
       });
-      log.d(_tag, 'Note deleted: id=$id');
+      log.d(_tag, 'Note soft deleted: id=$id');
     } catch (e) {
       log.e(_tag, "Failed to delete note: $e");
       rethrow;
@@ -69,9 +86,14 @@ class IsarNoteRepository implements NoteRepository {
   Future<void> deleteAllByCategoryId(int categoryId) async {
     try {
       await _isar.writeTxn(() async {
-        final query = _isar.notes.filter().categoryIdEqualTo(categoryId);
-        final deletedCount = await query.deleteAll();
-        log.d(_tag, '成功删除了 $deletedCount 条 id为 $categoryId 的笔记');
+        final notes = await _isar.notes.filter().categoryIdEqualTo(categoryId).findAll();
+        final now = DateTime.now().millisecondsSinceEpoch;
+        for (final note in notes) {
+          note.isDeleted = true;
+          note.updatedAt = now;
+        }
+        await _isar.notes.putAll(notes);
+        log.d(_tag, '成功软删除了 ${notes.length} 条 categoryId为 $categoryId 的笔记');
       });
     } catch (e) {
       log.e(_tag, "笔记删除失败: $e");
@@ -83,7 +105,9 @@ class IsarNoteRepository implements NoteRepository {
   Future<NoteEntity?> getById(int id) async {
     try {
       final note = await _isar.notes.get(id);
-      return note != null ? NoteMapper.toDomain(note) : null;
+      // 过滤已删除的记录
+      if (note == null || note.isDeleted) return null;
+      return NoteMapper.toDomain(note);
     } catch (e) {
       log.e(_tag, "Failed to get note by id: $e");
       return null;
@@ -93,7 +117,11 @@ class IsarNoteRepository implements NoteRepository {
   @override
   Future<List<NoteEntity>> getAll() async {
     try {
-      final notes = await _isar.notes.where().sortByTimeDesc().findAll();
+      final notes = await _isar.notes
+          .filter()
+          .isDeletedEqualTo(false)
+          .sortByTimeDesc()
+          .findAll();
       return NoteMapper.toDomainList(notes);
     } catch (e) {
       log.e(_tag, "Failed to get all notes: $e");
@@ -104,7 +132,8 @@ class IsarNoteRepository implements NoteRepository {
   @override
   Stream<List<NoteEntity>> watchAll() {
     return _isar.notes
-        .where()
+        .filter()
+        .isDeletedEqualTo(false)
         .sortByTimeDesc()  // 添加排序（最新的在前）
         .watch(fireImmediately: true)
         .map((notes) => NoteMapper.toDomainList(notes));
@@ -114,6 +143,7 @@ class IsarNoteRepository implements NoteRepository {
   Stream<List<NoteEntity>> watchByCategory(int category) {
     return _isar.notes
         .filter()
+        .isDeletedEqualTo(false)
         .categoryIdEqualTo(category)
         .sortByTimeDesc()  // 添加排序（最新的在前）
         .watch(fireImmediately: true)
@@ -125,6 +155,7 @@ class IsarNoteRepository implements NoteRepository {
     try {
       final notes = await _isar.notes
           .filter()
+          .isDeletedEqualTo(false)
           .titleContains(query, caseSensitive: false)
           .sortByTimeDesc()  // 添加排序（最新的在前）
           .findAll();
@@ -140,6 +171,7 @@ class IsarNoteRepository implements NoteRepository {
     try {
       final notes = await _isar.notes
           .filter()
+          .isDeletedEqualTo(false)
           .contentContains(query, caseSensitive: false)
           .sortByTimeDesc()  // 添加排序（最新的在前）
           .findAll();
@@ -160,6 +192,7 @@ class IsarNoteRepository implements NoteRepository {
 
       final notes = await _isar.notes
           .filter()
+          .isDeletedEqualTo(false)
           .categoryIdEqualTo(categoryId)
           .sortByTimeDesc()
           .findAll();
@@ -175,6 +208,7 @@ class IsarNoteRepository implements NoteRepository {
     try {
       final notes = await _isar.notes
           .filter()
+          .isDeletedEqualTo(false)
           .tagContains(query, caseSensitive: false)
           .sortByTimeDesc()  // 添加排序（最新的在前）
           .findAll();
@@ -189,15 +223,21 @@ class IsarNoteRepository implements NoteRepository {
   Stream<List<NoteEntity>> findByQuery(String query) {
     try {
       if (query.trim().isEmpty) {
-        return _isar.notes.where().sortByTimeDesc()
+        return _isar.notes
+                .filter()
+                .isDeletedEqualTo(false)
+                .sortByTimeDesc()
                 .watch(fireImmediately: true)
                 .map((notes) => NoteMapper.toDomainList(notes));
       }
       return  _isar.notes
               .filter()
-              .titleContains(query,caseSensitive: false)
-              .or()
-              .contentContains(query,caseSensitive: false)
+              .isDeletedEqualTo(false)
+              .and()
+              .group((q) => q
+                .titleContains(query, caseSensitive: false)
+                .or()
+                .contentContains(query, caseSensitive: false))
               .sortByTimeDesc()
               .watch(fireImmediately: true)
               .map((notes) => NoteMapper.toDomainList(notes));

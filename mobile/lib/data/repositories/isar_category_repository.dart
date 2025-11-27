@@ -1,4 +1,5 @@
 import 'package:isar_community/isar.dart';
+import 'package:uuid/uuid.dart';
 import '../../domain/entities/category_entity.dart';
 import '../../domain/repositories/category_repository.dart';
 import '../../model/category.dart';
@@ -11,6 +12,7 @@ import '../../util/logger_service.dart';
 class IsarCategoryRepository implements CategoryRepository {
   final Isar _isar;
   static const String _tag = "IsarCategoryRepository";
+  static const _uuid = Uuid();
 
   IsarCategoryRepository(this._isar);
 
@@ -34,6 +36,8 @@ class IsarCategoryRepository implements CategoryRepository {
     try {
       await _isar.writeTxn(() async {
         final isarCategory = CategoryMapper.fromDomain(defaultCategory);
+        isarCategory.uuid = _uuid.v4();
+        isarCategory.updatedAt = DateTime.now().millisecondsSinceEpoch;
         await _isar.categorys.put(isarCategory);
       });
       log.d(_tag, 'Default categories initialized successfully');
@@ -46,7 +50,11 @@ class IsarCategoryRepository implements CategoryRepository {
   @override
   Future<List<CategoryEntity>> getAll() async {
     try {
-      final categories = await _isar.categorys.where().sortByCreatedTime().findAll();
+      final categories = await _isar.categorys
+          .filter()
+          .isDeletedEqualTo(false)
+          .sortByCreatedTime()
+          .findAll();
       return CategoryMapper.toDomainList(categories);
     } catch (e) {
       log.e(_tag, "Failed to get all categories: $e");
@@ -58,7 +66,8 @@ class IsarCategoryRepository implements CategoryRepository {
   Future<CategoryEntity?> getById(int id) async {
     try {
       final category = await _isar.categorys.get(id);
-      return category != null ? CategoryMapper.toDomain(category) : null;
+      if (category == null || category.isDeleted) return null;
+      return CategoryMapper.toDomain(category);
     } catch (e) {
       log.e(_tag, "Failed to get category by id: $e");
       return null;
@@ -68,7 +77,11 @@ class IsarCategoryRepository implements CategoryRepository {
   @override
   Future<CategoryEntity?> getByName(String name) async {
     try {
-      final category = await _isar.categorys.filter().nameEqualTo(name).findFirst();
+      final category = await _isar.categorys
+          .filter()
+          .isDeletedEqualTo(false)
+          .nameEqualTo(name)
+          .findFirst();
       return category != null ? CategoryMapper.toDomain(category) : null;
     } catch (e) {
       log.e(_tag, "Failed to get category by name: $e");
@@ -86,6 +99,15 @@ class IsarCategoryRepository implements CategoryRepository {
       // 如果没有设置创建时间，使用当前时间
       isarCategory.createdTime ??= DateTime.now();
 
+      // 设置同步字段
+      final now = DateTime.now().millisecondsSinceEpoch;
+      isarCategory.updatedAt = now;
+      
+      // 如果是新记录，生成 UUID
+      if (category.id == 1 || isarCategory.uuid == null) {
+        isarCategory.uuid = _uuid.v4();
+      }
+
       await _isar.writeTxn(() async {
         resultId = await _isar.categorys.put(isarCategory);
       });
@@ -101,10 +123,16 @@ class IsarCategoryRepository implements CategoryRepository {
   @override
   Future<void> delete(int id) async {
     try {
+      // 使用软删除代替物理删除
       await _isar.writeTxn(() async {
-        await _isar.categorys.delete(id);
+        final category = await _isar.categorys.get(id);
+        if (category != null) {
+          category.isDeleted = true;
+          category.updatedAt = DateTime.now().millisecondsSinceEpoch;
+          await _isar.categorys.put(category);
+        }
       });
-      log.d(_tag, 'Category deleted: id=$id');
+      log.d(_tag, 'Category soft deleted: id=$id');
     } catch (e) {
       log.e(_tag, 'Failed to delete category: $e');
       rethrow;
@@ -114,7 +142,8 @@ class IsarCategoryRepository implements CategoryRepository {
   @override
   Stream<List<CategoryEntity>> watchAll() {
     return _isar.categorys
-        .where()
+        .filter()
+        .isDeletedEqualTo(false)
         .watch(fireImmediately: true)
         .map((categories) => CategoryMapper.toDomainList(categories));
   }

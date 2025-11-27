@@ -262,6 +262,7 @@ class ShareActivity : FlutterActivity() {
         } catch (e: SecurityException) {
             // Android 10+ 后台访问剪贴板会抛出 SecurityException
             Log.e(TAG, "parseClipboardIntent: ❌ 无权限访问剪贴板 (SecurityException): ${e.message}")
+            Toast.makeText(this, "无权限访问剪贴板", Toast.LENGTH_SHORT).show()
             e.printStackTrace()
             return null
         } catch (e: Exception) {

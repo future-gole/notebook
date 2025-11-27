@@ -379,7 +379,7 @@ class _NoteDetailPageState extends ConsumerState<NoteDetailPage>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'AI-generated summary will appear here...',
+                  '正在开发中',
                   style: textTheme.bodyMedium?.copyWith(
                     color: colorScheme.secondary,
                     fontStyle: FontStyle.italic,

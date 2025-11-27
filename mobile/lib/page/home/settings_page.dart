@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:pocketmind/util/app_config.dart';
+import 'package:pocketmind/page/sync_settings_page.dart';
 import 'dart:io';
 import 'package:pocketmind/util/proxy_config.dart';
 
@@ -128,6 +129,11 @@ class _SettingsPageState extends State<SettingsPage> {
           _buildTitleSettingCard(theme),
           const SizedBox(height: 24),
 
+          // 局域网同步设置
+          _buildSectionTitle('数据同步', theme),
+          _buildSyncSettingCard(theme),
+          const SizedBox(height: 24),
+
           // API 环境设置
           // todo 暂且不需要
           // _buildSectionTitle('API 环境', theme),
@@ -197,6 +203,37 @@ class _SettingsPageState extends State<SettingsPage> {
               ],
           )
       )
+    );
+  }
+
+  Widget _buildSyncSettingCard(ThemeData theme) {
+    return Card(
+      color: theme.cardColor,
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(color: theme.dividerColor.withOpacity(0.1)),
+      ),
+      child: ListTile(
+        leading: Icon(
+          Icons.sync,
+          color: theme.colorScheme.primary,
+        ),
+        title: Text('局域网同步', style: theme.textTheme.bodyLarge),
+        subtitle: Text(
+          '在多设备间同步笔记数据',
+          style: theme.textTheme.bodySmall,
+        ),
+        trailing: const Icon(Icons.chevron_right),
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const SyncSettingsPage(),
+            ),
+          );
+        },
+      ),
     );
   }
 

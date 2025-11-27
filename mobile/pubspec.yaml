@@ -50,9 +50,16 @@ dependencies:
   shared_preferences: ^2.3.3
   lottie: ^3.3.1
   flutter_uri_to_file: ^1.0.0+1
+  shelf: ^1.4.2
+  shelf_router: ^1.1.4
+  uuid: ^4.5.2
+  network_info_plus: ^7.0.0
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  test: ^1.25.0
+  mockito: ^5.4.4
+  build_runner: ^2.4.6
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is

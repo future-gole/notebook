@@ -11,15 +11,62 @@ import 'package:pocketmind/util/proxy_config.dart';
 import 'package:pocketmind/util/app_config.dart';
 import 'package:pocketmind/util/theme_data.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:uuid/uuid.dart';
 import 'model/category.dart';
 import 'model/note.dart';
+import 'sync/models/sync_log.dart';
 import 'data/repositories/isar_category_repository.dart';
+import 'util/logger_service.dart';
 
 // 这会强制构建系统将 main_share.dart 编译到应用中
 // 防止另一个入口没有被引用
 import 'package:pocketmind/main_share.dart' as share_entrypoint;
 
 late Isar isar;
+
+const _uuid = Uuid();
+
+/// 为旧数据迁移 UUID
+/// 
+/// 检查所有没有 UUID 的 Note 和 Category，为它们生成 UUID
+/// 这是为了支持跨设备同步功能
+Future<void> _migrateUuidsIfNeeded(Isar db) async {
+  final tag = 'UuidMigration';
+  
+  await db.writeTxn(() async {
+    // 迁移没有 UUID 的 Notes
+    final notesWithoutUuid = await db.notes.filter().uuidIsNull().findAll();
+    if (notesWithoutUuid.isNotEmpty) {
+      log.i(tag, 'Migrating ${notesWithoutUuid.length} notes without UUID');
+      final now = DateTime.now().millisecondsSinceEpoch;
+      for (final note in notesWithoutUuid) {
+        note.uuid = _uuid.v4();
+        // 如果没有 updatedAt，使用 time 或当前时间
+        if (note.updatedAt == 0) {
+          note.updatedAt = note.time?.millisecondsSinceEpoch ?? now;
+        }
+      }
+      await db.notes.putAll(notesWithoutUuid);
+      log.i(tag, 'Notes migration completed');
+    }
+    
+    // 迁移没有 UUID 的 Categories
+    final categoriesWithoutUuid = await db.categorys.filter().uuidIsNull().findAll();
+    if (categoriesWithoutUuid.isNotEmpty) {
+      log.i(tag, 'Migrating ${categoriesWithoutUuid.length} categories without UUID');
+      final now = DateTime.now().millisecondsSinceEpoch;
+      for (final category in categoriesWithoutUuid) {
+        category.uuid = _uuid.v4();
+        // 如果没有 updatedAt，使用 createdTime 或当前时间
+        if (category.updatedAt == 0) {
+          category.updatedAt = category.createdTime?.millisecondsSinceEpoch ?? now;
+        }
+      }
+      await db.categorys.putAll(categoriesWithoutUuid);
+      log.i(tag, 'Categories migration completed');
+    }
+  });
+}
 
 Future<void> main() async {
   // 确保 flutter 绑定初始化了
@@ -39,15 +86,19 @@ Future<void> main() async {
 
   // 获取一个可写目录
   final dir = await getApplicationDocumentsDirectory();
-  // 打开 Isar 实例
+  // 打开 Isar 实例，包含 SyncLog Schema 用于同步功能
   isar = await Isar.open(
-    [NoteSchema, CategorySchema], // 传入您所有模型的 Schema
+    [NoteSchema, CategorySchema, SyncLogSchema], // 传入您所有模型的 Schema
     directory: dir.path,
   );
 
   // 确保初始化默认分类数据
   final categoryRepository = IsarCategoryRepository(isar);
   await categoryRepository.initDefaultCategories();
+  
+  // 为旧数据迁移 UUID（确保所有记录都有 UUID）
+  await _migrateUuidsIfNeeded(isar);
+  
   await ImageStorageHelper().init();
   runApp(
     // 使用 ProviderScope 包裹应用，并 override isarProvider
