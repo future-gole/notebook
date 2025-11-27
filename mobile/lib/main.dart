@@ -27,12 +27,12 @@ late Isar isar;
 const _uuid = Uuid();
 
 /// 为旧数据迁移 UUID
-/// 
+///
 /// 检查所有没有 UUID 的 Note 和 Category，为它们生成 UUID
 /// 这是为了支持跨设备同步功能
 Future<void> _migrateUuidsIfNeeded(Isar db) async {
   final tag = 'UuidMigration';
-  
+
   await db.writeTxn(() async {
     // 迁移没有 UUID 的 Notes
     final notesWithoutUuid = await db.notes.filter().uuidIsNull().findAll();
@@ -49,17 +49,24 @@ Future<void> _migrateUuidsIfNeeded(Isar db) async {
       await db.notes.putAll(notesWithoutUuid);
       log.i(tag, 'Notes migration completed');
     }
-    
+
     // 迁移没有 UUID 的 Categories
-    final categoriesWithoutUuid = await db.categorys.filter().uuidIsNull().findAll();
+    final categoriesWithoutUuid = await db.categorys
+        .filter()
+        .uuidIsNull()
+        .findAll();
     if (categoriesWithoutUuid.isNotEmpty) {
-      log.i(tag, 'Migrating ${categoriesWithoutUuid.length} categories without UUID');
+      log.i(
+        tag,
+        'Migrating ${categoriesWithoutUuid.length} categories without UUID',
+      );
       final now = DateTime.now().millisecondsSinceEpoch;
       for (final category in categoriesWithoutUuid) {
         category.uuid = _uuid.v4();
         // 如果没有 updatedAt，使用 createdTime 或当前时间
         if (category.updatedAt == 0) {
-          category.updatedAt = category.createdTime?.millisecondsSinceEpoch ?? now;
+          category.updatedAt =
+              category.createdTime?.millisecondsSinceEpoch ?? now;
         }
       }
       await db.categorys.putAll(categoriesWithoutUuid);
@@ -95,10 +102,10 @@ Future<void> main() async {
   // 确保初始化默认分类数据
   final categoryRepository = IsarCategoryRepository(isar);
   await categoryRepository.initDefaultCategories();
-  
+
   // 为旧数据迁移 UUID（确保所有记录都有 UUID）
   await _migrateUuidsIfNeeded(isar);
-  
+
   await ImageStorageHelper().init();
   runApp(
     // 使用 ProviderScope 包裹应用，并 override isarProvider

@@ -7,7 +7,7 @@ import '../mappers/category_mapper.dart';
 import '../../util/logger_service.dart';
 
 /// Isar 数据库的分类仓库实现
-/// 
+///
 /// 封装所有与 Isar 相关的数据访问逻辑，对外只暴露领域实体
 class IsarCategoryRepository implements CategoryRepository {
   final Isar _isar;
@@ -93,16 +93,16 @@ class IsarCategoryRepository implements CategoryRepository {
   Future<int> save(CategoryEntity category) async {
     try {
       int resultId = -1;
-      
+
       final isarCategory = CategoryMapper.fromDomain(category);
-      
+
       // 如果没有设置创建时间，使用当前时间
       isarCategory.createdTime ??= DateTime.now();
 
       // 设置同步字段
       final now = DateTime.now().millisecondsSinceEpoch;
       isarCategory.updatedAt = now;
-      
+
       // 如果是新记录，生成 UUID
       if (category.id == 1 || isarCategory.uuid == null) {
         isarCategory.uuid = _uuid.v4();

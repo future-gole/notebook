@@ -14,7 +14,7 @@ enum Environment {
 }
 
 /// 应用配置管理类
-class AppConfig extends ChangeNotifier{
+class AppConfig extends ChangeNotifier {
   //todo 其他的地方可以换的都用ref换掉
   static const String _keyProxyEnabled = 'proxy_enabled';
   static const String _keyProxyHost = 'proxy_host';
@@ -49,7 +49,8 @@ class AppConfig extends ChangeNotifier{
   bool get titleEnabled => _prefs?.getBool(_keyTitleEnabled) ?? false; // 默认不开启
 
   /// waterfall
-  bool get waterfallLayoutEnabled => _prefs?.getBool(_isWaterfallLayout) ?? true; // 默认开启
+  bool get waterfallLayoutEnabled =>
+      _prefs?.getBool(_isWaterfallLayout) ?? true; // 默认开启
 
   /// 同步服务自动启动
   bool get syncAutoStart => _prefs?.getBool(_keySyncAutoStart) ?? false; // 默认关闭

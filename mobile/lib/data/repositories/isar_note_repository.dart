@@ -8,7 +8,7 @@ import '../mappers/note_mapper.dart';
 import '../../util/logger_service.dart';
 
 /// Isar 数据库的笔记仓库实现
-/// 
+///
 /// 封装所有与 Isar 相关的数据访问逻辑，对外只暴露领域实体
 class IsarNoteRepository implements NoteRepository {
   final Isar _isar;
@@ -26,10 +26,10 @@ class IsarNoteRepository implements NoteRepository {
 
     try {
       int resultId = -1;
-      
+
       // 转换为 Isar 模型
       final isarNote = NoteMapper.fromDomain(note);
-      
+
       // 如果没有设置时间，使用当前时间
       if (isarNote.time == null) {
         isarNote.time = DateTime.now();
@@ -38,9 +38,17 @@ class IsarNoteRepository implements NoteRepository {
       // 设置同步字段
       final now = DateTime.now().millisecondsSinceEpoch;
       isarNote.updatedAt = now;
-      
-      // 如果是新记录，生成 UUID
-      if (note.id == null) {
+
+      // 如果是更新操作，保留现有的 uuid
+      if (note.id != null) {
+        final existingNote = await _isar.notes.get(note.id!);
+        if (existingNote != null && existingNote.uuid != null) {
+          isarNote.uuid = existingNote.uuid;
+        }
+      }
+
+      // 如果是新记录或者没有 uuid，生成新的 UUID
+      if (isarNote.uuid == null || isarNote.uuid!.isEmpty) {
         isarNote.uuid = _uuid.v4();
       }
 
@@ -81,12 +89,14 @@ class IsarNoteRepository implements NoteRepository {
     }
   }
 
-
   @override
   Future<void> deleteAllByCategoryId(int categoryId) async {
     try {
       await _isar.writeTxn(() async {
-        final notes = await _isar.notes.filter().categoryIdEqualTo(categoryId).findAll();
+        final notes = await _isar.notes
+            .filter()
+            .categoryIdEqualTo(categoryId)
+            .findAll();
         final now = DateTime.now().millisecondsSinceEpoch;
         for (final note in notes) {
           note.isDeleted = true;
@@ -134,7 +144,7 @@ class IsarNoteRepository implements NoteRepository {
     return _isar.notes
         .filter()
         .isDeletedEqualTo(false)
-        .sortByTimeDesc()  // 添加排序（最新的在前）
+        .sortByTimeDesc() // 添加排序（最新的在前）
         .watch(fireImmediately: true)
         .map((notes) => NoteMapper.toDomainList(notes));
   }
@@ -145,7 +155,7 @@ class IsarNoteRepository implements NoteRepository {
         .filter()
         .isDeletedEqualTo(false)
         .categoryIdEqualTo(category)
-        .sortByTimeDesc()  // 添加排序（最新的在前）
+        .sortByTimeDesc() // 添加排序（最新的在前）
         .watch(fireImmediately: true)
         .map((notes) => NoteMapper.toDomainList(notes));
   }
@@ -157,7 +167,7 @@ class IsarNoteRepository implements NoteRepository {
           .filter()
           .isDeletedEqualTo(false)
           .titleContains(query, caseSensitive: false)
-          .sortByTimeDesc()  // 添加排序（最新的在前）
+          .sortByTimeDesc() // 添加排序（最新的在前）
           .findAll();
       return NoteMapper.toDomainList(notes);
     } catch (e) {
@@ -173,7 +183,7 @@ class IsarNoteRepository implements NoteRepository {
           .filter()
           .isDeletedEqualTo(false)
           .contentContains(query, caseSensitive: false)
-          .sortByTimeDesc()  // 添加排序（最新的在前）
+          .sortByTimeDesc() // 添加排序（最新的在前）
           .findAll();
       return NoteMapper.toDomainList(notes);
     } catch (e) {
@@ -210,7 +220,7 @@ class IsarNoteRepository implements NoteRepository {
           .filter()
           .isDeletedEqualTo(false)
           .tagContains(query, caseSensitive: false)
-          .sortByTimeDesc()  // 添加排序（最新的在前）
+          .sortByTimeDesc() // 添加排序（最新的在前）
           .findAll();
       return NoteMapper.toDomainList(notes);
     } catch (e) {
@@ -224,27 +234,28 @@ class IsarNoteRepository implements NoteRepository {
     try {
       if (query.trim().isEmpty) {
         return _isar.notes
-                .filter()
-                .isDeletedEqualTo(false)
-                .sortByTimeDesc()
-                .watch(fireImmediately: true)
-                .map((notes) => NoteMapper.toDomainList(notes));
+            .filter()
+            .isDeletedEqualTo(false)
+            .sortByTimeDesc()
+            .watch(fireImmediately: true)
+            .map((notes) => NoteMapper.toDomainList(notes));
       }
-      return  _isar.notes
-              .filter()
-              .isDeletedEqualTo(false)
-              .and()
-              .group((q) => q
+      return _isar.notes
+          .filter()
+          .isDeletedEqualTo(false)
+          .and()
+          .group(
+            (q) => q
                 .titleContains(query, caseSensitive: false)
                 .or()
-                .contentContains(query, caseSensitive: false))
-              .sortByTimeDesc()
-              .watch(fireImmediately: true)
-              .map((notes) => NoteMapper.toDomainList(notes));
+                .contentContains(query, caseSensitive: false),
+          )
+          .sortByTimeDesc()
+          .watch(fireImmediately: true)
+          .map((notes) => NoteMapper.toDomainList(notes));
     } catch (e) {
       log.e(_tag, "Failed to find notes by query: $e");
       return Stream.value([]);
     }
   }
-
 }

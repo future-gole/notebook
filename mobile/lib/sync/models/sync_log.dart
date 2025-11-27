@@ -3,7 +3,7 @@ import 'package:isar_community/isar.dart';
 part 'sync_log.g.dart';
 
 /// 同步日志记录
-/// 
+///
 /// 记录与每个远程设备的同步状态，用于增量同步时确定起始时间戳
 @collection
 class SyncLog {

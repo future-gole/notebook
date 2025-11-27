@@ -4,7 +4,7 @@ import '../models/sync_log.dart';
 import '../../util/logger_service.dart';
 
 /// 同步日志仓库
-/// 
+///
 /// 管理与每个远程设备的同步状态
 class SyncLogRepository {
   static const String _tag = 'SyncLogRepository';
@@ -40,7 +40,10 @@ class SyncLogRepository {
   }) async {
     try {
       await _isar.writeTxn(() async {
-        var syncLog = await _isar.syncLogs.filter().remoteIpEqualTo(ip).findFirst();
+        var syncLog = await _isar.syncLogs
+            .filter()
+            .remoteIpEqualTo(ip)
+            .findFirst();
 
         if (syncLog == null) {
           syncLog = SyncLog()
@@ -59,7 +62,10 @@ class SyncLogRepository {
         await _isar.syncLogs.put(syncLog);
       });
 
-      log.d(_tag, 'Updated sync log for $ip: timestamp=$timestamp, status=$status');
+      log.d(
+        _tag,
+        'Updated sync log for $ip: timestamp=$timestamp, status=$status',
+      );
     } catch (e) {
       log.e(_tag, 'Failed to update sync log for $ip: $e');
       rethrow;
@@ -70,7 +76,10 @@ class SyncLogRepository {
   Future<void> markSyncing(String ip) async {
     try {
       await _isar.writeTxn(() async {
-        var syncLog = await _isar.syncLogs.filter().remoteIpEqualTo(ip).findFirst();
+        var syncLog = await _isar.syncLogs
+            .filter()
+            .remoteIpEqualTo(ip)
+            .findFirst();
 
         if (syncLog == null) {
           syncLog = SyncLog()

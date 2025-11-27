@@ -1,5 +1,5 @@
 /// 同步响应数据
-/// 
+///
 /// 服务端返回的同步数据格式
 class SyncResponse {
   /// 服务端当前时间戳
@@ -52,10 +52,7 @@ class SyncRequest {
   /// 请求的实体类型 (note, category, all)
   final String? entityType;
 
-  const SyncRequest({
-    required this.since,
-    this.entityType,
-  });
+  const SyncRequest({required this.since, this.entityType});
 
   /// 转换为查询参数
   Map<String, String> toQueryParameters() {
