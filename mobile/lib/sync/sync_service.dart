@@ -395,7 +395,7 @@ class SyncServiceNotifier extends StateNotifier<SyncServiceState> {
     log.i(_tag, 'Discovering devices on subnet: $subnet.*');
 
     _manager ??= SyncManager(isar: _isar);
-    final devices = await _manager!.discoverDevices(subnet);
+    final devices = await _manager!.scanNetwork(subnet);
 
     // 过滤掉自己
     final filteredDevices = devices

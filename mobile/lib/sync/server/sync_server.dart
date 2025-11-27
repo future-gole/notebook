@@ -8,6 +8,7 @@ import 'package:isar_community/isar.dart';
 
 import '../models/device_info.dart';
 import '../models/sync_response.dart';
+import '../mappers/sync_data_mapper.dart';
 import '../../model/note.dart';
 import '../../model/category.dart';
 import '../../util/logger_service.dart';
@@ -156,7 +157,7 @@ class SyncServer {
           .updatedAtGreaterThan(since)
           .findAll();
 
-      final changes = notes.map((note) => _noteToJson(note)).toList();
+      final changes = SyncDataMapper.notesToJsonList(notes);
 
       final response = SyncResponse(
         timestamp: DateTime.now().millisecondsSinceEpoch,
@@ -189,7 +190,7 @@ class SyncServer {
           .updatedAtGreaterThan(since)
           .findAll();
 
-      final changes = categories.map((cat) => _categoryToJson(cat)).toList();
+      final changes = SyncDataMapper.categoriesToJsonList(categories);
 
       final response = SyncResponse(
         timestamp: DateTime.now().millisecondsSinceEpoch,
@@ -228,16 +229,10 @@ class SyncServer {
           .updatedAtGreaterThan(since)
           .findAll();
 
-      final changes = <Map<String, dynamic>>[
-        ...notes.map((note) => {
-          ..._noteToJson(note),
-          '_entityType': 'note',
-        }),
-        ...categories.map((cat) => {
-          ..._categoryToJson(cat),
-          '_entityType': 'category',
-        }),
-      ];
+      final changes = SyncDataMapper.combineChanges(
+        notes: notes,
+        categories: categories,
+      );
 
       final response = SyncResponse(
         timestamp: DateTime.now().millisecondsSinceEpoch,
@@ -256,33 +251,6 @@ class SyncServer {
         headers: {'Content-Type': 'application/json'},
       );
     }
-  }
-
-  /// 将 Note 转换为 JSON
-  Map<String, dynamic> _noteToJson(Note note) {
-    return {
-      'uuid': note.uuid,
-      'title': note.title,
-      'content': note.content,
-      'url': note.url,
-      'time': note.time?.millisecondsSinceEpoch,
-      'updatedAt': note.updatedAt,
-      'isDeleted': note.isDeleted,
-      'categoryId': note.categoryId,
-      'tag': note.tag,
-    };
-  }
-
-  /// 将 Category 转换为 JSON
-  Map<String, dynamic> _categoryToJson(Category category) {
-    return {
-      'uuid': category.uuid,
-      'name': category.name,
-      'description': category.description,
-      'createdTime': category.createdTime?.millisecondsSinceEpoch,
-      'updatedAt': category.updatedAt,
-      'isDeleted': category.isDeleted,
-    };
   }
 
   /// CORS 中间件

@@ -4,6 +4,7 @@ import 'client/sync_client.dart';
 import 'models/device_info.dart';
 import 'models/sync_log.dart';
 import 'repository/sync_log_repository.dart';
+import 'mappers/sync_data_mapper.dart';
 import '../model/note.dart';
 import '../model/category.dart';
 import '../util/logger_service.dart';
@@ -192,7 +193,7 @@ class SyncManager {
         return _ChangeResult.ignored;
       }
       
-      final note = _noteFromJson(change);
+      final note = SyncDataMapper.noteFromJson(change);
       note.uuid = remoteUuid;
       await _isar.notes.put(note);
       log.d(_tag, 'Added new note: $remoteUuid');
@@ -202,7 +203,7 @@ class SyncManager {
     // 比较更新时间 (Last-Write-Wins)
     if (remoteUpdatedAt > localNote.updatedAt) {
       // 远程版本更新，覆盖本地
-      final note = _noteFromJson(change);
+      final note = SyncDataMapper.noteFromJson(change);
       note.id = localNote.id; // 保持本地 ID
       note.uuid = remoteUuid;
       await _isar.notes.put(note);
@@ -248,7 +249,7 @@ class SyncManager {
         return _ChangeResult.ignored;
       }
       
-      final category = _categoryFromJson(change);
+      final category = SyncDataMapper.categoryFromJson(change);
       category.uuid = remoteUuid;
       await _isar.categorys.put(category);
       log.d(_tag, 'Added new category: $remoteName ($remoteUuid)');
@@ -258,7 +259,7 @@ class SyncManager {
     // 比较更新时间 (Last-Write-Wins)
     if (remoteUpdatedAt > localCategory.updatedAt) {
       // 远程版本更新，覆盖本地
-      final category = _categoryFromJson(change);
+      final category = SyncDataMapper.categoryFromJson(change);
       category.id = localCategory.id; // 保持本地 ID
       category.uuid = remoteUuid;
       await _isar.categorys.put(category);
@@ -271,57 +272,37 @@ class SyncManager {
     return _ChangeResult.ignored;
   }
 
-  /// 从 JSON 创建 Note
-  Note _noteFromJson(Map<String, dynamic> json) {
-    final note = Note()
-      ..uuid = json['uuid'] as String?
-      ..title = json['title'] as String?
-      ..content = json['content'] as String?
-      ..url = json['url'] as String?
-      ..categoryId = json['categoryId'] as int? ?? 1
-      ..tag = json['tag'] as String?
-      ..updatedAt = json['updatedAt'] as int? ?? 0
-      ..isDeleted = json['isDeleted'] as bool? ?? false;
-
-    if (json['time'] != null) {
-      note.time = DateTime.fromMillisecondsSinceEpoch(json['time'] as int);
-    }
-
-    return note;
-  }
-
-  /// 从 JSON 创建 Category
-  Category _categoryFromJson(Map<String, dynamic> json) {
-    final category = Category()
-      ..uuid = json['uuid'] as String?
-      ..name = json['name'] as String
-      ..description = json['description'] as String?
-      ..updatedAt = json['updatedAt'] as int? ?? 0
-      ..isDeleted = json['isDeleted'] as bool? ?? false;
-
-    if (json['createdTime'] != null) {
-      category.createdTime = DateTime.fromMillisecondsSinceEpoch(json['createdTime'] as int);
-    }
-
-    return category;
-  }
-
-  /// 扫描并发现局域网设备
-  Future<List<DeviceInfo>> discoverDevices(String subnet) async {
-    return _client.scanNetwork(subnet);
+  /// 扫描局域网中的设备
+  /// 
+  /// [subnet] 子网前三段，如 "192.168.1"
+  Future<List<DeviceInfo>> scanNetwork(
+    String subnet, {
+    Duration timeout = const Duration(seconds: 3),
+  }) async {
+    log.i(_tag, 'Starting network scan on subnet: $subnet');
+    final devices = await _client.scanNetwork(subnet, timeout: timeout);
+    log.i(_tag, 'Found ${devices.length} devices');
+    return devices;
   }
 
   /// 与所有已知设备同步
-  Future<Map<String, SyncResult>> synchronizeAll() async {
-    final syncLogs = await _syncLogRepository.getAll();
+  Future<Map<String, SyncResult>> synchronizeAll({
+    List<String>? targetIps,
+  }) async {
+    final ips = targetIps ?? await _getKnownDeviceIps();
     final results = <String, SyncResult>{};
 
-    for (final syncLog in syncLogs) {
-      final result = await synchronize(syncLog.remoteIp);
-      results[syncLog.remoteIp] = result;
+    for (final ip in ips) {
+      results[ip] = await synchronize(ip);
     }
 
     return results;
+  }
+
+  /// 获取已知设备 IP 列表
+  Future<List<String>> _getKnownDeviceIps() async {
+    final logs = await _isar.syncLogs.where().findAll();
+    return logs.map((log) => log.remoteIp).toList();
   }
 
   /// 关闭管理器

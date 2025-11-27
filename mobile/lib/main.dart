@@ -120,10 +120,10 @@ class MyApp extends StatelessWidget {
 
       title: 'PocketMind',
 
-      // 应用"赤陶与暖沙"主题（亮色模式）
+      // 应用 亮色模式
       theme: calmBeigeTheme,
 
-      // 应用"静谧之夜"主题（暗色模式）
+      // 应用 暗色模式
       darkTheme: quietNightTheme,
 
       // 跟随系统主题设置

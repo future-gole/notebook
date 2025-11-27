@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:isar_community/isar.dart';
 
+import '../mappers/sync_data_mapper.dart';
 import '../models/device_info.dart';
 import '../../model/note.dart';
 import '../../model/category.dart';
@@ -286,10 +287,10 @@ class SyncWebSocketServer {
           .updatedAtGreaterThan(since)
           .findAll();
       
-      final changes = <Map<String, dynamic>>[
-        ...notes.map((n) => {..._noteToJson(n), '_entityType': 'note'}),
-        ...categories.map((c) => {..._categoryToJson(c), '_entityType': 'category'}),
-      ];
+      final changes = SyncDataMapper.combineChanges(
+        notes: notes,
+        categories: categories,
+      );
       
       _sendMessage(socket, SyncMessage(
         type: SyncMessageType.syncResponse,
@@ -349,27 +350,4 @@ class SyncWebSocketServer {
       log.e(_tag, 'Failed to send message: $e');
     }
   }
-
-  /// Note 转 JSON
-  Map<String, dynamic> _noteToJson(Note note) => {
-    'uuid': note.uuid,
-    'title': note.title,
-    'content': note.content,
-    'url': note.url,
-    'time': note.time?.millisecondsSinceEpoch,
-    'updatedAt': note.updatedAt,
-    'isDeleted': note.isDeleted,
-    'categoryId': note.categoryId,
-    'tag': note.tag,
-  };
-
-  /// Category 转 JSON
-  Map<String, dynamic> _categoryToJson(Category category) => {
-    'uuid': category.uuid,
-    'name': category.name,
-    'description': category.description,
-    'createdTime': category.createdTime?.millisecondsSinceEpoch,
-    'updatedAt': category.updatedAt,
-    'isDeleted': category.isDeleted,
-  };
 }
