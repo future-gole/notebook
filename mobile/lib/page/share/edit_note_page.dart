@@ -5,10 +5,15 @@ import 'package:pocketmind/api/note_api_service.dart';
 import 'package:pocketmind/providers/note_providers.dart';
 import 'package:pocketmind/providers/category_providers.dart';
 import 'package:pocketmind/server/category_service.dart';
+import 'package:pocketmind/service/notification_service.dart';
 import 'package:pocketmind/util/app_config.dart';
+import 'package:intl/intl.dart';
+import 'package:flutter/cupertino.dart';
+
+import 'package:pocketmind/page/widget/creative_time_picker.dart';
 
 // 标签页枚举
-enum EditTab { title, content, tags, category, AI }
+enum EditTab { title, content, tags, category, AI, reminder }
 
 class EditNotePage extends ConsumerStatefulWidget {
   final String? initialTitle;
@@ -45,6 +50,7 @@ class EditNotePageState extends ConsumerState<EditNotePage> {
   String _selectedCategory = 'home';
   int _selectedCategoryId = 1;
   bool _isAddingCategory = false;
+  DateTime? _scheduledTime;
 
   @override
   void initState() {
@@ -87,12 +93,31 @@ class EditNotePageState extends ConsumerState<EditNotePage> {
       categoryId: _selectedCategoryId, // 使用选中的分类ID
       tag: _tagController.text,
     );
-    if(_aiController.text.isNotEmpty){
+
+    if (_scheduledTime != null) {
+      final notificationService = ref.read(notificationServiceProvider);
+      await notificationService.requestPermissions();
+      await notificationService.scheduleNotification(
+        id: widget.id,
+        title: _titleEnabled && _titleController.text.isNotEmpty
+            ? _titleController.text
+            : "笔记提醒",
+        body: _contentController.text.isNotEmpty
+            ? _contentController.text
+            : "您有一条笔记提醒。",
+        scheduledDate: _scheduledTime!,
+      );
+    }
+
+    if (_aiController.text.isNotEmpty) {
       // 直接发送不用 await
-      ref.read(noteApiServiceProvider).analyzePage(
-          userQuery: _aiController.text,
-          webUrl: widget.webUrl,
-          userEmail: "double2z2@163.com");
+      ref
+          .read(noteApiServiceProvider)
+          .analyzePage(
+            userQuery: _aiController.text,
+            webUrl: widget.webUrl,
+            userEmail: "double2z2@163.com",
+          );
     }
     widget.onDone();
   }
@@ -104,47 +129,57 @@ class EditNotePageState extends ConsumerState<EditNotePage> {
     return Container(
       color: Colors.transparent, // 透明背景以显示底层 FlowingBackground
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          // 只在启用标题时显示标题标签
-          if (_titleEnabled) ...[
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            // 只在启用标题时显示标题标签
+            if (_titleEnabled) ...[
+              _buildNavTab(
+                icon: Icons.title_outlined,
+                label: '标题',
+                tab: EditTab.title,
+                colorScheme: colorScheme,
+              ),
+              const SizedBox(width: 40),
+            ],
             _buildNavTab(
-              icon: Icons.title_outlined,
-              label: '标题',
-              tab: EditTab.title,
+              icon: Icons.note_outlined,
+              label: '正文',
+              tab: EditTab.content,
               colorScheme: colorScheme,
             ),
             const SizedBox(width: 40),
+            _buildNavTab(
+              icon: Icons.circle_outlined,
+              label: '分类',
+              tab: EditTab.category,
+              colorScheme: colorScheme,
+            ),
+            const SizedBox(width: 40),
+            _buildNavTab(
+              icon: Icons.local_offer_outlined,
+              label: '标签',
+              tab: EditTab.tags,
+              colorScheme: colorScheme,
+            ),
+            const SizedBox(width: 40),
+            _buildNavTab(
+              icon: Icons.question_answer_outlined,
+              label: 'AI',
+              tab: EditTab.AI,
+              colorScheme: colorScheme,
+            ),
+            const SizedBox(width: 40),
+            _buildNavTab(
+              icon: Icons.alarm,
+              label: '提醒',
+              tab: EditTab.reminder,
+              colorScheme: colorScheme,
+            ),
           ],
-          _buildNavTab(
-            icon: Icons.note_outlined,
-            label: '正文',
-            tab: EditTab.content,
-            colorScheme: colorScheme,
-          ),
-          const SizedBox(width: 40),
-          _buildNavTab(
-            icon: Icons.circle_outlined,
-            label: '分类',
-            tab: EditTab.category,
-            colorScheme: colorScheme,
-          ),
-          const SizedBox(width: 40),
-          _buildNavTab(
-            icon: Icons.local_offer_outlined,
-            label: '标签',
-            tab: EditTab.tags,
-            colorScheme: colorScheme,
-          ),
-          const SizedBox(width: 40),
-          _buildNavTab(
-            icon: Icons.question_answer_outlined,
-            label: 'AI',
-            tab: EditTab.AI,
-            colorScheme: colorScheme,
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -190,11 +225,12 @@ class EditNotePageState extends ConsumerState<EditNotePage> {
       alignment: Alignment.topLeft,
       child: TextField(
         controller: _currentTab == EditTab.content
-            ? _contentController :
-            _currentTab == EditTab.title ? _titleController
+            ? _contentController
+            : _currentTab == EditTab.title
+            ? _titleController
             : _aiController,
         decoration: InputDecoration(
-          hintText: _currentTab == EditTab.AI ? "敬请期待" : "Start typing here...",
+          hintText: _currentTab == EditTab.AI ? "敬请期待" : "开始输入...",
           hintStyle: TextStyle(color: colorScheme.secondary, fontSize: 16),
           border: InputBorder.none,
           isDense: true,
@@ -237,7 +273,7 @@ class EditNotePageState extends ConsumerState<EditNotePage> {
           ),
           const SizedBox(height: 24),
           Text(
-            "RECENT TAGS",
+            "最近标签",
             style: TextStyle(
               color: colorScheme.secondary.withValues(alpha: 0.6),
               fontSize: 12,
@@ -480,6 +516,333 @@ class EditNotePageState extends ConsumerState<EditNotePage> {
     );
   }
 
+  Widget _buildReminderContent(ColorScheme colorScheme) {
+    final shortcuts = _config.reminderShortcuts;
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: colorScheme.surface,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          if (_scheduledTime != null) ...[
+            // 已设置提醒的展示卡片
+            Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: colorScheme.surfaceContainerHighest.withOpacity(0.15),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: colorScheme.surfaceContainerHighest.withOpacity(0.3),
+                  width: 1,
+                ),
+              ),
+              child: Column(
+                children: [
+                  Icon(
+                    Icons.notifications_active_outlined,
+                    size: 48,
+                    color: colorScheme.surfaceContainerHighest,
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    "已设置提醒",
+                    style: TextStyle(
+                      color: colorScheme.secondary,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    DateFormat('MMM d, y • h:mm a').format(_scheduledTime!),
+                    style: TextStyle(
+                      color: colorScheme.onSurface,
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'SF Pro Display',
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      // 修改时间按钮
+                      TextButton.icon(
+                        onPressed: _pickCustomTime,
+                        icon: Icon(
+                          Icons.edit_outlined,
+                          size: 18,
+                          color: colorScheme.primary,
+                        ),
+                        label: Text(
+                          "修改",
+                          style: TextStyle(
+                            color: colorScheme.primary,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        style: TextButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 12,
+                          ),
+                          backgroundColor: colorScheme.surface,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      // 删除提醒按钮
+                      TextButton.icon(
+                        onPressed: () {
+                          setState(() {
+                            _scheduledTime = null;
+                          });
+                        },
+                        icon: Icon(
+                          Icons.close,
+                          size: 18,
+                          color: colorScheme.error,
+                        ),
+                        label: Text(
+                          "删除",
+                          style: TextStyle(
+                            color: colorScheme.error,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        style: TextButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 12,
+                          ),
+                          backgroundColor: colorScheme.error.withOpacity(0.1),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ] else ...[
+            // 未设置提醒时的选项
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  "设置提醒",
+                  style: TextStyle(
+                    color: colorScheme.onSurface,
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                if (shortcuts.isNotEmpty)
+                  TextButton(
+                    onPressed: () {
+                      // 简单的清除所有快捷方式逻辑，或者弹窗管理
+                      // 这里为了简化，长按快捷方式删除，或者在设置里管理
+                      // 暂时不提供一键清除，避免误触
+                    },
+                    child: Text(
+                      "长按删除快捷方式",
+                      style: TextStyle(
+                        color: colorScheme.secondary.withOpacity(0.5),
+                        fontSize: 12,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 24),
+            // 快速选项网格
+            LayoutBuilder(
+              builder: (context, constraints) {
+                return Wrap(
+                  spacing: 12,
+                  runSpacing: 12,
+                  children: [
+                    // 稍后 (固定)
+                    _buildQuickOption(
+                      colorScheme,
+                      icon: Icons.wb_twilight,
+                      label: "稍后",
+                      timeLabel: _formatTime(
+                        DateTime.now().add(const Duration(hours: 3)),
+                      ),
+                      onTap: () {
+                        setState(() {
+                          _scheduledTime = DateTime.now().add(
+                            const Duration(hours: 3),
+                          );
+                        });
+                      },
+                      width: (constraints.maxWidth - 12) / 2,
+                    ),
+                    // 动态快捷方式
+                    ...shortcuts.asMap().entries.map((entry) {
+                      final index = entry.key;
+                      final shortcut = entry.value;
+                      final name = shortcut['name'] ?? '未命名';
+                      final timeStr = shortcut['time'] ?? '09:00';
+
+                      return GestureDetector(
+                        onLongPress: () async {
+                          // 长按删除
+                          await _config.removeReminderShortcut(index);
+                          setState(() {}); // 刷新界面
+                        },
+                        child: _buildQuickOption(
+                          colorScheme,
+                          icon: Icons.alarm,
+                          label: name,
+                          timeLabel: timeStr,
+                          onTap: () {
+                            final now = DateTime.now();
+                            final timeParts = timeStr.split(':');
+                            final hour = int.parse(timeParts[0]);
+                            final minute = int.parse(timeParts[1]);
+                            // 如果时间已过，设为明天，否则设为今天
+                            var scheduled = DateTime(
+                              now.year,
+                              now.month,
+                              now.day,
+                              hour,
+                              minute,
+                            );
+                            if (scheduled.isBefore(now)) {
+                              scheduled = scheduled.add(
+                                const Duration(days: 1),
+                              );
+                            }
+                            setState(() {
+                              _scheduledTime = scheduled;
+                            });
+                          },
+                          width: (constraints.maxWidth - 12) / 2,
+                        ),
+                      );
+                    }),
+                    // 自定义时间 (固定)
+                    _buildQuickOption(
+                      colorScheme,
+                      icon: Icons.calendar_month_outlined,
+                      label: "自定义时间",
+                      timeLabel: "选择...",
+                      onTap: _pickCustomTime,
+                      width: (constraints.maxWidth - 12) / 2,
+                      isPrimary: true,
+                    ),
+                  ],
+                );
+              },
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  String _formatTime(DateTime time) {
+    return DateFormat('h:mm a').format(time);
+  }
+
+  Widget _buildQuickOption(
+    ColorScheme colorScheme, {
+    required IconData icon,
+    required String label,
+    required String timeLabel,
+    required VoidCallback onTap,
+    required double width,
+    bool isPrimary = false,
+  }) {
+    final bgColor = isPrimary
+        ? colorScheme.primary
+        : colorScheme.surfaceContainerHighest.withOpacity(0.1);
+    final fgColor = isPrimary
+        ? colorScheme.onPrimary
+        : colorScheme.onSurfaceVariant;
+    final iconColor = isPrimary ? colorScheme.onPrimary : colorScheme.primary;
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          width: width,
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: bgColor,
+            borderRadius: BorderRadius.circular(16),
+            border: isPrimary
+                ? null
+                : Border.all(
+                    color: colorScheme.outline.withOpacity(0.1),
+                    width: 1,
+                  ),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(icon, color: iconColor, size: 24),
+              const SizedBox(height: 12),
+              Text(
+                label,
+                style: TextStyle(
+                  color: fgColor,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                timeLabel,
+                style: TextStyle(color: fgColor.withOpacity(0.7), fontSize: 12),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _pickCustomTime() async {
+    final now = DateTime.now();
+    final initialTime = _scheduledTime ?? now;
+
+    await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => CreativeTimePicker(
+          initialTime: initialTime,
+          onTimeSelected: (selectedTime, name) async {
+            setState(() {
+              _scheduledTime = selectedTime;
+            });
+            Navigator.pop(context); // Close picker
+
+            // Save shortcut if name is provided
+            if (name != null && name.isNotEmpty) {
+              final timeStr = DateFormat('HH:mm').format(selectedTime);
+              await _config.addReminderShortcut(name, timeStr);
+              if (mounted) setState(() {});
+            }
+          },
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final bottomInset = MediaQuery.of(context).viewInsets.bottom;
@@ -539,11 +902,13 @@ class EditNotePageState extends ConsumerState<EditNotePage> {
                           child:
                               _currentTab == EditTab.content ||
                                   _currentTab == EditTab.title ||
-                            _currentTab == EditTab.AI
+                                  _currentTab == EditTab.AI
                               ? _buildNotesContent(colorScheme)
                               : SingleChildScrollView(
                                   child: _currentTab == EditTab.tags
                                       ? _buildTagsContent(colorScheme)
+                                      : _currentTab == EditTab.reminder
+                                      ? _buildReminderContent(colorScheme)
                                       : _buildCategoryContent(colorScheme),
                                 ),
                         ),

@@ -23,6 +23,8 @@ class _SettingsPageState extends State<SettingsPage> {
   bool _titleEnabled = false;
   bool _isWaterfallLayout = true;
   bool _isLoading = true;
+  bool _highPrecisionNotification = false;
+  int _notificationIntensity = 2;
   Environment _currentEnvironment = Environment.development;
 
   @override
@@ -54,6 +56,8 @@ class _SettingsPageState extends State<SettingsPage> {
       _apiKeyController.text = _config.linkPreviewApiKey;
       _meteCacheTimeController.text = _config.metaCacheTime.toString();
       _isWaterfallLayout = _config.waterfallLayoutEnabled;
+      _highPrecisionNotification = _config.highPrecisionNotification;
+      _notificationIntensity = _config.notificationIntensity;
       _isLoading = false;
     });
   }
@@ -80,6 +84,10 @@ class _SettingsPageState extends State<SettingsPage> {
     await _config.setMetaCacheTime(
       int.tryParse(_meteCacheTimeController.text) ?? 10,
     );
+
+    // 保存通知设置
+    await _config.setHighPrecisionNotification(_highPrecisionNotification);
+    await _config.setNotificationIntensity(_notificationIntensity);
 
     // 应用代理设置
     _applyProxySettings();
@@ -127,6 +135,11 @@ class _SettingsPageState extends State<SettingsPage> {
           // Title 显示设置
           _buildSectionTitle('显示设置', theme),
           _buildTitleSettingCard(theme),
+          const SizedBox(height: 24),
+
+          // 提醒设置
+          _buildSectionTitle('提醒设置', theme),
+          _buildNotificationCard(theme),
           const SizedBox(height: 24),
 
           // 局域网同步设置
@@ -199,6 +212,65 @@ class _SettingsPageState extends State<SettingsPage> {
               onChanged: (value) {
                 setState(() => _titleEnabled = value);
               },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNotificationCard(ThemeData theme) {
+    return Card(
+      color: theme.cardColor,
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(color: theme.dividerColor.withOpacity(0.1)),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SwitchListTile(
+              contentPadding: EdgeInsets.zero,
+              title: Text('高精度提醒', style: theme.textTheme.bodyLarge),
+              subtitle: Text(
+                _highPrecisionNotification
+                    ? '使用闹钟通道，耗电量较高但更准时'
+                    : '使用省电通道，可能会有几分钟延迟',
+                style: theme.textTheme.bodySmall,
+              ),
+              value: _highPrecisionNotification,
+              onChanged: (value) {
+                setState(() => _highPrecisionNotification = value);
+              },
+            ),
+            const Divider(height: 24),
+            Text('提醒强度', style: theme.textTheme.bodyMedium),
+            const SizedBox(height: 12),
+            _buildIntensityOption(
+              theme,
+              2,
+              '强提醒',
+              '弹窗 + 声音 + 震动',
+              Icons.notifications_active,
+            ),
+            const SizedBox(height: 8),
+            _buildIntensityOption(
+              theme,
+              1,
+              '标准',
+              '声音 + 状态栏',
+              Icons.notifications,
+            ),
+            const SizedBox(height: 8),
+            _buildIntensityOption(
+              theme,
+              0,
+              '静音',
+              '仅状态栏显示',
+              Icons.notifications_off,
             ),
           ],
         ),
@@ -504,6 +576,79 @@ class _SettingsPageState extends State<SettingsPage> {
         const SizedBox(height: 4),
         Text(content, style: theme.textTheme.bodySmall),
       ],
+    );
+  }
+
+  Widget _buildIntensityOption(
+    ThemeData theme,
+    int value,
+    String title,
+    String subtitle,
+    IconData icon,
+  ) {
+    final isSelected = _notificationIntensity == value;
+    final colorScheme = theme.colorScheme;
+
+    return InkWell(
+      onTap: () => setState(() => _notificationIntensity = value),
+      borderRadius: BorderRadius.circular(8),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? colorScheme.primaryContainer.withOpacity(0.4)
+              : Colors.transparent,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: isSelected
+                ? colorScheme.primary
+                : theme.dividerColor.withOpacity(0.2),
+            width: isSelected ? 1.5 : 1,
+          ),
+        ),
+        child: Row(
+          children: [
+            Icon(
+              icon,
+              color: isSelected
+                  ? colorScheme.primary
+                  : theme.iconTheme.color?.withOpacity(0.7),
+              size: 20,
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      fontWeight: isSelected
+                          ? FontWeight.bold
+                          : FontWeight.normal,
+                      color: isSelected ? colorScheme.primary : null,
+                    ),
+                  ),
+                  if (subtitle.isNotEmpty) ...[
+                    const SizedBox(height: 2),
+                    Text(
+                      subtitle,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: isSelected
+                            ? colorScheme.primary.withOpacity(0.8)
+                            : null,
+                        fontSize: 11,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            if (isSelected)
+              Icon(Icons.check_circle, color: colorScheme.primary, size: 18),
+          ],
+        ),
+      ),
     );
   }
 }

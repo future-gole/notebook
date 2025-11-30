@@ -13,6 +13,7 @@ import 'package:pocketmind/page/widget/flowing_background.dart';
 import 'package:pocketmind/providers/infrastructure_providers.dart';
 import 'package:pocketmind/providers/note_providers.dart';
 import 'package:pocketmind/server/note_service.dart';
+import 'package:pocketmind/service/notification_service.dart';
 import 'package:pocketmind/util/image_storage_helper.dart';
 import 'package:pocketmind/util/theme_data.dart';
 import 'package:path_provider/path_provider.dart';
@@ -35,6 +36,8 @@ Future<void> main_share() async {
 
   // 2. 打开 Isar 实例,和主示例相同，要不然存的地方就不一样了
   isar = await Isar.open([NoteSchema, CategorySchema], directory: dir.path);
+
+  await notificationService.init();
 
   // 4. 运行一个 只 包含分享 UI 的应用
   runApp(
@@ -108,25 +111,25 @@ class _MyShareAppState extends ConsumerState<MyShareApp>
     });
   }
 
-  Future<String?> _extractedUrl(String content) async{
-    if(UrlHelper.containsHttpsUrl(content)){
+  Future<String?> _extractedUrl(String content) async {
+    if (UrlHelper.containsHttpsUrl(content)) {
       return UrlHelper.extractHttpsUrl(content);
     }
-    if(UrlHelper.containsContentUri(content)){
+    if (UrlHelper.containsContentUri(content)) {
       String? uri = UrlHelper.extractContentUri(content);
-      try{
+      try {
         File tempFile = await toFile(uri!);
         // 先初始化一下
         await ImageStorageHelper().init();
         return await ImageStorageHelper().saveImage(tempFile);
-      } catch (e){
+      } catch (e) {
         log.e(tag, "❌ URI 转换文件失败: $e");
       }
-
     }
     return null;
   }
-  String? _contentWithoutUrl(String content){
+
+  String? _contentWithoutUrl(String content) {
     return UrlHelper.removeUrls(content);
   }
 
@@ -153,11 +156,7 @@ class _MyShareAppState extends ConsumerState<MyShareApp>
 
           // 2. 更新 UI 状态以显示 ShareSuccessPage
           setState(() {
-            _currentShare = ShareData(
-              title: title,
-              content: content,
-              url: url,
-            );
+            _currentShare = ShareData(title: title, content: content, url: url);
             _currentState = ShareUIState.success;
           });
 

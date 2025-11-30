@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:isar_community/isar.dart';
 import 'package:pocketmind/HomeScreen.dart';
+import 'package:pocketmind/service/notification_service.dart';
 import 'package:pocketmind/page/home/settings_page.dart';
 import 'package:pocketmind/providers/infrastructure_providers.dart';
 import 'package:pocketmind/util/image_storage_helper.dart';
@@ -107,6 +108,7 @@ Future<void> main() async {
   await _migrateUuidsIfNeeded(isar);
 
   await ImageStorageHelper().init();
+  await notificationService.init();
   runApp(
     // 使用 ProviderScope 包裹应用，并 override isarProvider
     // 后续都使用状态管理里面的isar

@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
 
 /// 环境枚举
 enum Environment {
@@ -25,6 +26,10 @@ class AppConfig extends ChangeNotifier {
   static const String _keyEnvironment = 'app_environment';
   static const String _isWaterfallLayout = 'waterfall_layout';
   static const String _keySyncAutoStart = 'sync_auto_start';
+  static const String _keyReminderShortcuts = 'reminder_shortcuts';
+  static const String _keyHighPrecisionNotification =
+      'high_precision_notification';
+  static const String _keyNotificationIntensity = 'notification_intensity';
 
   // 单例模式
   static final AppConfig _instance = AppConfig._internal();
@@ -54,6 +59,62 @@ class AppConfig extends ChangeNotifier {
 
   /// 同步服务自动启动
   bool get syncAutoStart => _prefs?.getBool(_keySyncAutoStart) ?? false; // 默认关闭
+
+  /// 提醒快捷方式列表
+  /// 格式: [{"name": "Gym", "time": "18:00"}, ...]
+  List<Map<String, String>> get reminderShortcuts {
+    final value = _prefs?.get(_keyReminderShortcuts);
+    if (value is! String) {
+      return [];
+    }
+    final jsonString = value;
+    try {
+      final List<dynamic> list = json.decode(jsonString);
+      return list.map((e) => Map<String, String>.from(e)).toList();
+    } catch (e) {
+      return [];
+    }
+  }
+
+  Future<void> addReminderShortcut(String name, String time) async {
+    final shortcuts = reminderShortcuts;
+    // 限制最大数量为 5
+    if (shortcuts.length >= 5) {
+      // 如果超过5个，移除最早的一个? 或者直接报错?
+      // 这里简单处理：移除第一个
+      shortcuts.removeAt(0);
+    }
+    shortcuts.add({'name': name, 'time': time});
+    await _prefs?.setString(_keyReminderShortcuts, json.encode(shortcuts));
+    notifyListeners();
+  }
+
+  Future<void> removeReminderShortcut(int index) async {
+    final shortcuts = reminderShortcuts;
+    if (index >= 0 && index < shortcuts.length) {
+      shortcuts.removeAt(index);
+      await _prefs?.setString(_keyReminderShortcuts, json.encode(shortcuts));
+      notifyListeners();
+    }
+  }
+
+  /// 通知精度配置
+  bool get highPrecisionNotification =>
+      _prefs?.getBool(_keyHighPrecisionNotification) ?? false; // 默认关闭(省电模式)
+
+  Future<void> setHighPrecisionNotification(bool enabled) async {
+    await _prefs?.setBool(_keyHighPrecisionNotification, enabled);
+    notifyListeners();
+  }
+
+  /// 通知强度: 0=低(静音), 1=中(标准), 2=高(强提醒)
+  int get notificationIntensity =>
+      _prefs?.getInt(_keyNotificationIntensity) ?? 2;
+
+  Future<void> setNotificationIntensity(int level) async {
+    await _prefs?.setInt(_keyNotificationIntensity, level);
+    notifyListeners();
+  }
 
   Future<void> setSyncAutoStart(bool enabled) async {
     await _prefs?.setBool(_keySyncAutoStart, enabled);
