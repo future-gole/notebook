@@ -1,5 +1,7 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart'
     as fln;
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 import 'package:flutter_timezone/flutter_timezone.dart';
@@ -106,6 +108,25 @@ class NotificationService {
     required String body,
     required DateTime scheduledDate,
   }) async {
+    // 0. 先检测权限检查与请求
+    PermissionStatus status = await Permission.notification.status;
+
+    if (!status.isGranted) {
+      // 如果没有权限，主动请求一次 (iOS会弹窗，Android 13+会弹窗)
+      status = await Permission.notification.request();
+
+      // 如果请求后还是拒绝 (用户点了“不允许”或“不再询问”)
+      if (!status.isGranted) {
+        Fluttertoast.showToast(
+            msg: "设置闹钟需要通知权限，请在设置中开启！",
+            toastLength: Toast.LENGTH_LONG
+        );
+        //打开系统设置页面
+        await openAppSettings();
+        return;
+      }
+    }
+
     // 1. 将输入的 DateTime (本地时间) 转换为 tz.local 时区下的 TZDateTime
     tz.TZDateTime tzDate = tz.TZDateTime.from(scheduledDate, tz.local);
 
@@ -158,6 +179,12 @@ class NotificationService {
       );
       log.i('NotificationService', '通知调度成功');
     } catch (e) {
+        log.e('NotificationService', '闹钟保存失败');
+        Fluttertoast.showToast(
+            msg: "闹钟保存失败",
+            toastLength: Toast.LENGTH_LONG,
+            gravity: ToastGravity.CENTER,
+        );
       log.e('NotificationService', '调度通知失败: $e');
     }
   }
