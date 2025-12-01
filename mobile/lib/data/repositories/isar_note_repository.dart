@@ -151,11 +151,15 @@ class IsarNoteRepository implements NoteRepository {
 
   @override
   Stream<List<NoteEntity>> watchByCategory(int category) {
-    return _isar.notes
-        .filter()
-        .isDeletedEqualTo(false)
-        .categoryIdEqualTo(category)
-        .sortByTimeDesc() // 添加排序（最新的在前）
+    // 1. 先定义基础查询：所有未删除的笔记
+    var query = _isar.notes.filter().isDeletedEqualTo(false);
+    // 2. 动态判断：如果 category 不是 1（全部），则追加分类 ID 过滤
+    if (category != 1) {
+      query = query.categoryIdEqualTo(category);
+    }
+    // 3. 统一收尾：排序、监听、转换
+    return query
+        .sortByTimeDesc()
         .watch(fireImmediately: true)
         .map((notes) => NoteMapper.toDomainList(notes));
   }

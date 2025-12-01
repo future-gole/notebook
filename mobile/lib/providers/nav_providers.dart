@@ -23,7 +23,13 @@ final activeNavIndexProvider = StateProvider<int>((ref) => 0);
 /// 笔记布局模式枚举
 enum NoteLayout { list, grid }
 
-final appConfigProvider = ChangeNotifierProvider<AppConfig>((ref) {
-  return AppConfig();
+final activeCategoryId = FutureProvider<int>((ref) async {
+  // 获取激活的下标
+  final activeIndex = ref.watch(activeNavIndexProvider);
+  // 获取最新的导航项
+  final items = await ref.watch(navItemsProvider.future);
+  // 获取当前分类的 categoryId
+  return items[activeIndex].categoryId;
 });
+
 

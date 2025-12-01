@@ -10,27 +10,14 @@ class IsarNavItemRepository implements NavItemRepository {
   IsarNavItemRepository(this.isar);
 
   @override
-  Future<List<NavItem>> getNavItems() async {
-    // 从 Isar 获取所有分类
-    final categories = await isar.categorys.where().findAll();
-
-    // 将 Category 转换为 NavItem
-    return categories.map((category) {
-      return NavItem(
-        svgPath: _getIconForCategory(category.name),
-        text: category.name,
-        category: category.name,
-        categoryId: category.id,
-      );
-    }).toList();
-  }
-
-  @override
   Stream<List<NavItem>> watchNavItems() {
-    // 监听 categories 变化
-    return isar.categorys.where().watch(fireImmediately: true).map((
-      categories,
-    ) {
+    return isar.categorys
+        .filter()
+        .isDeletedEqualTo(false) // 1. 在数据库层面直接过滤
+        .sortByCreatedTime() // 2. 排序
+        .watch(fireImmediately: true)
+        .map((categories) {
+      // 3. 此时 categories 里全是有效数据，直接转换即可
       return categories.map((category) {
         return NavItem(
           svgPath: _getIconForCategory(category.name),

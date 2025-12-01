@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:pocketmind/util/app_config.dart';
-import 'package:pocketmind/page/sync_settings_page.dart';
+import 'package:pocketmind/page/home/sync_settings_page.dart';
 import 'dart:io';
 import 'package:pocketmind/util/proxy_config.dart';
 

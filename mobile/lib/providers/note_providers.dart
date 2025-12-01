@@ -59,17 +59,10 @@ class NoteByCategory extends StreamNotifier<List<NoteEntity>> {
   // build 方法返回 Stream，自动监听数据库变化
   @override
   Stream<List<NoteEntity>> build() async* {
-    // 获取激活的下标
-    final activeIndex = ref.watch(activeNavIndexProvider);
     // 获取 noteService
     final noteService = ref.watch(noteServiceProvider);
-    // 获取最新的导航项
-    final items = await ref.watch(navItemsProvider.future);
 
-    log.d("activeIndex","activeIndex: $activeIndex");
-
-    // 获取当前分类的 categoryId
-    int targetCategoryId = items[activeIndex].categoryId;
+    final targetCategoryId = await ref.watch(activeCategoryId.future);
 
     log.d("activeIndex","targetCategoryId: $targetCategoryId");
 

@@ -31,7 +31,6 @@ class _NoteEditorSheetState extends ConsumerState<NoteEditorSheet>
   bool _isAddCategoryMode = false;
   final TextEditingController _addCategoryController = TextEditingController();
 
-  late int _selectedCategoryId;
 
 
   final _config = AppConfig();
@@ -43,7 +42,6 @@ class _NoteEditorSheetState extends ConsumerState<NoteEditorSheet>
     // 根据模式初始化控制器
     _titleController = TextEditingController();
     _contentController = TextEditingController();
-    _selectedCategoryId = 1;
     _loadTitleSetting();
 
     _addCategoryAnimationController = AnimationController(
@@ -132,15 +130,14 @@ class _NoteEditorSheetState extends ConsumerState<NoteEditorSheet>
       return;
     }
 
-    // 可以选择不分类，不分类就是默认的home
-
     final noteService = ref.read(noteServiceProvider);
 
+    final targetCategoryId = await ref.watch(activeCategoryId.future);
     // 新建模式：创建新笔记
     await noteService.addOrUpdateNote(
       title: _titleEnabled ? title : null,
       content: content,
-      categoryId: _selectedCategoryId,
+      categoryId: targetCategoryId,
     );
 
     // 刷新笔记列表

@@ -6,6 +6,7 @@ import 'package:pocketmind/domain/entities/note_entity.dart';
 import 'package:pocketmind/page/widget/glass_nav_bar.dart';
 import 'package:pocketmind/page/widget/note_Item.dart';
 import 'package:pocketmind/page/home/note_add_sheet.dart';
+import 'package:pocketmind/providers/infrastructure_providers.dart';
 import 'package:pocketmind/providers/nav_providers.dart';
 import 'package:pocketmind/providers/note_providers.dart';
 import 'package:pocketmind/util/logger_service.dart';

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../sync/sync_service.dart';
-import '../sync/models/device_info.dart';
-import '../util/app_config.dart';
+import '../../sync/sync_service.dart';
+import '../../sync/models/device_info.dart';
+import '../../util/app_config.dart';
 
 /// 同步设置页面
 class SyncSettingsPage extends ConsumerStatefulWidget {
