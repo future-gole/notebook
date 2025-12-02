@@ -23,10 +23,13 @@ class _CreativeTimePickerState extends State<CreativeTimePicker>
   late int _hour;
   late int _minute;
   late bool _isAm;
+  late DateTime _selectedDate;
+  late DateTime _calendarFocusedDay; // For the custom calendar view
   String? _draggingType; // 'hour' | 'minute' | null
   bool _alarmSet = false;
   final TextEditingController _nameController = TextEditingController();
   bool _showNameInput = false;
+  bool _isDatePickerMode = false; // Toggle between Time and Date picker
 
   // Theme colors
   late List<Color> _bgColors;
@@ -34,6 +37,11 @@ class _CreativeTimePickerState extends State<CreativeTimePicker>
   late Color _knobColor;
   late IconData _themeIcon;
   late Color _themeIconColor;
+
+  // Dynamic Glass Colors for visibility
+  late Color _glassColor;
+  late Color _glassBorderColor;
+  late Color _textColor;
 
   @override
   void initState() {
@@ -44,6 +52,8 @@ class _CreativeTimePickerState extends State<CreativeTimePicker>
         : (initTime.hour == 0 ? 12 : initTime.hour);
     _minute = initTime.minute;
     _isAm = initTime.hour < 12;
+    _selectedDate = DateTime(initTime.year, initTime.month, initTime.day);
+    _calendarFocusedDay = _selectedDate;
     _updateTheme();
   }
 
@@ -69,17 +79,25 @@ class _CreativeTimePickerState extends State<CreativeTimePicker>
       _knobColor = const Color(0xFFF472B6); // pink-400
       _themeIcon = Icons.wb_sunny;
       _themeIconColor = const Color(0xFFFBCFE8); // pink-200
+      _glassColor = Colors.white.withOpacity(0.1);
+      _glassBorderColor = Colors.white.withOpacity(0.1);
+      _textColor = Colors.white;
     } else if (realHour >= 7 && realHour < 17) {
-      // Day
+      // Day - Adjusted for better visibility
       _bgColors = [
-        const Color(0xFF60A5FA), // blue-400
-        const Color(0xFF7DD3FC), // sky-300
-        const Color(0xFFFEF08A), // yellow-200
+        const Color(0xFF3B82F6), // blue-500 (Darker than before)
+        const Color(0xFF0EA5E9), // sky-500
+        const Color(0xFFF59E0B), // amber-500 (Darker yellow/orange)
       ];
-      _accentColor = const Color(0xFF2563EB); // blue-600
-      _knobColor = const Color(0xFFFACC15); // yellow-400
+      _accentColor = const Color(0xFF1D4ED8); // blue-700
+      _knobColor = const Color(0xFFFDE047); // yellow-300
       _themeIcon = Icons.wb_sunny;
-      _themeIconColor = const Color(0xFFEAB308); // yellow-500
+      _themeIconColor = const Color(0xFFFEF08A); // yellow-200
+
+      // Make glass more visible on bright background
+      _glassColor = Colors.white.withOpacity(0.25);
+      _glassBorderColor = Colors.white.withOpacity(0.4);
+      _textColor = Colors.white;
     } else if (realHour >= 17 && realHour < 20) {
       // Dusk
       _bgColors = [
@@ -91,6 +109,9 @@ class _CreativeTimePickerState extends State<CreativeTimePicker>
       _knobColor = const Color(0xFFFB923C); // orange-400
       _themeIcon = Icons.nightlight_round;
       _themeIconColor = const Color(0xFFFED7AA); // orange-200
+      _glassColor = Colors.white.withOpacity(0.1);
+      _glassBorderColor = Colors.white.withOpacity(0.1);
+      _textColor = Colors.white;
     } else {
       // Night
       _bgColors = [
@@ -102,6 +123,9 @@ class _CreativeTimePickerState extends State<CreativeTimePicker>
       _knobColor = const Color(0xFF6366F1); // indigo-500
       _themeIcon = Icons.nightlight_round;
       _themeIconColor = const Color(0xFF818CF8); // indigo-400
+      _glassColor = Colors.white.withOpacity(0.05);
+      _glassBorderColor = Colors.white.withOpacity(0.1);
+      _textColor = Colors.white;
     }
   }
 
@@ -134,6 +158,372 @@ class _CreativeTimePickerState extends State<CreativeTimePicker>
       }
       _updateTheme();
     });
+  }
+
+  Widget _buildClockView(double size) {
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        // Minute Track (Outer)
+        Container(
+          width: size,
+          height: size,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            border: Border.all(color: _glassBorderColor.withOpacity(0.2)),
+          ),
+        ),
+
+        // Minute Ticks
+        ...List.generate(12, (index) {
+          final angle = index * 30 * (math.pi / 180);
+          return Transform.translate(
+            offset: Offset(
+              (size / 2 - 10) * math.sin(angle),
+              -(size / 2 - 10) * math.cos(angle),
+            ),
+            child: Transform.rotate(
+              angle: angle,
+              child: Container(
+                width: 2,
+                height: 8,
+                color: _glassBorderColor.withOpacity(0.3),
+              ),
+            ),
+          );
+        }),
+
+        // Minute Knob & Interaction
+        GestureDetector(
+          onPanStart: (d) => setState(() => _draggingType = 'minute'),
+          onPanUpdate: (d) => _handlePan(d, 'minute', Size(size, size)),
+          onPanEnd: (d) => setState(() => _draggingType = null),
+          child: Container(
+            width: size,
+            height: size,
+            color: Colors.transparent, // Hit test
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                Transform.rotate(
+                  angle: _minute * 6 * (math.pi / 180),
+                  child: Column(
+                    children: [
+                      Container(
+                        width: 32,
+                        height: 32,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.white.withOpacity(0.6),
+                              blurRadius: 15,
+                            ),
+                          ],
+                          border: Border.all(
+                            color: Colors.white.withOpacity(0.5),
+                            width: 2,
+                          ),
+                        ),
+                        child: Center(
+                          child: Container(
+                            width: 8,
+                            height: 8,
+                            decoration: const BoxDecoration(
+                              color: Color(0xFF0F172A), // slate-900
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                        ),
+                      ),
+                      Container(
+                        width: 1,
+                        height: size / 2 - 32,
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              Colors.white.withOpacity(0.5),
+                              Colors.transparent,
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+
+        // Hour Track (Inner)
+        Container(
+          width: size * 0.65,
+          height: size * 0.65,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            border: Border.all(color: _glassBorderColor.withOpacity(0.2)),
+          ),
+        ),
+
+        // Hour Knob & Interaction
+        GestureDetector(
+          onPanStart: (d) => setState(() => _draggingType = 'hour'),
+          onPanUpdate: (d) =>
+              _handlePan(d, 'hour', Size(size * 0.65, size * 0.65)),
+          onPanEnd: (d) => setState(() => _draggingType = null),
+          child: Container(
+            width: size * 0.65,
+            height: size * 0.65,
+            color: Colors.transparent,
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                Transform.rotate(
+                  angle: _hour * 30 * (math.pi / 180),
+                  child: Align(
+                    alignment: Alignment.topCenter,
+                    child: Container(
+                      width: 40,
+                      height: 40,
+                      margin: const EdgeInsets.only(top: 0), // Adjust if needed
+                      decoration: BoxDecoration(
+                        color: _knobColor,
+                        shape: BoxShape.circle,
+                        boxShadow: const [
+                          BoxShadow(color: Colors.black26, blurRadius: 8),
+                        ],
+                        border: Border.all(
+                          color: Colors.white.withOpacity(0.8),
+                          width: 2,
+                        ),
+                      ),
+                      child: Icon(_themeIcon, color: _themeIconColor, size: 20),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+
+        // Center Display
+        Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.baseline,
+              textBaseline: TextBaseline.alphabetic,
+              children: [
+                IgnorePointer(
+                  child: Text(
+                    '$_hour',
+                    style: TextStyle(
+                      fontSize: 64,
+                      fontWeight: FontWeight.bold,
+                      color: _draggingType == 'hour'
+                          ? _textColor
+                          : _textColor.withOpacity(0.9),
+                      height: 1,
+                    ),
+                  ),
+                ),
+                IgnorePointer(
+                  child: Text(
+                    ':',
+                    style: TextStyle(
+                      fontSize: 32,
+                      color: _textColor.withOpacity(0.5),
+                    ),
+                  ),
+                ),
+                IgnorePointer(
+                  child: Text(
+                    _minute.toString().padLeft(2, '0'),
+                    style: TextStyle(
+                      fontSize: 64,
+                      fontWeight: FontWeight.bold,
+                      color: _draggingType == 'minute'
+                          ? _textColor
+                          : _textColor.withOpacity(0.9),
+                      height: 1,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            GestureDetector(
+              onTap: () => setState(() {
+                _isAm = !_isAm;
+                _updateTheme();
+              }),
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 4,
+                ),
+                decoration: BoxDecoration(
+                  color: _glassColor,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: _glassBorderColor),
+                ),
+                child: Text(
+                  _isAm ? 'AM' : 'PM',
+                  style: TextStyle(
+                    color: _textColor,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildCalendarView(double size) {
+    final daysInMonth = DateUtils.getDaysInMonth(
+      _calendarFocusedDay.year,
+      _calendarFocusedDay.month,
+    );
+    final firstDayOfMonth = DateTime(
+      _calendarFocusedDay.year,
+      _calendarFocusedDay.month,
+      1,
+    );
+    final startingWeekday = firstDayOfMonth.weekday; // 1 = Mon, 7 = Sun
+
+    return Container(
+      width: size,
+      height: size,
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        children: [
+          // Header (Month Year)
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              IconButton(
+                icon: Icon(Icons.chevron_left, color: _textColor),
+                onPressed: () {
+                  setState(() {
+                    _calendarFocusedDay = DateTime(
+                      _calendarFocusedDay.year,
+                      _calendarFocusedDay.month - 1,
+                    );
+                  });
+                },
+              ),
+              Text(
+                DateFormat('yyyy年 MM月').format(_calendarFocusedDay),
+                style: TextStyle(
+                  color: _textColor,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              IconButton(
+                icon: Icon(Icons.chevron_right, color: _textColor),
+                onPressed: () {
+                  setState(() {
+                    _calendarFocusedDay = DateTime(
+                      _calendarFocusedDay.year,
+                      _calendarFocusedDay.month + 1,
+                    );
+                  });
+                },
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          // Weekday Headers
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: ['一', '二', '三', '四', '五', '六', '日']
+                .map(
+                  (d) => Text(
+                    d,
+                    style: TextStyle(
+                      color: _textColor.withOpacity(0.6),
+                      fontSize: 12,
+                    ),
+                  ),
+                )
+                .toList(),
+          ),
+          const SizedBox(height: 10),
+          // Days Grid
+          Expanded(
+            child: GridView.builder(
+              physics: const NeverScrollableScrollPhysics(),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 7,
+                mainAxisSpacing: 8,
+                crossAxisSpacing: 8,
+              ),
+              itemCount: 42, // 6 rows * 7 cols
+              itemBuilder: (context, index) {
+                final dayOffset = index - (startingWeekday - 1);
+                if (dayOffset < 0 || dayOffset >= daysInMonth) {
+                  return const SizedBox();
+                }
+                final day = dayOffset + 1;
+                final date = DateTime(
+                  _calendarFocusedDay.year,
+                  _calendarFocusedDay.month,
+                  day,
+                );
+                final isSelected = DateUtils.isSameDay(date, _selectedDate);
+                final isToday = DateUtils.isSameDay(date, DateTime.now());
+
+                return GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      _selectedDate = date;
+                      // Optional: Auto-switch back to clock?
+                      // _isDatePickerMode = false;
+                    });
+                  },
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: isSelected
+                          ? _knobColor
+                          : (isToday
+                                ? _glassColor.withOpacity(0.3)
+                                : Colors.transparent),
+                      shape: BoxShape.circle,
+                      border: isToday && !isSelected
+                          ? Border.all(color: _glassBorderColor)
+                          : null,
+                    ),
+                    child: Center(
+                      child: Text(
+                        '$day',
+                        style: TextStyle(
+                          color: isSelected
+                              ? Colors.black.withOpacity(0.8)
+                              : _textColor,
+                          fontWeight: isSelected
+                              ? FontWeight.bold
+                              : FontWeight.normal,
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -197,7 +587,6 @@ class _CreativeTimePickerState extends State<CreativeTimePicker>
                   final size =
                       math.min(constraints.maxWidth, constraints.maxHeight) *
                       0.85;
-                  final center = Offset(size / 2, size / 2);
 
                   return SizedBox(
                     width: size,
@@ -211,10 +600,8 @@ class _CreativeTimePickerState extends State<CreativeTimePicker>
                           height: size,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            color: Colors.white.withOpacity(0.05),
-                            border: Border.all(
-                              color: Colors.white.withOpacity(0.1),
-                            ),
+                            color: _glassColor,
+                            border: Border.all(color: _glassBorderColor),
                             boxShadow: [
                               BoxShadow(
                                 color: Colors.black.withOpacity(0.2),
@@ -225,252 +612,26 @@ class _CreativeTimePickerState extends State<CreativeTimePicker>
                           ),
                         ),
 
-                        // Minute Track (Outer)
-                        Container(
-                          width: size,
-                          height: size,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: Colors.white.withOpacity(0.2),
-                            ),
-                          ),
-                        ),
-
-                        // Minute Ticks
-                        ...List.generate(12, (index) {
-                          final angle = index * 30 * (math.pi / 180);
-                          return Transform.translate(
-                            offset: Offset(
-                              (size / 2 - 10) * math.sin(angle),
-                              -(size / 2 - 10) * math.cos(angle),
-                            ),
-                            child: Transform.rotate(
-                              angle: angle,
-                              child: Container(
-                                width: 2,
-                                height: 8,
-                                color: Colors.white.withOpacity(0.3),
+                        // Content Switcher (Time vs Date)
+                        AnimatedSwitcher(
+                          duration: const Duration(milliseconds: 500),
+                          transitionBuilder: (child, animation) {
+                            return FadeTransition(
+                              opacity: animation,
+                              child: ScaleTransition(
+                                scale: animation.drive(
+                                  Tween(
+                                    begin: 0.9,
+                                    end: 1.0,
+                                  ).chain(CurveTween(curve: Curves.easeOut)),
+                                ),
+                                child: child,
                               ),
-                            ),
-                          );
-                        }),
-
-                        // Minute Knob & Interaction
-                        GestureDetector(
-                          onPanStart: (d) =>
-                              setState(() => _draggingType = 'minute'),
-                          onPanUpdate: (d) =>
-                              _handlePan(d, 'minute', Size(size, size)),
-                          onPanEnd: (d) => setState(() => _draggingType = null),
-                          child: Container(
-                            width: size,
-                            height: size,
-                            color: Colors.transparent, // Hit test
-                            child: Stack(
-                              alignment: Alignment.center,
-                              children: [
-                                Transform.rotate(
-                                  angle: _minute * 6 * (math.pi / 180),
-                                  child: Column(
-                                    children: [
-                                      Container(
-                                        width: 32,
-                                        height: 32,
-                                        decoration: BoxDecoration(
-                                          color: Colors.white,
-                                          shape: BoxShape.circle,
-                                          boxShadow: [
-                                            BoxShadow(
-                                              color: Colors.white.withOpacity(
-                                                0.6,
-                                              ),
-                                              blurRadius: 15,
-                                            ),
-                                          ],
-                                          border: Border.all(
-                                            color: Colors.white.withOpacity(
-                                              0.5,
-                                            ),
-                                            width: 2,
-                                          ),
-                                        ),
-                                        child: Center(
-                                          child: Container(
-                                            width: 8,
-                                            height: 8,
-                                            decoration: const BoxDecoration(
-                                              color: Color(
-                                                0xFF0F172A,
-                                              ), // slate-900
-                                              shape: BoxShape.circle,
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                      Container(
-                                        width: 1,
-                                        height: size / 2 - 32,
-                                        decoration: BoxDecoration(
-                                          gradient: LinearGradient(
-                                            begin: Alignment.topCenter,
-                                            end: Alignment.bottomCenter,
-                                            colors: [
-                                              Colors.white.withOpacity(0.5),
-                                              Colors.transparent,
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-
-                        // Hour Track (Inner)
-                        Container(
-                          width: size * 0.65,
-                          height: size * 0.65,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: Colors.white.withOpacity(0.2),
-                            ),
-                          ),
-                        ),
-
-                        // Hour Knob & Interaction
-                        GestureDetector(
-                          onPanStart: (d) =>
-                              setState(() => _draggingType = 'hour'),
-                          onPanUpdate: (d) => _handlePan(
-                            d,
-                            'hour',
-                            Size(size * 0.65, size * 0.65),
-                          ),
-                          onPanEnd: (d) => setState(() => _draggingType = null),
-                          child: Container(
-                            width: size * 0.65,
-                            height: size * 0.65,
-                            color: Colors.transparent,
-                            child: Stack(
-                              alignment: Alignment.center,
-                              children: [
-                                Transform.rotate(
-                                  angle: _hour * 30 * (math.pi / 180),
-                                  child: Align(
-                                    alignment: Alignment.topCenter,
-                                    child: Container(
-                                      width: 40,
-                                      height: 40,
-                                      margin: const EdgeInsets.only(
-                                        top: 0,
-                                      ), // Adjust if needed
-                                      decoration: BoxDecoration(
-                                        color: _knobColor,
-                                        shape: BoxShape.circle,
-                                        boxShadow: const [
-                                          BoxShadow(
-                                            color: Colors.black26,
-                                            blurRadius: 8,
-                                          ),
-                                        ],
-                                        border: Border.all(
-                                          color: Colors.white.withOpacity(0.8),
-                                          width: 2,
-                                        ),
-                                      ),
-                                      child: Icon(
-                                        _themeIcon,
-                                        color: _themeIconColor,
-                                        size: 20,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-
-                        // Center Display
-                        Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Row(
-                              mainAxisSize: MainAxisSize.min,
-                              crossAxisAlignment: CrossAxisAlignment.baseline,
-                              textBaseline: TextBaseline.alphabetic,
-                              children: [
-                                IgnorePointer(
-                                  child: Text(
-                                    '$_hour',
-                                    style: TextStyle(
-                                      fontSize: 64,
-                                      fontWeight: FontWeight.bold,
-                                      color: _draggingType == 'hour'
-                                          ? Colors.white
-                                          : Colors.white.withOpacity(0.9),
-                                      height: 1,
-                                    ),
-                                  ),
-                                ),
-                                IgnorePointer(
-                                  child: Text(
-                                    ':',
-                                    style: TextStyle(
-                                      fontSize: 32,
-                                      color: Colors.white.withOpacity(0.5),
-                                    ),
-                                  ),
-                                ),
-                                IgnorePointer(
-                                  child: Text(
-                                    _minute.toString().padLeft(2, '0'),
-                                    style: TextStyle(
-                                      fontSize: 64,
-                                      fontWeight: FontWeight.bold,
-                                      color: _draggingType == 'minute'
-                                          ? Colors.white
-                                          : Colors.white.withOpacity(0.9),
-                                      height: 1,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 8),
-                            GestureDetector(
-                              onTap: () => setState(() {
-                                _isAm = !_isAm;
-                                _updateTheme();
-                              }),
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 16,
-                                  vertical: 4,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.1),
-                                  borderRadius: BorderRadius.circular(20),
-                                  border: Border.all(
-                                    color: Colors.white.withOpacity(0.2),
-                                  ),
-                                ),
-                                child: Text(
-                                  _isAm ? 'AM' : 'PM',
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 14,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
+                            );
+                          },
+                          child: _isDatePickerMode
+                              ? _buildCalendarView(size)
+                              : _buildClockView(size),
                         ),
                       ],
                     ),
@@ -497,28 +658,73 @@ class _CreativeTimePickerState extends State<CreativeTimePicker>
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 16),
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.1),
+                          color: _glassColor,
                           borderRadius: BorderRadius.circular(16),
-                          border: Border.all(
-                            color: Colors.white.withOpacity(0.2),
-                          ),
+                          border: Border.all(color: _glassBorderColor),
                         ),
                         child: TextField(
                           controller: _nameController,
-                          style: const TextStyle(color: Colors.white),
+                          style: TextStyle(color: _textColor),
                           decoration: InputDecoration(
                             hintText: '输入快捷名称 (例如: 晨练)',
                             hintStyle: TextStyle(
-                              color: Colors.white.withOpacity(0.5),
+                              color: _textColor.withOpacity(0.5),
                             ),
                             border: InputBorder.none,
                             icon: Icon(
                               Icons.bookmark,
-                              color: Colors.white.withOpacity(0.7),
+                              color: _textColor.withOpacity(0.7),
                               size: 20,
                             ),
                           ),
                         ),
+                      ),
+                    ),
+                  ),
+
+                  // Date Selector Button
+                  GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        _isDatePickerMode = !_isDatePickerMode;
+                      });
+                    },
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 300),
+                      margin: const EdgeInsets.only(bottom: 20),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 10,
+                      ),
+                      decoration: BoxDecoration(
+                        color: _isDatePickerMode
+                            ? _glassColor.withOpacity(0.3)
+                            : _glassColor,
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: _isDatePickerMode
+                              ? _accentColor.withOpacity(0.5)
+                              : _glassBorderColor,
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.calendar_today,
+                            color: _textColor.withOpacity(0.8),
+                            size: 16,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            DateFormat('yyyy年MM月dd日').format(_selectedDate),
+                            style: TextStyle(
+                              color: _textColor,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
@@ -529,12 +735,22 @@ class _CreativeTimePickerState extends State<CreativeTimePicker>
                       // Reset Button
                       GestureDetector(
                         onTap: () {
+                          final now = DateTime.now();
                           setState(() {
-                            _hour = 7;
-                            _minute = 30;
-                            _isAm = true;
+                            _hour = now.hour > 12
+                                ? now.hour - 12
+                                : (now.hour == 0 ? 12 : now.hour);
+                            _minute = now.minute;
+                            _isAm = now.hour < 12;
+                            _selectedDate = DateTime(
+                              now.year,
+                              now.month,
+                              now.day,
+                            );
+                            _calendarFocusedDay = _selectedDate;
                             _alarmSet = false;
                             _showNameInput = false;
+                            _isDatePickerMode = false;
                             _nameController.clear();
                             _updateTheme();
                           });
@@ -543,15 +759,13 @@ class _CreativeTimePickerState extends State<CreativeTimePicker>
                           width: 56,
                           height: 56,
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.05),
+                            color: _glassColor.withOpacity(0.05),
                             shape: BoxShape.circle,
-                            border: Border.all(
-                              color: Colors.white.withOpacity(0.1),
-                            ),
+                            border: Border.all(color: _glassBorderColor),
                           ),
                           child: Icon(
                             Icons.refresh,
-                            color: Colors.white.withOpacity(0.7),
+                            color: _textColor.withOpacity(0.7),
                           ),
                         ),
                       ),
@@ -569,16 +783,14 @@ class _CreativeTimePickerState extends State<CreativeTimePicker>
                           height: 56,
                           decoration: BoxDecoration(
                             color: _showNameInput
-                                ? Colors.white.withOpacity(0.2)
-                                : Colors.white.withOpacity(0.05),
+                                ? _glassColor.withOpacity(0.2)
+                                : _glassColor.withOpacity(0.05),
                             shape: BoxShape.circle,
-                            border: Border.all(
-                              color: Colors.white.withOpacity(0.1),
-                            ),
+                            border: Border.all(color: _glassBorderColor),
                           ),
                           child: Icon(
                             Icons.edit,
-                            color: Colors.white.withOpacity(0.7),
+                            color: _textColor.withOpacity(0.7),
                           ),
                         ),
                       ),
@@ -589,15 +801,14 @@ class _CreativeTimePickerState extends State<CreativeTimePicker>
                         onTap: () {
                           setState(() => _alarmSet = !_alarmSet);
                           // Calculate final DateTime
-                          final now = DateTime.now();
                           int realHour = _isAm
                               ? (_hour == 12 ? 0 : _hour)
                               : (_hour == 12 ? 12 : _hour + 12);
 
                           final selectedTime = DateTime(
-                            now.year,
-                            now.month,
-                            now.day,
+                            _selectedDate.year,
+                            _selectedDate.month,
+                            _selectedDate.day,
                             realHour,
                             _minute,
                           );
