@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../sync/sync_service.dart';
 import '../../sync/models/device_info.dart';
 import '../../util/app_config.dart';
+import '../widget/creative_toast.dart';
 
 /// 同步设置页面
 class SyncSettingsPage extends ConsumerStatefulWidget {
@@ -542,23 +543,18 @@ class _SyncSettingsPageState extends ConsumerState<SyncSettingsPage> {
 
       // 显示同步结果
       if (results.isEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('未发现其他设备'),
-            backgroundColor: Colors.orange,
-          ),
-        );
+        CreativeToast.warning(context, title: '未发现设备', message: '局域网中未发现其他可同步设备', direction: ToastDirection.bottom);
       } else {
         final successCount = results.values.where((r) => r.success).length;
         final totalChanges = results.values
             .where((r) => r.success)
             .fold<int>(0, (sum, r) => sum + r.totalChanges);
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('同步完成: $successCount 台设备, $totalChanges 条变更'),
-            backgroundColor: Colors.green,
-          ),
+        CreativeToast.success(
+          context,
+          title: '同步完成',
+          message: '$successCount 台设备, $totalChanges 条变更',
+          direction: ToastDirection.bottom,
         );
       }
     } finally {
@@ -582,16 +578,11 @@ class _SyncSettingsPageState extends ConsumerState<SyncSettingsPage> {
 
     if (!mounted) return;
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          result.success
-              ? '同步成功: ${result.totalChanges} 条变更'
-              : '同步失败: ${result.error}',
-        ),
-        backgroundColor: result.success ? Colors.green : Colors.red,
-      ),
-    );
+    if (result.success) {
+      CreativeToast.success(context, title: '同步成功', message: '${result.totalChanges} 条变更已同步', direction: ToastDirection.bottom);
+    } else {
+      CreativeToast.error(context, title: '同步失败', message: result.error ?? '未知错误', direction: ToastDirection.bottom);
+    }
   }
 
   /// 格式化日期时间

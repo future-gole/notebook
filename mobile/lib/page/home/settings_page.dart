@@ -7,6 +7,7 @@ import 'package:pocketmind/util/proxy_config.dart';
 import 'package:pocketmind/data/repositories/cleanup_service.dart';
 import 'package:pocketmind/util/logger_service.dart';
 import 'package:pocketmind/providers/infrastructure_providers.dart';
+import '../widget/creative_toast.dart';
 
 /// 设置页面
 class SettingsPage extends ConsumerStatefulWidget {
@@ -22,6 +23,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
   final _meteCacheTimeController = TextEditingController();
   final _proxyHostController = TextEditingController();
   final _proxyPortController = TextEditingController();
+  final _log = LogService();
 
   bool _proxyEnabled = false;
   bool _titleEnabled = false;
@@ -97,9 +99,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
     _applyProxySettings();
 
     if (mounted) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('设置已保存')));
+      CreativeToast.success(context, title: '设置已保存', message: '您的设置已成功保存', direction: ToastDirection.bottom);
     }
   }
 
@@ -331,10 +331,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
               ],
             ),
             const SizedBox(height: 16),
-            Text(
-              '定期清理已删除的笔记和孤立的图片文件，释放存储空间',
-              style: theme.textTheme.bodySmall,
-            ),
+            Text('定期清理已删除的笔记和孤立的图片文件，释放存储空间', style: theme.textTheme.bodySmall),
             const SizedBox(height: 16),
             ElevatedButton.icon(
               onPressed: _performCleanup,
@@ -354,28 +351,12 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
   }
 
   Future<void> _performCleanup() async {
-    // 显示确认对话框
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('确认清理'),
-        content: const Text(
-          '将清理：\n\n'
-          '• 10天前删除的笔记\n'
-          '• 未被引用的孤立图片\n\n'
-          '此操作不可恢复，是否继续？',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('取消'),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('确认'),
-          ),
-        ],
-      ),
+    final confirmed = await showConfirmDialog(
+      context,
+      title: "确认清理",
+      message: "将清理,10天前软删除的所有笔记以及图片",
+      cancelText: "取消",
+      confirmText: "确认",
     );
 
     if (confirmed != true) return;
@@ -415,12 +396,12 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
         ),
       );
 
-      PMlog.i('SettingsPage', 'Cleanup completed: $result');
+      _log.i('SettingsPage', 'Cleanup completed: $result');
     } catch (e) {
       if (!mounted) return;
       Navigator.pop(context); // 关闭加载对话框
 
-      PMlog.e('SettingsPage', 'Cleanup failed: $e');
+      _log.e('SettingsPage', 'Cleanup failed: $e');
 
       await showDialog(
         context: context,

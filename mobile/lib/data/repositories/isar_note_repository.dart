@@ -4,8 +4,8 @@ import '../../domain/entities/note_entity.dart';
 import '../../domain/repositories/note_repository.dart';
 import '../../model/note.dart';
 import '../../model/category.dart';
-import '../mappers/note_mapper.dart';
 import '../../util/logger_service.dart';
+import '../mappers/note_mapper.dart';
 import '../../util/image_storage_helper.dart';
 
 /// Isar 数据库的笔记仓库实现

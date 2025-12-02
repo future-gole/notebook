@@ -11,6 +11,7 @@ import 'package:pocketmind/util/image_storage_helper.dart';
 import 'package:pocketmind/util/proxy_config.dart';
 import 'package:pocketmind/util/app_config.dart';
 import 'package:pocketmind/util/theme_data.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:uuid/uuid.dart';
 import 'model/category.dart';
@@ -124,24 +125,17 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-
-      title: 'PocketMind',
-
-      // 应用 亮色模式
-      theme: calmBeigeTheme,
-
-      // 应用 暗色模式
-      darkTheme: quietNightTheme,
-
-      // 跟随系统主题设置
-      themeMode: ThemeMode.system,
-
-      home: HomeScreen(),
-
-      // 配置路由
-      routes: {'/settings': (context) => const SettingsPage()},
+    return ScreenUtilInit(
+      designSize: const Size(375, 812),
+      builder: (context, child) => MaterialApp(
+        debugShowCheckedModeBanner: false,
+        title: 'PocketMind',
+        theme: calmBeigeTheme,
+        darkTheme: quietNightTheme,
+        themeMode: ThemeMode.system,
+        home: HomeScreen(),
+        routes: {'/settings': (context) => const SettingsPage()},
+      ),
     );
   }
 }

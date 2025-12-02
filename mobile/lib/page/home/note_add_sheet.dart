@@ -9,10 +9,10 @@ import 'package:pocketmind/providers/nav_providers.dart';
 import 'package:pocketmind/providers/note_providers.dart';
 import 'package:pocketmind/service/category_service.dart';
 import 'package:pocketmind/util/app_config.dart';
+import '../widget/creative_toast.dart';
 
 // 主页笔记新建界面
 class NoteEditorSheet extends ConsumerStatefulWidget {
-
   const NoteEditorSheet({super.key});
 
   @override
@@ -31,8 +31,6 @@ class _NoteEditorSheetState extends ConsumerState<NoteEditorSheet>
   bool _isAddCategoryMode = false;
   final TextEditingController _addCategoryController = TextEditingController();
 
-
-
   final _config = AppConfig();
   bool _titleEnabled = false;
 
@@ -45,8 +43,8 @@ class _NoteEditorSheetState extends ConsumerState<NoteEditorSheet>
     _loadTitleSetting();
 
     _addCategoryAnimationController = AnimationController(
-        vsync: this,
-        duration: const Duration(milliseconds: 300),
+      vsync: this,
+      duration: const Duration(milliseconds: 300),
     );
 
     _appBarSlideAnimation =
@@ -108,25 +106,13 @@ class _NoteEditorSheetState extends ConsumerState<NoteEditorSheet>
 
     // 如果未启用标题，只检查内容
     if (content.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('内容不能为空'),
-          backgroundColor: Theme.of(context).colorScheme.error,
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+      CreativeToast.error(context, title: '内容为空', message: '请输入笔记内容', direction: ToastDirection.top);
       return;
     }
 
     // 如果启用标题，也检查标题
     if (_titleEnabled && title.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('标题不能为空'),
-          backgroundColor: Theme.of(context).colorScheme.error,
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+      CreativeToast.error(context, title: '标题为空', message: '请输入笔记标题', direction: ToastDirection.top);
       return;
     }
 
@@ -146,19 +132,11 @@ class _NoteEditorSheetState extends ConsumerState<NoteEditorSheet>
     if (!context.mounted) return;
 
     // 显示成功提示
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('笔记已保存'),
-        backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
-        behavior: SnackBarBehavior.floating,
-        duration: const Duration(seconds: 2),
-      ),
-    );
+    CreativeToast.success(context, title: '笔记已保存', message: '您的笔记已成功保存', direction: ToastDirection.top);
 
     // 关闭模态框
     Navigator.of(context).pop();
   }
-
 
   // 构建搜索栏
   Widget _buildAddCategoryBar() {
@@ -253,12 +231,12 @@ class _NoteEditorSheetState extends ConsumerState<NoteEditorSheet>
                       SlideTransition(
                         position: _addCategoryBarSlideAnimation,
                         child: _buildAddCategoryBar(),
-                      )
+                      ),
                     ],
                   ),
                 ),
-                // --- 顶部标题栏 ---
 
+                // --- 顶部标题栏 ---
                 const SizedBox(height: 20),
 
                 // --- 标题输入框 (仅在启用时显示) ---
@@ -304,7 +282,7 @@ class _NoteEditorSheetState extends ConsumerState<NoteEditorSheet>
 
   Widget _appBar() {
     ColorScheme colorScheme = Theme.of(context).colorScheme;
-    return  Row(
+    return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         IconButton(
@@ -315,9 +293,7 @@ class _NoteEditorSheetState extends ConsumerState<NoteEditorSheet>
           onPressed: _toggleAddCategoryMode,
         ),
         // 分类选择条，使用 Expanded 避免溢出，居中显示
-        const Expanded(
-          child: CategoriesBar(),
-        ),
+        const Expanded(child: CategoriesBar()),
         IconButton(
           icon: const Icon(Icons.check),
           onPressed: _onSave,

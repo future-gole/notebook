@@ -18,6 +18,7 @@ import 'package:pocketmind/util/image_storage_helper.dart';
 import 'package:pocketmind/util/theme_data.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pocketmind/util/url_helper.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../util/logger_service.dart';
 import 'package:flutter_uri_to_file/flutter_uri_to_file.dart';
 
@@ -177,14 +178,17 @@ class _MyShareAppState extends ConsumerState<MyShareApp>
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      theme: calmBeigeTheme,
-      darkTheme: quietNightTheme,
-      themeMode: ThemeMode.system,
-      home: Material(
-        type: MaterialType.transparency,
-        child: _buildStage(context),
+    return ScreenUtilInit(
+      designSize: const Size(375, 812),
+      builder: (context, child) => MaterialApp(
+        debugShowCheckedModeBanner: false,
+        theme: calmBeigeTheme,
+        darkTheme: quietNightTheme,
+        themeMode: ThemeMode.system,
+        home: Material(
+          type: MaterialType.transparency,
+          child: _buildStage(context),
+        ),
       ),
     );
   }

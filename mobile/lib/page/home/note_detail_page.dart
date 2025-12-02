@@ -9,6 +9,7 @@ import 'package:pocketmind/util/image_storage_helper.dart'
 import 'package:pocketmind/util/logger_service.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:pocketmind/util/url_helper.dart';
+import '../widget/creative_toast.dart';
 
 import '../../util/link_preview_cache.dart';
 import '../widget/load_image_widget.dart';
@@ -62,7 +63,6 @@ class _NoteDetailPageState extends ConsumerState<NoteDetailPage>
     _newTagController = TextEditingController();
     _addCategoryController = TextEditingController();
     _addCategoryFocusNode = FocusNode();
-
 
     _selectedCategoryId = widget.note.categoryId;
 
@@ -734,9 +734,7 @@ class _NoteDetailPageState extends ConsumerState<NoteDetailPage>
   void _addTag(String tag) {
     if (tag.isEmpty) return;
     if (_tags.contains(tag)) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('标签已存在')));
+      CreativeToast.warning(context, title: '标签已存在', message: '该标签已经添加过了', direction: ToastDirection.top);
       return;
     }
 
@@ -963,9 +961,7 @@ class _NoteDetailPageState extends ConsumerState<NoteDetailPage>
   void _onSharePressed() {
     // TODO: 实现分享功能
     PMlog.d(_tag, "Share pressed");
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text('分享功能即将上线')));
+    CreativeToast.info(context, title: '即将上线', message: '分享功能正在开发中', direction: ToastDirection.top);
   }
 
   /// Delete 按钮
@@ -1019,9 +1015,8 @@ class _NoteDetailPageState extends ConsumerState<NoteDetailPage>
 
     if (mounted) {
       Navigator.of(context).pop(); // 返回上一页
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('笔记已删除')));
+      CreativeToast.success(context, title: '笔记已删除', message: '该笔记已被永久删除',
+          direction: ToastDirection.top);
     }
   }
 
