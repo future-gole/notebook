@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pocketmind/providers/note_providers.dart';
 import 'package:pocketmind/domain/entities/note_entity.dart';
-import 'package:pocketmind/server/note_service.dart';
+import 'package:pocketmind/service/note_service.dart';
 import 'package:pocketmind/util/url_helper.dart';
 import 'link_preview_card.dart';
 import '../home/note_add_sheet.dart';

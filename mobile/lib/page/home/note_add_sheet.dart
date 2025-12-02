@@ -7,7 +7,7 @@ import 'package:pocketmind/page/widget/categories_bar.dart' show CategoriesBar;
 import 'package:pocketmind/providers/category_providers.dart';
 import 'package:pocketmind/providers/nav_providers.dart';
 import 'package:pocketmind/providers/note_providers.dart';
-import 'package:pocketmind/server/category_service.dart';
+import 'package:pocketmind/service/category_service.dart';
 import 'package:pocketmind/util/app_config.dart';
 
 // 主页笔记新建界面

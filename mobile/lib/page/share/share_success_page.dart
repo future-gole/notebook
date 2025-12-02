@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lottie/lottie.dart';
 import 'package:pocketmind/providers/http_providers.dart';
-import 'package:pocketmind/server/page_analysis_service.dart';
+import 'package:pocketmind/service/page_analysis_service.dart';
 import 'package:pocketmind/util/logger_service.dart';
 import 'package:pocketmind/util/theme_data.dart' show sharePageColors, SharePageThemeColors;
 

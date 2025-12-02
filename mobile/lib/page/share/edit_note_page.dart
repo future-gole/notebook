@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pocketmind/api/note_api_service.dart';
 import 'package:pocketmind/providers/note_providers.dart';
 import 'package:pocketmind/providers/category_providers.dart';
-import 'package:pocketmind/server/category_service.dart';
+import 'package:pocketmind/service/category_service.dart';
 import 'package:pocketmind/service/notification_service.dart';
 import 'package:pocketmind/util/app_config.dart';
 import 'package:intl/intl.dart';

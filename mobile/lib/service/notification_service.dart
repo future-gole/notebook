@@ -1,5 +1,6 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart'
     as fln;
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
@@ -53,18 +54,18 @@ class NotificationService {
     const fln.AndroidInitializationSettings initializationSettingsAndroid =
         fln.AndroidInitializationSettings('@mipmap/launcher_icon');
 
+    const fln.WindowsInitializationSettings initializationSettingsWindows =
+    fln.WindowsInitializationSettings(appName: "pocketmind", appUserModelId: 'com.doublez.pocketmind', guid: '81984258-2100-44F4-893C-311394038165');
+
     final fln.DarwinInitializationSettings initializationSettingsDarwin =
-        fln.DarwinInitializationSettings(
-          requestAlertPermission: false,
-          requestBadgePermission: false,
-          requestSoundPermission: false,
-        );
+        fln.DarwinInitializationSettings();
 
     final fln.InitializationSettings initializationSettings =
         fln.InitializationSettings(
           android: initializationSettingsAndroid,
           iOS: initializationSettingsDarwin,
           macOS: initializationSettingsDarwin,
+          windows: initializationSettingsWindows,
         );
 
     await flutterLocalNotificationsPlugin.initialize(
@@ -131,25 +132,72 @@ class NotificationService {
     tz.TZDateTime tzDate = tz.TZDateTime.from(scheduledDate, tz.local);
 
     final config = AppConfig();
-    // 根据配置设置通知强度
-    fln.Importance importance;
-    fln.Priority priority;
+    // 定义 Android 变量
+    fln.Importance androidImportance;
+    fln.Priority androidPriority;
+
+    // 定义 iOS/macOS 变量
+    bool iosPresentSound;
+    bool iosPresentBadge;
+    bool iosPresentAlert;
+    fln.InterruptionLevel iosInterruptionLevel;
+
+    // 定义 win 变量
+    fln.WindowsNotificationDetails? windowsDetails;
 
     switch (config.notificationIntensity) {
       case 0: // 低
-        importance = fln.Importance.low;
-        priority = fln.Priority.low;
+        // Android: 无声、无弹窗、仅状态栏
+        androidImportance = fln.Importance.low;
+        androidPriority = fln.Priority.low;
+
+        // iOS/macOS: 仅添加进列表、不亮屏、不响铃 (Passive)
+        iosPresentSound = false;
+        iosPresentBadge = true; // 角标还是更新一下比较好
+        iosPresentAlert = false; // 不弹窗
+        iosInterruptionLevel = fln.InterruptionLevel.passive;
+
+        // Windows
+        windowsDetails = fln.WindowsNotificationDetails(
+          audio: fln.WindowsNotificationAudio.silent(),
+          duration: fln.WindowsNotificationDuration.short,
+        );
         break;
       case 1: // 中
-        importance = fln.Importance.defaultImportance;
-        priority = fln.Priority.defaultPriority;
+        // Android: 有声、根据系统状态决定是否弹窗
+        androidImportance = fln.Importance.defaultImportance;
+        androidPriority = fln.Priority.defaultPriority;
+
+        // iOS/macOS: 标准通知 (Active)
+        iosPresentSound = true;
+        iosPresentBadge = true;
+        iosPresentAlert = true;
+        iosInterruptionLevel = fln.InterruptionLevel.active;
+
+        // win
+        windowsDetails = const fln.WindowsNotificationDetails();
         break;
       case 2: // 高
       default:
-        importance = fln.Importance.max;
-        priority = fln.Priority.high;
+        // Android: 强行弹窗、最大声音
+        androidImportance = fln.Importance.max;
+        androidPriority = fln.Priority.high;
+
+        // iOS/macOS: 时效性通知 (TimeSensitive)，可突破专注模式
+        iosPresentSound = true;
+        iosPresentBadge = true;
+        iosPresentAlert = true;
+        iosInterruptionLevel = fln.InterruptionLevel.timeSensitive;
+
+        // win
+        windowsDetails = fln.WindowsNotificationDetails(
+          scenario: fln.WindowsNotificationScenario.alarm,
+          duration: fln.WindowsNotificationDuration.long,
+        );
         break;
     }
+    String androidChannelId = 'reminder_channel_level_${config.notificationIntensity}';
+    String androidChannelName = 'Reminders (${config.notificationIntensity == 0 ? "Low" : config.notificationIntensity == 1 ? "Medium" : "High"})';
 
     try {
       await flutterLocalNotificationsPlugin.zonedSchedule(
@@ -158,19 +206,32 @@ class NotificationService {
         body,
         tzDate,
         fln.NotificationDetails(
+          // --- Android 配置 ---
           android: fln.AndroidNotificationDetails(
-            'reminder_channel_v7', // 更新 Channel ID
-            'Reminders',
+            androidChannelId, // 动态 ID
+            androidChannelName,
             channelDescription: 'Channel for note reminders',
-            importance: importance,
-            priority: priority,
+            importance: androidImportance,
+            priority: androidPriority,
           ),
+
+          // --- iOS / macOS 配置 ---
           iOS: fln.DarwinNotificationDetails(
-            presentAlert: true,
-            presentBadge: true,
-            presentSound: true,
-            interruptionLevel: fln.InterruptionLevel.timeSensitive,
+            presentAlert: iosPresentAlert,
+            presentBadge: iosPresentBadge,
+            presentSound: iosPresentSound,
+            interruptionLevel: iosInterruptionLevel, // 关键：设置中断级别
           ),
+          macOS: fln.DarwinNotificationDetails(
+            presentAlert: iosPresentAlert,
+            presentBadge: iosPresentBadge,
+            presentSound: iosPresentSound,
+            interruptionLevel: iosInterruptionLevel,
+          ),
+          windows: windowsDetails
+          // --- Windows 配置 (功能有限) ---
+          // Windows 主要是靠系统接管，代码里没有类似 Priority 的参数。
+          // Linux 同理。
         ),
         androidScheduleMode: config.highPrecisionNotification
             ? fln.AndroidScheduleMode.alarmClock

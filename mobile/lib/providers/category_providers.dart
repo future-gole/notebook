@@ -3,7 +3,7 @@ import 'package:pocketmind/domain/entities/category_entity.dart';
 import 'package:pocketmind/domain/repositories/category_repository.dart';
 import 'package:pocketmind/data/repositories/isar_category_repository.dart';
 import 'package:pocketmind/providers/infrastructure_providers.dart';
-import 'package:pocketmind/server/category_service.dart';
+import 'package:pocketmind/service/category_service.dart';
 
 /// CategoryRepository Provider - 数据层
 /// 提供 Isar 的具体实现

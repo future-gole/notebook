@@ -12,7 +12,7 @@ import 'package:pocketmind/page/share/share_success_page.dart';
 import 'package:pocketmind/page/widget/flowing_background.dart';
 import 'package:pocketmind/providers/infrastructure_providers.dart';
 import 'package:pocketmind/providers/note_providers.dart';
-import 'package:pocketmind/server/note_service.dart';
+import 'package:pocketmind/service/note_service.dart';
 import 'package:pocketmind/service/notification_service.dart';
 import 'package:pocketmind/util/image_storage_helper.dart';
 import 'package:pocketmind/util/theme_data.dart';
