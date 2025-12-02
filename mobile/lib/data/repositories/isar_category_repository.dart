@@ -22,7 +22,7 @@ class IsarCategoryRepository implements CategoryRepository {
 
     // 如果已有分类，不再初始化
     if (existingCount > 0) {
-      log.d(_tag, 'Categories already exist, skip initialization');
+      PMlog.d(_tag, 'Categories already exist, skip initialization');
       return;
     }
 
@@ -40,9 +40,9 @@ class IsarCategoryRepository implements CategoryRepository {
         isarCategory.updatedAt = DateTime.now().millisecondsSinceEpoch;
         await _isar.categorys.put(isarCategory);
       });
-      log.d(_tag, 'Default categories initialized successfully');
+      PMlog.d(_tag, 'Default categories initialized successfully');
     } catch (e) {
-      log.e(_tag, 'Failed to initialize default categories: $e');
+      PMlog.e(_tag, 'Failed to initialize default categories: $e');
       rethrow;
     }
   }
@@ -57,7 +57,7 @@ class IsarCategoryRepository implements CategoryRepository {
           .findAll();
       return CategoryMapper.toDomainList(categories);
     } catch (e) {
-      log.e(_tag, "Failed to get all categories: $e");
+      PMlog.e(_tag, "Failed to get all categories: $e");
       return [];
     }
   }
@@ -69,7 +69,7 @@ class IsarCategoryRepository implements CategoryRepository {
       if (category == null || category.isDeleted) return null;
       return CategoryMapper.toDomain(category);
     } catch (e) {
-      log.e(_tag, "Failed to get category by id: $e");
+      PMlog.e(_tag, "Failed to get category by id: $e");
       return null;
     }
   }
@@ -84,7 +84,7 @@ class IsarCategoryRepository implements CategoryRepository {
           .findFirst();
       return category != null ? CategoryMapper.toDomain(category) : null;
     } catch (e) {
-      log.e(_tag, "Failed to get category by name: $e");
+      PMlog.e(_tag, "Failed to get category by name: $e");
       return null;
     }
   }
@@ -112,10 +112,10 @@ class IsarCategoryRepository implements CategoryRepository {
         resultId = await _isar.categorys.put(isarCategory);
       });
 
-      log.d(_tag, 'Category saved successfully: ${category.name}');
+      PMlog.d(_tag, 'Category saved successfully: ${category.name}');
       return resultId;
     } catch (e) {
-      log.e(_tag, 'Failed to save category: $e');
+      PMlog.e(_tag, 'Failed to save category: $e');
       return -1;
     }
   }
@@ -132,9 +132,9 @@ class IsarCategoryRepository implements CategoryRepository {
           await _isar.categorys.put(category);
         }
       });
-      log.d(_tag, 'Category soft deleted: id=$id');
+      PMlog.d(_tag, 'Category soft deleted: id=$id');
     } catch (e) {
-      log.e(_tag, 'Failed to delete category: $e');
+      PMlog.e(_tag, 'Failed to delete category: $e');
       rethrow;
     }
   }

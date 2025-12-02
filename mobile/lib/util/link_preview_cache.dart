@@ -21,9 +21,9 @@ class LinkPreviewCache {
       };
       
       await prefs.setString(cacheKey, json.encode(cacheData));
-      log.d(tag,'💾 缓存已保存: $url');
+      PMlog.d(tag,'💾 缓存已保存: $url');
     } catch (e) {
-      log.e(tag,'❌ 缓存保存失败: $e');
+      PMlog.e(tag,'❌ 缓存保存失败: $e');
     }
   }
 
@@ -47,16 +47,16 @@ class LinkPreviewCache {
 
       // 检查缓存是否过期
       if (DateTime.now().difference(cacheTime) > Duration(days: metacacheTime)) {
-        log.d(tag,'💾 缓存已过期: $url');
+        PMlog.d(tag,'💾 缓存已过期: $url');
         await clearCache(url);
         return null;
       }
       
-      log.d(tag,'✅ 使用缓存: $url');
+      PMlog.d(tag,'✅ 使用缓存: $url');
       return cacheData['metadata'] as Map<String, dynamic>;
       
     } catch (e) {
-      log.e(tag,'❌ 缓存读取失败: $e');
+      PMlog.e(tag,'❌ 缓存读取失败: $e');
       return null;
     }
   }
@@ -68,7 +68,7 @@ class LinkPreviewCache {
       final cacheKey = _getCacheKey(url);
       await prefs.remove(cacheKey);
     } catch (e) {
-      log.e(tag,'❌ 缓存清除失败: $e');
+      PMlog.e(tag,'❌ 缓存清除失败: $e');
     }
   }
 
@@ -84,9 +84,9 @@ class LinkPreviewCache {
         }
       }
 
-      log.d(tag,'🗑️ 所有缓存已清除');
+      PMlog.d(tag,'🗑️ 所有缓存已清除');
     } catch (e) {
-      log.e(tag,'❌ 缓存清除失败: $e');
+      PMlog.e(tag,'❌ 缓存清除失败: $e');
     }
   }
 
@@ -119,7 +119,7 @@ class LinkPreviewCache {
         'size': totalSize,
       };
     } catch (e) {
-      log.e(tag,'❌ 获取缓存统计失败: $e');
+      PMlog.e(tag,'❌ 获取缓存统计失败: $e');
       return {'count': 0, 'size': 0};
     }
   }

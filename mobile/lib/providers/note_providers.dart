@@ -64,7 +64,7 @@ class NoteByCategory extends StreamNotifier<List<NoteEntity>> {
 
     final targetCategoryId = await ref.watch(activeCategoryId.future);
 
-    log.d("activeIndex","targetCategoryId: $targetCategoryId");
+    PMlog.d("activeIndex","targetCategoryId: $targetCategoryId");
 
     // 直接转发 watchCategoryNotes 的 Stream
     yield* noteService.watchCategoryNotes(targetCategoryId);

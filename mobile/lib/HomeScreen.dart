@@ -251,7 +251,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                             );
                           },
                           error: (error, stack) {
-                            log.e(tag, "stack: $error,stack:$stack");
+                            PMlog.e(tag, "stack: $error,stack:$stack");
                             return const Center(child: Text('加载笔记失败'));
                           },
                           loading: () =>
@@ -432,7 +432,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         return _buildNotesList(notes, currentLayout, noteService);
       },
       error: (error, stack) {
-        log.e(tag, "搜索错误: $error, stack:$stack");
+        PMlog.e(tag, "搜索错误: $error, stack:$stack");
         return const Center(child: Text('搜索失败'));
       },
       loading: () => const Center(child: CircularProgressIndicator()),

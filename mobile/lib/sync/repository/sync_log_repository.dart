@@ -18,7 +18,7 @@ class SyncLogRepository {
     try {
       return await _isar.syncLogs.filter().remoteIpEqualTo(ip).findFirst();
     } catch (e) {
-      log.e(_tag, 'Failed to get sync log for $ip: $e');
+      PMlog.e(_tag, 'Failed to get sync log for $ip: $e');
       return null;
     }
   }
@@ -62,12 +62,12 @@ class SyncLogRepository {
         await _isar.syncLogs.put(syncLog);
       });
 
-      log.d(
+      PMlog.d(
         _tag,
         'Updated sync log for $ip: timestamp=$timestamp, status=$status',
       );
     } catch (e) {
-      log.e(_tag, 'Failed to update sync log for $ip: $e');
+      PMlog.e(_tag, 'Failed to update sync log for $ip: $e');
       rethrow;
     }
   }
@@ -91,7 +91,7 @@ class SyncLogRepository {
         await _isar.syncLogs.put(syncLog);
       });
     } catch (e) {
-      log.e(_tag, 'Failed to mark syncing for $ip: $e');
+      PMlog.e(_tag, 'Failed to mark syncing for $ip: $e');
     }
   }
 
@@ -120,7 +120,7 @@ class SyncLogRepository {
     try {
       return await _isar.syncLogs.where().findAll();
     } catch (e) {
-      log.e(_tag, 'Failed to get all sync logs: $e');
+      PMlog.e(_tag, 'Failed to get all sync logs: $e');
       return [];
     }
   }
@@ -132,7 +132,7 @@ class SyncLogRepository {
         await _isar.syncLogs.filter().remoteIpEqualTo(ip).deleteAll();
       });
     } catch (e) {
-      log.e(_tag, 'Failed to delete sync log for $ip: $e');
+      PMlog.e(_tag, 'Failed to delete sync log for $ip: $e');
     }
   }
 
@@ -143,7 +143,7 @@ class SyncLogRepository {
         await _isar.syncLogs.clear();
       });
     } catch (e) {
-      log.e(_tag, 'Failed to clear sync logs: $e');
+      PMlog.e(_tag, 'Failed to clear sync logs: $e');
     }
   }
 }

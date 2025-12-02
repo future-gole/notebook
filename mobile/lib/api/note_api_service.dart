@@ -30,7 +30,7 @@ class NoteApiService{
     String? webUrl,
     required String userEmail,
   }) async {
-      log.d(tag, "开始分析页面: $webUrl, 用户查询: $userQuery");
+      PMlog.d(tag, "开始分析页面: $webUrl, 用户查询: $userQuery");
       // 暂且后端没有返回
       final data = await _http.post(
         ApiConstants.analysis_service,

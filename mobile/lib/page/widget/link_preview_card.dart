@@ -165,7 +165,7 @@ class _ApiLinkPreviewState extends ConsumerState<_ApiLinkPreview> {
         });
       }
     } catch (e) {
-      log.d(tag, '❌ API 获取失败: $e');
+      PMlog.d(tag, '❌ API 获取失败: $e');
       if (mounted) {
         setState(() {
           _hasError = true;
@@ -191,7 +191,7 @@ class _ApiLinkPreviewState extends ConsumerState<_ApiLinkPreview> {
 
     // 创建 Metadata 对象用于显示
     final metadata = Metadata();
-    log.d(tag, "title: ${_metadata!['title']}，description：${_metadata!['description']},imageUrl:${_metadata!['imageUrl']}");
+    PMlog.d(tag, "title: ${_metadata!['title']}，description：${_metadata!['description']},imageUrl:${_metadata!['imageUrl']}");
     metadata.title = _metadata!['title'];
     metadata.desc = _metadata!['description'];
     metadata.image = _metadata!['imageUrl'];
@@ -785,6 +785,6 @@ Future<void> _launchUrl(String urlString) async {
   try {
     await launchUrl(uri, mode: LaunchMode.externalApplication);
   } catch (e) {
-    log.e(tag, '❌ URL 跳转失败: $e');
+    PMlog.e(tag, '❌ URL 跳转失败: $e');
   }
 }

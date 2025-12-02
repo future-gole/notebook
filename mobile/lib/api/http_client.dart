@@ -48,13 +48,13 @@ class HttpClient {
   /// 设置 Token
   void setToken(String token) {
     _dio.options.headers[HttpHeaders.authorizationHeader] = 'Bearer $token';
-    log.d(tag, "Token 已设置");
+    PMlog.d(tag, "Token 已设置");
   }
 
   /// 清除 Token
   void clearToken() {
     _dio.options.headers.remove(HttpHeaders.authorizationHeader);
-    log.d(tag, "Token 已清除");
+    PMlog.d(tag, "Token 已清除");
   }
 
   /// 内部辅助函数，将 DioException 转换为自定义的 HttpException
@@ -277,7 +277,7 @@ class HttpClient {
   /// 取消所有请求
   void cancelAll() {
     // 注意：这会取消所有正在进行的请求
-    log.w(tag, "取消所有请求");
+    PMlog.w(tag, "取消所有请求");
   }
 }
 
@@ -330,7 +330,7 @@ class _LogInterceptor extends Interceptor {
 
   @override
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
-    log.d(tag, '''
+    PMlog.d(tag, '''
 ┌─────────────────────────────────────────────────────────────────
 │ 📤 REQUEST
 ├─────────────────────────────────────────────────────────────────
@@ -344,7 +344,7 @@ class _LogInterceptor extends Interceptor {
 
   @override
   void onResponse(Response response, ResponseInterceptorHandler handler) {
-    log.d(tag, '''
+    PMlog.d(tag, '''
 ┌─────────────────────────────────────────────────────────────────
 │ 📥 RESPONSE
 ├─────────────────────────────────────────────────────────────────
@@ -358,7 +358,7 @@ class _LogInterceptor extends Interceptor {
 
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) {
-    log.e(tag, '''
+    PMlog.e(tag, '''
 ┌─────────────────────────────────────────────────────────────────
 │ ❌ ERROR
 ├─────────────────────────────────────────────────────────────────
@@ -380,7 +380,7 @@ class _ErrorInterceptor extends Interceptor {
   void onError(DioException err, ErrorInterceptorHandler handler) {
     // 统一错误处理
     String errorMessage = _handleError(err);
-    log.e(tag, "请求错误: $errorMessage");
+    PMlog.e(tag, "请求错误: $errorMessage");
     
     // 可以在这里添加全局错误提示逻辑
     // 例如：显示 Toast、SnackBar 等

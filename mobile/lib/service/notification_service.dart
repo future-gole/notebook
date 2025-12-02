@@ -26,9 +26,9 @@ class NotificationService {
     try {
       final timezoneInfo = await FlutterTimezone.getLocalTimezone();
       timeZoneName = timezoneInfo.identifier;
-      log.i('NotificationService', '获取到系统时区: $timeZoneName');
+      PMlog.i('NotificationService', '获取到系统时区: $timeZoneName');
     } catch (e) {
-      log.e('NotificationService', '获取系统时区失败: $e');
+      PMlog.e('NotificationService', '获取系统时区失败: $e');
     }
 
     try {
@@ -38,15 +38,15 @@ class NotificationService {
         throw Exception('TimeZone name is null');
       }
     } catch (e) {
-      log.w(
+      PMlog.w(
         'NotificationService',
         '无法设置本地时区 ($timeZoneName), 尝试默认使用北京时间 (Asia/Shanghai)',
       );
       try {
         tz.setLocalLocation(tz.getLocation('Asia/Shanghai'));
-        log.i('NotificationService', '已切换到北京时间');
+        PMlog.i('NotificationService', '已切换到北京时间');
       } catch (e2) {
-        log.e('NotificationService', '设置北京时间失败, 降级使用 UTC: $e2');
+        PMlog.e('NotificationService', '设置北京时间失败, 降级使用 UTC: $e2');
         tz.setLocalLocation(tz.UTC);
       }
     }
@@ -238,15 +238,15 @@ class NotificationService {
             : fln.AndroidScheduleMode.exactAllowWhileIdle,
         matchDateTimeComponents: null,
       );
-      log.i('NotificationService', '通知调度成功');
+      PMlog.i('NotificationService', '通知调度成功');
     } catch (e) {
-        log.e('NotificationService', '闹钟保存失败');
+        PMlog.e('NotificationService', '闹钟保存失败');
         Fluttertoast.showToast(
             msg: "闹钟保存失败",
             toastLength: Toast.LENGTH_LONG,
             gravity: ToastGravity.CENTER,
         );
-      log.e('NotificationService', '调度通知失败: $e');
+      PMlog.e('NotificationService', '调度通知失败: $e');
     }
   }
 

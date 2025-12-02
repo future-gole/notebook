@@ -31,7 +31,7 @@ class ImageStorageHelper {
     if (!await directory.exists()) {
       await directory.create(recursive: true);
     }
-    log.d(tag,"图片存储根目录已初始化: $_rootDir");
+    PMlog.d(tag,"图片存储根目录已初始化: $_rootDir");
   }
 
   /// 保存图片：将临时文件移动到我们的存储目录
@@ -68,10 +68,36 @@ class ImageStorageHelper {
       final file = getFileByRelativePath(relativePath);
       if (await file.exists()) {
         await file.delete();
-        log.d(tag, "已删除本地图片: $relativePath");
+        PMlog.d(tag, "已删除本地图片: $relativePath");
       }
     } catch (e) {
-      log.e(tag, "删除图片失败: $relativePath,e:$e");
+      PMlog.e(tag, "删除图片失败: $relativePath,e:$e");
+    }
+  }
+
+  /// 获取 pocket_images 目录下所有图片文件的相对路径
+  Future<List<String>> getAllImagePaths() async {
+    try {
+      final directory = Directory(p.join(_rootDir, _folderName));
+      if (!await directory.exists()) {
+        return [];
+      }
+
+      final files = await directory.list().toList();
+      final imagePaths = <String>[];
+
+      for (final entity in files) {
+        if (entity is File) {
+          // 转换为相对路径
+          final fileName = p.basename(entity.path);
+          imagePaths.add(p.join(_folderName, fileName));
+        }
+      }
+
+      return imagePaths;
+    } catch (e) {
+      PMlog.e(tag, "获取图片文件列表失败: $e");
+      return [];
     }
   }
 }

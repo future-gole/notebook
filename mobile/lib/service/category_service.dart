@@ -43,9 +43,9 @@ class CategoryService {
 
     final resultId = await _categoryRepository.save(newCategory);
     if (resultId != -1) {
-      log.d(CategoryServiceTag, '分类添加成功: id: $resultId,name: $name');
+      PMlog.d(CategoryServiceTag, '分类添加成功: id: $resultId,name: $name');
     } else {
-      log.e(CategoryServiceTag, '分类添加失败');
+      PMlog.e(CategoryServiceTag, '分类添加失败');
     }
     return resultId;
   }
@@ -53,7 +53,7 @@ class CategoryService {
   /// 删除分类
   Future<void> deleteCategory(int categoryId) async {
     await _categoryRepository.delete(categoryId);
-    log.d(CategoryServiceTag, '分类删除成功');
+    PMlog.d(CategoryServiceTag, '分类删除成功');
   }
 
   /// 监听所有分类变化

@@ -676,7 +676,7 @@ class _NoteDetailPageState extends ConsumerState<NoteDetailPage>
       tag: tagsString,
     );
 
-    log.d(_tag, "Note saved");
+    PMlog.d(_tag, "Note saved");
   }
 
   /// 显示添加标签对话框
@@ -962,7 +962,7 @@ class _NoteDetailPageState extends ConsumerState<NoteDetailPage>
   /// Share 按钮
   void _onSharePressed() {
     // TODO: 实现分享功能
-    log.d(_tag, "Share pressed");
+    PMlog.d(_tag, "Share pressed");
     ScaffoldMessenger.of(
       context,
     ).showSnackBar(const SnackBar(content: Text('分享功能即将上线')));
@@ -1030,7 +1030,7 @@ class _NoteDetailPageState extends ConsumerState<NoteDetailPage>
     try {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
     } catch (e) {
-      log.e(tag, '❌ URL 跳转失败: $e');
+      PMlog.e(tag, '❌ URL 跳转失败: $e');
     }
   }
 }

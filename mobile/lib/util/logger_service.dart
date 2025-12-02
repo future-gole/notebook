@@ -142,7 +142,7 @@ class DeveloperLogOutput extends LogOutput {
   }
 }
 
-// 2. LogService 类 (配置变化)
+// 2. LogService 类
 class LogService {
   static final LogService _instance = LogService._internal();
   factory LogService() => _instance;
@@ -221,5 +221,5 @@ class LogService {
   }
 }
 
-// 5. 全局访问实例 (不变)
-final log = LogService();
+// 5. 全局访问实例
+final PMlog = LogService();

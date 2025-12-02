@@ -1,18 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pocketmind/util/app_config.dart';
 import 'package:pocketmind/page/home/sync_settings_page.dart';
 import 'dart:io';
 import 'package:pocketmind/util/proxy_config.dart';
+import 'package:pocketmind/data/repositories/cleanup_service.dart';
+import 'package:pocketmind/util/logger_service.dart';
+import 'package:pocketmind/providers/infrastructure_providers.dart';
 
 /// 设置页面
-class SettingsPage extends StatefulWidget {
+class SettingsPage extends ConsumerStatefulWidget {
   const SettingsPage({Key? key}) : super(key: key);
 
   @override
-  State<SettingsPage> createState() => _SettingsPageState();
+  ConsumerState<SettingsPage> createState() => _SettingsPageState();
 }
 
-class _SettingsPageState extends State<SettingsPage> {
+class _SettingsPageState extends ConsumerState<SettingsPage> {
   final _config = AppConfig();
   final _apiKeyController = TextEditingController();
   final _meteCacheTimeController = TextEditingController();
@@ -145,6 +149,11 @@ class _SettingsPageState extends State<SettingsPage> {
           // 局域网同步设置
           _buildSectionTitle('数据同步', theme),
           _buildSyncSettingCard(theme),
+          const SizedBox(height: 24),
+
+          // 存储管理
+          _buildSectionTitle('存储管理', theme),
+          _buildStorageCard(theme),
           const SizedBox(height: 24),
 
           // API 环境设置
@@ -299,6 +308,134 @@ class _SettingsPageState extends State<SettingsPage> {
         },
       ),
     );
+  }
+
+  Widget _buildStorageCard(ThemeData theme) {
+    return Card(
+      color: theme.cardColor,
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(color: theme.dividerColor.withOpacity(0.1)),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.storage, color: theme.colorScheme.primary),
+                const SizedBox(width: 12),
+                Text('清理数据', style: theme.textTheme.bodyLarge),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Text(
+              '定期清理已删除的笔记和孤立的图片文件，释放存储空间',
+              style: theme.textTheme.bodySmall,
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton.icon(
+              onPressed: _performCleanup,
+              icon: const Icon(Icons.cleaning_services),
+              label: const Text('执行清理'),
+              style: ElevatedButton.styleFrom(
+                minimumSize: const Size(double.infinity, 44),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _performCleanup() async {
+    // 显示确认对话框
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('确认清理'),
+        content: const Text(
+          '将清理：\n\n'
+          '• 10天前删除的笔记\n'
+          '• 未被引用的孤立图片\n\n'
+          '此操作不可恢复，是否继续？',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('取消'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('确认'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
+    // 显示加载对话框
+    if (!mounted) return;
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(child: CircularProgressIndicator()),
+    );
+
+    try {
+      final isar = ref.read(isarProvider);
+      final cleanupService = CleanupService(isar);
+      final result = await cleanupService.performFullCleanup();
+
+      if (!mounted) return;
+      Navigator.pop(context); // 关闭加载对话框
+
+      // 显示结果
+      await showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('清理完成'),
+          content: Text(
+            '清理结果：\n\n'
+            '• 删除笔记：${result['notes']} 条\n'
+            '• 删除图片：${result['images']} 张',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('确定'),
+            ),
+          ],
+        ),
+      );
+
+      PMlog.i('SettingsPage', 'Cleanup completed: $result');
+    } catch (e) {
+      if (!mounted) return;
+      Navigator.pop(context); // 关闭加载对话框
+
+      PMlog.e('SettingsPage', 'Cleanup failed: $e');
+
+      await showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('清理失败'),
+          content: Text('清理过程中发生错误：\n$e'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('确定'),
+            ),
+          ],
+        ),
+      );
+    }
   }
 
   Widget _buildEnvironmentCard(ThemeData theme) {

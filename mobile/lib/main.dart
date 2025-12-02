@@ -38,7 +38,7 @@ Future<void> _migrateUuidsIfNeeded(Isar db) async {
     // 迁移没有 UUID 的 Notes
     final notesWithoutUuid = await db.notes.filter().uuidIsNull().findAll();
     if (notesWithoutUuid.isNotEmpty) {
-      log.i(tag, 'Migrating ${notesWithoutUuid.length} notes without UUID');
+      PMlog.i(tag, 'Migrating ${notesWithoutUuid.length} notes without UUID');
       final now = DateTime.now().millisecondsSinceEpoch;
       for (final note in notesWithoutUuid) {
         note.uuid = _uuid.v4();
@@ -48,7 +48,7 @@ Future<void> _migrateUuidsIfNeeded(Isar db) async {
         }
       }
       await db.notes.putAll(notesWithoutUuid);
-      log.i(tag, 'Notes migration completed');
+      PMlog.i(tag, 'Notes migration completed');
     }
 
     // 迁移没有 UUID 的 Categories
@@ -57,7 +57,7 @@ Future<void> _migrateUuidsIfNeeded(Isar db) async {
         .uuidIsNull()
         .findAll();
     if (categoriesWithoutUuid.isNotEmpty) {
-      log.i(
+      PMlog.i(
         tag,
         'Migrating ${categoriesWithoutUuid.length} categories without UUID',
       );
@@ -71,7 +71,7 @@ Future<void> _migrateUuidsIfNeeded(Isar db) async {
         }
       }
       await db.categorys.putAll(categoriesWithoutUuid);
-      log.i(tag, 'Categories migration completed');
+      PMlog.i(tag, 'Categories migration completed');
     }
   });
 }

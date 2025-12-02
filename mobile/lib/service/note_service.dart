@@ -26,7 +26,7 @@ class NoteService {
     int categoryId = 1, // 分类ID（用于categories数据库关联）
     String? tag,
   }) async {
-    log.d(
+    PMlog.d(
       NoteServiceTag,
       'Note added: title: $title, content: $content, url: $url, category: $category, categoryId: $categoryId',
     );
@@ -43,7 +43,7 @@ class NoteService {
     );
 
     if (id != null && id != -1) {
-      log.d(NoteServiceTag, "id:$id, 进行更新操作");
+      PMlog.d(NoteServiceTag, "id:$id, 进行更新操作");
     }
 
     // 通过仓库保存

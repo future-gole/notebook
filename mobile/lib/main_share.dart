@@ -70,7 +70,7 @@ class _MyShareAppState extends ConsumerState<MyShareApp>
     super.initState();
     noteService = ref.read(noteServiceProvider);
     _channel.setMethodCallHandler(_handleMethodCall);
-    log.d(tag, "MyShareApp 初始化完成, 等待分享...");
+    PMlog.d(tag, "MyShareApp 初始化完成, 等待分享...");
 
     // 延迟通知原生端引擎已准备好
     // 使用 addPostFrameCallback 确保第一帧渲染完成后再通知
@@ -83,15 +83,15 @@ class _MyShareAppState extends ConsumerState<MyShareApp>
   Future<void> _notifyEngineReady() async {
     try {
       await _channel.invokeMethod('engineReady');
-      log.d(tag, "已通知原生端：Flutter 引擎准备就绪");
+      PMlog.d(tag, "已通知原生端：Flutter 引擎准备就绪");
     } catch (e) {
-      log.e(tag, "通知引擎准备就绪失败: $e");
+      PMlog.e(tag, "通知引擎准备就绪失败: $e");
     }
   }
 
   // 隐藏 UI 并关闭 Activity
   void _dismissUI() {
-    log.d(tag, "Dismissing UI...");
+    PMlog.d(tag, "Dismissing UI...");
 
     // 重置状态机
     setState(() {
@@ -123,7 +123,7 @@ class _MyShareAppState extends ConsumerState<MyShareApp>
         await ImageStorageHelper().init();
         return await ImageStorageHelper().saveImage(tempFile);
       } catch (e) {
-        log.e(tag, "❌ URI 转换文件失败: $e");
+        PMlog.e(tag, "❌ URI 转换文件失败: $e");
       }
     }
     return null;
@@ -134,7 +134,7 @@ class _MyShareAppState extends ConsumerState<MyShareApp>
   }
 
   Future<dynamic> _handleMethodCall(MethodCall call) async {
-    log.d(tag, "接收到方法: ${call.method}");
+    PMlog.d(tag, "接收到方法: ${call.method}");
 
     switch (call.method) {
       case 'showShare':
@@ -144,7 +144,7 @@ class _MyShareAppState extends ConsumerState<MyShareApp>
         final content = _contentWithoutUrl(args['content'] as String);
         final url = await _extractedUrl(args['content'] as String);
 
-        log.d(tag, "showShare: title=$title, url=$url, content= $url");
+        PMlog.d(tag, "showShare: title=$title, url=$url, content= $url");
 
         try {
           // 1. 直接保存数据到数据库
@@ -160,10 +160,10 @@ class _MyShareAppState extends ConsumerState<MyShareApp>
             _currentState = ShareUIState.success;
           });
 
-          log.d(tag, "分享的UI成功展示");
+          PMlog.d(tag, "分享的UI成功展示");
           return "Success";
         } catch (e) {
-          log.e(tag, "展示识别: $e");
+          PMlog.e(tag, "展示识别: $e");
           return e.toString();
         }
 

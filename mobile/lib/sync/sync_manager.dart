@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:async';
 
 import 'package:isar_community/isar.dart';
 
@@ -12,6 +13,8 @@ import 'realtime/sync_websocket_server.dart';
 import '../model/note.dart';
 import '../model/category.dart';
 import '../util/logger_service.dart';
+import '../util/url_helper.dart';
+import '../util/image_storage_helper.dart';
 
 /// 同步结果
 class SyncResult {
@@ -69,10 +72,10 @@ class SyncManager {
     String? targetIp,
   }) async {
     final ip = targetIp ?? client.remoteDevice?.ipAddress ?? 'unknown';
-    log.i(_tag, 'Starting sync with $ip via WebSocket');
+    PMlog.i(_tag, 'Starting sync with $ip via WebSocket');
 
     if (!client.isConnected) {
-      log.w(_tag, 'WebSocket client not connected');
+      PMlog.w(_tag, 'WebSocket client not connected');
       return const SyncResult(success: false, error: 'Not connected');
     }
 
@@ -81,7 +84,7 @@ class SyncManager {
       final lastSyncTimestamp = await _syncLogRepository.getLastSyncTimestamp(
         ip,
       );
-      log.d(_tag, 'Last sync timestamp: $lastSyncTimestamp');
+      PMlog.d(_tag, 'Last sync timestamp: $lastSyncTimestamp');
 
       // 标记同步开始
       await _syncLogRepository.markSyncing(ip);
@@ -99,8 +102,8 @@ class SyncManager {
         );
       }
 
-      // 3. 应用变更
-      final result = await _applyChanges(response.changes);
+      // 3. 应用变更（传递 WebSocket 客户端以便请求图片）
+      final result = await _applyChanges(response.changes, wsClient: client);
 
       // 4. 更新同步日志
       final remoteDevice = client.remoteDevice;
@@ -112,10 +115,10 @@ class SyncManager {
         status: SyncStatus.success,
       );
 
-      log.i(_tag, 'Sync completed: $result');
+      PMlog.i(_tag, 'Sync completed: $result');
       return result;
     } catch (e) {
-      log.e(_tag, 'Sync failed: $e');
+      PMlog.e(_tag, 'Sync failed: $e');
       await _syncLogRepository.markFailed(ip, e.toString());
       return SyncResult(success: false, error: e.toString());
     }
@@ -134,14 +137,14 @@ class SyncManager {
     String targetIp, {
     int port = SyncWebSocketServer.defaultPort,
   }) async {
-    log.i(_tag, 'Starting sync with $targetIp:$port');
+    PMlog.i(_tag, 'Starting sync with $targetIp:$port');
 
     // 创建临时客户端
     final client = SyncWebSocketClient(localDevice: _localDevice);
 
     // 设置同步请求处理器（当服务端向我们请求数据时）
     client.onSyncRequestReceived = (since) async {
-      log.i(_tag, '📤 Server requested sync data since $since');
+      PMlog.i(_tag, '📤 Server requested sync data since $since');
       return await getLocalChangesSince(since);
     };
 
@@ -149,7 +152,7 @@ class SyncManager {
       // 1. 建立连接
       final connected = await client.connect(targetIp, port: port);
       if (!connected) {
-        log.w(_tag, 'Failed to connect to $targetIp');
+        PMlog.w(_tag, 'Failed to connect to $targetIp');
         await _syncLogRepository.markFailed(targetIp, 'Connection failed');
         return const SyncResult(success: false, error: 'Connection failed');
       }
@@ -168,12 +171,27 @@ class SyncManager {
   }
 
   /// 应用变更数据（公共方法，供外部调用）
-  Future<SyncResult> applyChanges(List<Map<String, dynamic>> changes) async {
-    return _applyChanges(changes);
+  Future<SyncResult> applyChanges(
+    List<Map<String, dynamic>> changes, {
+    SyncWebSocketClient? wsClient,
+    SyncWebSocketServer? wsServer,
+    String? clientIp,
+  }) async {
+    return _applyChanges(
+      changes,
+      wsClient: wsClient,
+      wsServer: wsServer,
+      clientIp: clientIp,
+    );
   }
 
   /// 应用变更数据（内部实现）
-  Future<SyncResult> _applyChanges(List<Map<String, dynamic>> changes) async {
+  Future<SyncResult> _applyChanges(
+    List<Map<String, dynamic>> changes, {
+    SyncWebSocketClient? wsClient,
+    SyncWebSocketServer? wsServer,
+    String? clientIp,
+  }) async {
     if (changes.isEmpty) {
       return const SyncResult(success: true);
     }
@@ -184,6 +202,9 @@ class SyncManager {
     int categoriesUpdated = 0;
 
     try {
+      // 首先收集所有需要同步的图片路径
+      final imagePaths = <String>[];
+      
       await _isar.writeTxn(() async {
         for (final change in changes) {
           final entityType = change['_entityType'] as String?;
@@ -194,6 +215,16 @@ class SyncManager {
               notesAdded++;
             } else if (result == _ChangeResult.updated) {
               notesUpdated++;
+            }
+
+            // 检查是否有本地图片路径
+            final url = change['url'] as String?;
+            if (url != null && UrlHelper.isLocalImagePath(url)) {
+              // 检查本地是否已存在该图片
+              final file = ImageStorageHelper().getFileByRelativePath(url);
+              if (!await file.exists()) {
+                imagePaths.add(url);
+              }
             }
           } else if (entityType == 'category') {
             final result = await _applyCategoryChange(change);
@@ -206,6 +237,20 @@ class SyncManager {
         }
       });
 
+      // 如果有需要同步的图片，请求从远程设备获取
+      if (imagePaths.isNotEmpty) {
+        PMlog.i(_tag, '📷 Requesting ${imagePaths.length} images from remote');
+        for (final path in imagePaths) {
+          if (wsClient != null) {
+            // 作为客户端请求
+            wsClient.requestImage(path);
+          } else if (wsServer != null && clientIp != null) {
+            // 作为服务端请求
+            wsServer.requestImage(clientIp, path);
+          }
+        }
+      }
+
       return SyncResult(
         success: true,
         notesAdded: notesAdded,
@@ -214,7 +259,7 @@ class SyncManager {
         categoriesUpdated: categoriesUpdated,
       );
     } catch (e) {
-      log.e(_tag, 'Failed to apply changes: $e');
+      PMlog.e(_tag, 'Failed to apply changes: $e');
       return SyncResult(success: false, error: e.toString());
     }
   }
@@ -229,7 +274,7 @@ class SyncManager {
   Future<_ChangeResult> _applyNoteChange(Map<String, dynamic> change) async {
     final remoteUuid = change['uuid'] as String?;
     if (remoteUuid == null || remoteUuid.isEmpty) {
-      log.w(_tag, 'Skipping note without UUID');
+      PMlog.w(_tag, 'Skipping note without UUID');
       return _ChangeResult.ignored;
     }
 
@@ -245,7 +290,7 @@ class SyncManager {
     if (localNote == null) {
       // 本地不存在，插入新记录（如果远程未删除）
       if (remoteIsDeleted) {
-        log.d(
+        PMlog.d(
           _tag,
           'Skipping deleted note that does not exist locally: $remoteUuid',
         );
@@ -255,7 +300,7 @@ class SyncManager {
       final note = SyncDataMapper.noteFromJson(change);
       note.uuid = remoteUuid;
       await _isar.notes.put(note);
-      log.d(_tag, 'Added new note: $remoteUuid');
+      PMlog.d(_tag, 'Added new note: $remoteUuid');
       return _ChangeResult.added;
     }
 
@@ -266,7 +311,7 @@ class SyncManager {
       note.id = localNote.id; // 保持本地 ID
       note.uuid = remoteUuid;
       await _isar.notes.put(note);
-      log.d(
+      PMlog.d(
         _tag,
         'Updated note: $remoteUuid (remote: $remoteUpdatedAt > local: ${localNote.updatedAt})',
       );
@@ -274,7 +319,7 @@ class SyncManager {
     }
 
     // 本地版本更新或相同，忽略
-    log.d(_tag, 'Ignored note: $remoteUuid (local version is newer or equal)');
+    PMlog.d(_tag, 'Ignored note: $remoteUuid (local version is newer or equal)');
     return _ChangeResult.ignored;
   }
 
@@ -284,7 +329,7 @@ class SyncManager {
   ) async {
     final remoteUuid = change['uuid'] as String?;
     if (remoteUuid == null || remoteUuid.isEmpty) {
-      log.w(_tag, 'Skipping category without UUID');
+      PMlog.w(_tag, 'Skipping category without UUID');
       return _ChangeResult.ignored;
     }
 
@@ -309,7 +354,7 @@ class SyncManager {
     if (localCategory == null) {
       // 本地不存在，插入新记录（如果远程未删除）
       if (remoteIsDeleted) {
-        log.d(
+        PMlog.d(
           _tag,
           'Skipping deleted category that does not exist locally: $remoteUuid',
         );
@@ -319,7 +364,7 @@ class SyncManager {
       final category = SyncDataMapper.categoryFromJson(change);
       category.uuid = remoteUuid;
       await _isar.categorys.put(category);
-      log.d(_tag, 'Added new category: $remoteName ($remoteUuid)');
+      PMlog.d(_tag, 'Added new category: $remoteName ($remoteUuid)');
       return _ChangeResult.added;
     }
 
@@ -330,7 +375,7 @@ class SyncManager {
       category.id = localCategory.id; // 保持本地 ID
       category.uuid = remoteUuid;
       await _isar.categorys.put(category);
-      log.d(
+      PMlog.d(
         _tag,
         'Updated category: $remoteName (remote: $remoteUpdatedAt > local: ${localCategory.updatedAt})',
       );
@@ -338,7 +383,7 @@ class SyncManager {
     }
 
     // 本地版本更新或相同，忽略
-    log.d(
+    PMlog.d(
       _tag,
       'Ignored category: $remoteName (local version is newer or equal)',
     );
@@ -351,13 +396,13 @@ class SyncManager {
   /// [subnet] 子网前三段，如 "192.168.1"
   Future<List<DeviceInfo>> scanNetwork(
     String subnet, {
-    Duration timeout = const Duration(seconds: 2),
+    Duration timeout = const Duration(seconds: 3),
     int port = SyncWebSocketServer.defaultPort,
   }) async {
-    log.i(_tag, '=== Network Scan Started ===');
-    log.i(_tag, 'Subnet: $subnet.*');
-    log.i(_tag, 'Port: $port');
-    log.i(_tag, 'Timeout: ${timeout.inMilliseconds}ms');
+    PMlog.i(_tag, '=== Network Scan Started ===');
+    PMlog.i(_tag, 'Subnet: $subnet.*');
+    PMlog.i(_tag, 'Port: $port');
+    PMlog.i(_tag, 'Timeout: ${timeout.inMilliseconds}ms');
 
     final devices = <DeviceInfo>[];
     final futures = <Future<DeviceInfo?>>[];
@@ -369,22 +414,22 @@ class SyncManager {
     }
 
     // 并发执行扫描
-    log.i(_tag, 'Scanning 254 hosts concurrently...');
+    PMlog.i(_tag, 'Scanning 254 hosts concurrently...');
     final results = await Future.wait(futures);
 
     for (final device in results) {
       if (device != null) {
         devices.add(device);
-        log.i(
+        PMlog.i(
           _tag,
           '✅ Found device at ${device.ipAddress}: ${device.deviceName}',
         );
       }
     }
 
-    log.i(_tag, '=== Network Scan Completed ===');
-    log.i(_tag, 'Found: ${devices.length} devices');
-    log.i(_tag, '==============================');
+    PMlog.i(_tag, '=== Network Scan Completed ===');
+    PMlog.i(_tag, 'Found: ${devices.length} devices');
+    PMlog.i(_tag, '==============================');
 
     return devices;
   }
@@ -392,10 +437,13 @@ class SyncManager {
   /// 扫描单个主机
   Future<DeviceInfo?> _scanHost(String ip, int port, Duration timeout) async {
     try {
+      PMlog.d(_tag, 'Scanning $ip:$port...');
       final socket = await WebSocket.connect(
         'ws://$ip:$port',
         headers: {'X-Device-Id': _localDevice.deviceId},
       ).timeout(timeout);
+
+      PMlog.d(_tag, 'Connected to $ip:$port, sending discover message');
 
       // 发送发现请求（不触发设备注册）
       final msg = {
@@ -408,33 +456,49 @@ class SyncManager {
       // 等待接收 hello 或 discover_response 消息
       DeviceInfo? deviceInfo;
 
-      await for (final data in socket.timeout(timeout)) {
-        try {
-          final json = jsonDecode(data as String) as Map<String, dynamic>;
-          final type = json['type'] as String?;
-          if ((type == SyncMessageType.hello ||
-                  type == SyncMessageType.discoverResponse) &&
-              json['data'] != null) {
-            deviceInfo = DeviceInfo.fromJson(
-              json['data'] as Map<String, dynamic>,
-            );
-            deviceInfo = DeviceInfo(
-              deviceId: deviceInfo.deviceId,
-              deviceName: deviceInfo.deviceName,
-              ipAddress: ip,
-              port: port,
-              platform: deviceInfo.platform,
-              lastSeen: DateTime.now(),
-            );
-            break;
+      // 使用Future.any来避免await for可能的阻塞问题
+      final messagesFuture = socket.first;
+      final timeoutFuture = Future.delayed(timeout);
+
+      await Future.any([
+        messagesFuture.then((data) {
+          try {
+            final json = jsonDecode(data as String) as Map<String, dynamic>;
+            final type = json['type'] as String?;
+            PMlog.d(_tag, 'Received message from $ip: type=$type');
+            
+            if ((type == SyncMessageType.hello ||
+                    type == SyncMessageType.discoverResponse) &&
+                json['data'] != null) {
+              final info = DeviceInfo.fromJson(
+                json['data'] as Map<String, dynamic>,
+              );
+              deviceInfo = DeviceInfo(
+                deviceId: info.deviceId,
+                deviceName: info.deviceName,
+                ipAddress: ip,
+                port: port,
+                platform: info.platform,
+                lastSeen: DateTime.now(),
+              );
+              PMlog.d(_tag, 'Got device info from $ip: ${deviceInfo!.deviceName}');
+            }
+          } catch (e) {
+            PMlog.w(_tag, 'Error parsing message from $ip: $e');
           }
-        } catch (_) {}
-      }
+        }),
+        timeoutFuture,
+      ]);
 
       await socket.close();
       return deviceInfo;
-    } catch (_) {
+    } catch (e) {
       // 连接失败或超时，该 IP 没有运行同步服务
+      if (e is TimeoutException) {
+        PMlog.d(_tag, 'Timeout connecting to $ip:$port');
+      } else {
+        PMlog.d(_tag, 'Failed to connect to $ip:$port: ${e.runtimeType}');
+      }
       return null;
     }
   }
