@@ -1,0 +1,264 @@
+import 'dart:io';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pocketmind/providers/category_providers.dart';
+import 'package:pocketmind/providers/nav_providers.dart';
+import 'package:pocketmind/providers/note_providers.dart';
+import 'package:pocketmind/page/widget/creative_toast.dart';
+import 'sidebar_item.dart';
+
+/// 桌面端侧边栏组件
+/// 包含 App 名称、分类列表和设置入口
+class DesktopSidebar extends ConsumerWidget {
+  /// 侧边栏宽度
+  static const double width = 260.0;
+
+  const DesktopSidebar({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    // 从 provider 获取导航项数据
+    final navItemsAsync = ref.watch(navItemsProvider);
+    // 从 provider 获取当前激活的索引
+    final activeIndex = ref.watch(activeNavIndexProvider);
+
+    // macOS 红绿灯按钮预留空间
+    final topPadding = Platform.isMacOS ? 28.0 : 0.0;
+
+    return Container(
+      width: width,
+      // 使用 surfaceContainerLow 作为侧边栏背景
+      color: colorScheme.surfaceContainerLow,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // macOS 红绿灯预留空间
+          SizedBox(height: topPadding),
+
+          // App 名称区域
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 24, 20, 32),
+            child: Row(
+              children: [
+                // App Logo
+                Container(
+                  width: 28,
+                  height: 28,
+                  decoration: BoxDecoration(
+                    color: colorScheme.tertiary,
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  alignment: Alignment.center,
+                  child: const Text(
+                    'P',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'Georgia',
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                // App 名称 - 使用衬线字体
+                Text(
+                  'PocketMind',
+                  style: TextStyle(
+                    fontFamily: 'Georgia',
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: colorScheme.primary,
+                    letterSpacing: -0.3,
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // 分类标题
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
+            child: Text(
+              '分类',
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+                color: colorScheme.secondary.withOpacity(0.7),
+                letterSpacing: 1.5,
+              ),
+            ),
+          ),
+
+          // 分类列表
+          Expanded(
+            child: navItemsAsync.when(
+              data: (navItems) {
+                if (navItems.isEmpty) {
+                  return const SizedBox.shrink();
+                }
+                return ListView.builder(
+                  padding: EdgeInsets.zero,
+                  itemCount: navItems.length,
+                  itemBuilder: (context, index) {
+                    final item = navItems[index];
+                    // 默认分类（如"全部"）通常ID较小或固定，这里假设 categoryId > 1 才能删除
+                    // 或者根据业务逻辑判断是否可删除
+                    final canDelete = item.categoryId > 1;
+
+                    return SidebarItem(
+                      text: item.text,
+                      isActive: activeIndex == index,
+                      onTap: () {
+                        ref.read(activeNavIndexProvider.notifier).state = index;
+                      },
+                      onDelete: canDelete
+                          ? () => _onDeletePressed(
+                              context,
+                              ref,
+                              item.categoryId,
+                              item.text,
+                            )
+                          : null,
+                    );
+                  },
+                );
+              },
+              loading: () => const Center(
+                child: Padding(
+                  padding: EdgeInsets.all(20),
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+              ),
+              error: (error, stack) {
+                debugPrint('Error loading nav items: $error');
+                return const SizedBox.shrink();
+              },
+            ),
+          ),
+
+          // 底部分隔线
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Divider(
+              height: 1,
+              thickness: 0.5,
+              color: colorScheme.outline,
+            ),
+          ),
+
+          // 设置入口
+          const _SettingsButton(),
+
+          // 底部安全区域
+          const SizedBox(height: 16),
+        ],
+      ),
+    );
+  }
+
+  /// 删除分类对话框
+  Future<void> _onDeletePressed(
+    BuildContext context,
+    WidgetRef ref,
+    int categoryId,
+    String categoryName,
+  ) async {
+    final confirmed = await showConfirmDialog(
+      context,
+      title: '删除分类',
+      message: '确定要删除分类 "$categoryName" 吗？\n该分类下的所有笔记也将被永久删除，此操作无法撤销。',
+      confirmText: '确认删除',
+      cancelText: '取消',
+    );
+
+    if (confirmed == true) {
+      try {
+        await ref
+            .read(noteServiceProvider)
+            .deleteAllNoteByCategoryId(categoryId);
+        await ref.read(categoryServiceProvider).deleteCategory(categoryId);
+
+        // 重置选中项到"全部"
+        ref.read(activeNavIndexProvider.notifier).state = 0;
+
+        if (context.mounted) {
+          CreativeToast.success(
+            context,
+            title: '删除成功',
+            message: '分类 "$categoryName" 已删除',
+            direction: ToastDirection.top,
+          );
+        }
+      } catch (e) {
+        if (context.mounted) {
+          CreativeToast.error(
+            context,
+            title: '删除失败',
+            message: e.toString(),
+            direction: ToastDirection.top,
+          );
+        }
+      }
+    }
+  }
+}
+
+/// 设置按钮组件
+class _SettingsButton extends StatefulWidget {
+  const _SettingsButton();
+
+  @override
+  State<_SettingsButton> createState() => _SettingsButtonState();
+}
+
+class _SettingsButtonState extends State<_SettingsButton> {
+  bool _isHovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return MouseRegion(
+      onEnter: (_) => setState(() => _isHovered = true),
+      onExit: (_) => setState(() => _isHovered = false),
+      cursor: SystemMouseCursors.click,
+      child: GestureDetector(
+        onTap: () => Navigator.of(context).pushNamed('/settings'),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 150),
+          margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          decoration: BoxDecoration(
+            color: _isHovered
+                ? (isDark
+                      ? Colors.white.withOpacity(0.05)
+                      : Colors.black.withOpacity(0.03))
+                : Colors.transparent,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Row(
+            children: [
+              Icon(
+                Icons.settings_outlined,
+                size: 18,
+                color: colorScheme.secondary,
+              ),
+              const SizedBox(width: 10),
+              Text(
+                '设置',
+                style: TextStyle(
+                  color: colorScheme.secondary,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w400,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}

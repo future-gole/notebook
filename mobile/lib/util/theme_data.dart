@@ -1,4 +1,4 @@
-// 主题定义 - "亮色模式" (赤陶与暖沙)
+// 主题定义 - 统一的亮色/暗色主题
 import 'package:flutter/material.dart';
 
 // 流动背景颜色 - 亮色模式
@@ -18,17 +18,13 @@ class DarkFlowingBackgroundColors {
 }
 
 class SharePageThemeColors extends ThemeExtension<SharePageThemeColors> {
-  const SharePageThemeColors({
-    required this.primary,
-    required this.secondary,
-  });
+  const SharePageThemeColors({required this.primary, required this.secondary});
 
   final Color? primary;
   final Color? secondary;
 
   @override
   SharePageThemeColors copyWith({Color? primary, Color? secondary}) {
-    // 覆盖原本的颜色
     return SharePageThemeColors(
       primary: primary ?? this.primary,
       secondary: secondary ?? this.secondary,
@@ -36,8 +32,10 @@ class SharePageThemeColors extends ThemeExtension<SharePageThemeColors> {
   }
 
   @override
-  SharePageThemeColors lerp(ThemeExtension<SharePageThemeColors>? other, double t) {
-    // (This is used for animating theme changes)
+  SharePageThemeColors lerp(
+    ThemeExtension<SharePageThemeColors>? other,
+    double t,
+  ) {
     if (other is! SharePageThemeColors) {
       return this;
     }
@@ -53,146 +51,139 @@ class SharePageThemeColors extends ThemeExtension<SharePageThemeColors> {
 }
 
 const lightShareColors = SharePageThemeColors(
-  primary: Color(0xFFFFFFFF), // 亮色模式下的分享主色
-  secondary: Color(0xFFEAE5E0), // 亮色模式下的分享次色
+  primary: Color(0xFFFFFFFF),
+  secondary: Color(0xFFEAE5E0),
 );
 
 const darkShareColors = SharePageThemeColors(
-  primary: Color(0xFFFFFFFF), // 暗色模式下的分享主色
-  secondary: Color(0xFFEAE5E0), // 暗色模式下的分享 次色
+  primary: Color(0xFFFFFFFF),
+  secondary: Color(0xFFEAE5E0),
 );
 
-
+// 暗色模式
 final ThemeData calmBeigeTheme = ThemeData(
   useMaterial3: true,
   brightness: Brightness.light,
   colorScheme: const ColorScheme(
     brightness: Brightness.light,
-    primary: Color(0xFF423B38), // 主文本色 - 深暖棕褐色
+    primary: Color(0xFF3A3A35), // 主文本色
     onPrimary: Color(0xFFFFFFFF),
-    secondary: Color(0xFF9B9691), // 副文本色 - 温暖褐灰色
+    secondary: Color(0xFF9B9691), // 副文本色
     onSecondary: Color(0xFFFFFFFF),
-    surface: Color(0xFFFAF9F7), // 卡片背景
-    onSurface: Color(0xFF423B38),
+    surface: Color(0xFFFFFFFF), // 卡片背景
+    onSurface: Color(0xFF3A3A35),
     error: Color(0xFFBA1A1A),
     onError: Color(0xFFFFFFFF),
-    // 自定义颜色
-    tertiary: Color(0xFF3A3A3A), // Done/FAB按钮背景 - 深木炭色
-    onTertiary: Color(0xFFFFFFFF), // Done/FAB按钮文本
-    surfaceContainerHighest: Color(0xFFE58F6F), // 点睛色 - 赤陶色
-    outline: Color(0xCCFAF9F7), // 画布遮罩 - 80%透明米白
-    onSurfaceVariant: Color(0xFF9B9691), // 辅助文字（副文本）
-    outlineVariant: Color(0xFFD6D2CE), //分割线/描边颜色
+    // 强调色 - 赤陶色
+    tertiary: Color(0xFFD97757),
+    onTertiary: Color(0xFFFFFFFF),
+    // 侧边栏/次级背景色
+    surfaceContainerLow: Color(0xFFF2F0ED),
+    // 点睛色
+    surfaceContainerHighest: Color(0xFFD97757),
+    outline: Color(0xFFE0DDD9), // 分割线颜色
+    onSurfaceVariant: Color(0xFF9B9691),
+    outlineVariant: Color(0xFFD6D2CE),
   ),
-  scaffoldBackgroundColor: const Color(0xFFFAF9F7), // 画布背景
-  canvasColor: const Color(0xFFFAF9F7), // 画布背景
-  cardColor: Colors.white, // 卡片在画布上"浮"起来
-  shadowColor: Colors.black.withOpacity(0.05), // 柔和的阴影\
+  scaffoldBackgroundColor: const Color(0xFFF2F0ED), // Scaffold 背景
+  canvasColor: const Color(0xFFF2F0ED),
+  cardColor: const Color(0xFFFFFFFF), // 卡片背景
+  shadowColor: Colors.black.withOpacity(0.05),
   fontFamily: 'SF Pro',
   textTheme: const TextTheme(
-    // 标题样式
     titleLarge: TextStyle(
       fontSize: 24,
       fontWeight: FontWeight.bold,
-      color: Color(0xFF423B38),
+      color: Color(0xFF3A3A35),
     ),
     titleMedium: TextStyle(
       fontSize: 18,
       fontWeight: FontWeight.bold,
-      color: Color(0xFF423B38),
+      color: Color(0xFF3A3A35),
     ),
-    // 正文样式
-    bodyLarge: TextStyle(fontSize: 16, color: Color(0xFF423B38), height: 1.5),
-    bodyMedium: TextStyle(fontSize: 14, color: Color(0xFF423B38), height: 1.5),
-    // 辅助文字（时间、提示等）
+    bodyLarge: TextStyle(fontSize: 16, color: Color(0xFF3A3A35), height: 1.5),
+    bodyMedium: TextStyle(fontSize: 14, color: Color(0xFF3A3A35), height: 1.5),
     bodySmall: TextStyle(fontSize: 12, color: Color(0xFF9B9691)),
   ),
   appBarTheme: const AppBarTheme(
     backgroundColor: Colors.transparent,
     elevation: 0,
-    foregroundColor: Color(0xFF423B38),
+    foregroundColor: Color(0xFF3A3A35),
     titleTextStyle: TextStyle(
       fontSize: 24,
       fontWeight: FontWeight.bold,
-      color: Color(0xFF423B38),
+      color: Color(0xFF3A3A35),
     ),
   ),
   floatingActionButtonTheme: const FloatingActionButtonThemeData(
-    backgroundColor: Color(0xFF3A3A3A), // 与Done按钮一致
+    backgroundColor: Color(0xFFD97757), // 强调色
     foregroundColor: Color(0xFFFFFFFF),
     shape: StadiumBorder(),
     elevation: 4,
   ),
-
-  // 添加亮色自定义颜色扩展
-  extensions: const <ThemeExtension<dynamic>>[
-    lightShareColors,
-  ],
+  extensions: const <ThemeExtension<dynamic>>[lightShareColors],
 );
 
-// 主题定义 - "暗色模式" (静谧之夜与橄榄金)
+// 暗色模式
 final ThemeData quietNightTheme = ThemeData(
   useMaterial3: true,
   brightness: Brightness.dark,
   colorScheme: const ColorScheme(
     brightness: Brightness.dark,
-    primary: Color(0xFFEAE5E0), // 主文本色 - 柔和米白色
-    onPrimary: Color(0xFF2B2A28),
-    secondary: Color(0xFFA5A19C), // 副文本色 - 哑光浅暖灰
-    onSecondary: Color(0xFF2B2A28),
-    surface: Color(0xFF3A3734), // 卡片背景 - 稍亮于画布
-    onSurface: Color(0xFFEAE5E0),
+    primary: Color(0xFFA1A1AA), // 主文本色 - 柔和灰白
+    onPrimary: Color(0xFF09090B),
+    secondary: Color(0xFF71717A), // 副文本色
+    onSecondary: Color(0xFF09090B),
+    surface: Color(0xFF202022), // 卡片背景
+    onSurface: Color(0xFFA1A1AA),
     error: Color(0xFFFFB4AB),
     onError: Color(0xFF690005),
-    // 自定义颜色
-    tertiary: Color(0xFFEAE5E0), // Done按钮背景 - 使用主文本色（反转设计）
-    onTertiary: Color(0xFF2B2A28), // Done按钮文本 - 使用画布色
-    surfaceContainerHighest: Color(0xFFB9A389), // 点睛色 - 橄榄金
-    outline: Color(0xCC2B2A28), // 画布遮罩 - 80%透明深暖灰
-    onSurfaceVariant: Color(0xFFA5A19C), // 辅助文字（副文本）
-    outlineVariant: Color(0xFF4A4744), //分割线/描边颜色
+    // 强调色 - 暖橙
+    tertiary: Color(0xFFE58F6F),
+    onTertiary: Color(0xFF09090B),
+    // 侧边栏/次级背景色 - 纯黑
+    surfaceContainerLow: Color(0xFF151515),
+    // 点睛色
+    surfaceContainerHighest: Color(0xFFE58F6F),
+    outline: Color(0xBB838282), // 分割线颜色
+    onSurfaceVariant: Color(0xFFC6C1C1),
+    outlineVariant: Color(0xFF3F3F46),
   ),
-  scaffoldBackgroundColor: const Color(0xFF2B2A28), // 画布背景
-  canvasColor: const Color(0xFF2B2A28), // 画布背景
-  cardColor: const Color(0xFF3A3734), // 卡片稍亮于画布
-  shadowColor: Colors.black.withOpacity(0.3), // 暗色模式的阴影稍深
+  scaffoldBackgroundColor: const Color(0xFF202022), // Scaffold 背景
+  canvasColor: const Color(0xFF09090B),
+  cardColor: const Color(0xFF202022), // 卡片背景 - 提亮
+  shadowColor: Colors.black.withOpacity(0.3),
   fontFamily: 'SF Pro',
   textTheme: const TextTheme(
-    // 标题样式
     titleLarge: TextStyle(
       fontSize: 24,
       fontWeight: FontWeight.bold,
-      color: Color(0xFFEAE5E0),
+      color: Color(0xFFA1A1AA),
     ),
     titleMedium: TextStyle(
       fontSize: 18,
       fontWeight: FontWeight.bold,
-      color: Color(0xFFEAE5E0),
+      color: Color(0xFFA1A1AA),
     ),
-    // 正文样式
-    bodyLarge: TextStyle(fontSize: 16, color: Color(0xFFEAE5E0), height: 1.5),
-    bodyMedium: TextStyle(fontSize: 14, color: Color(0xFFEAE5E0), height: 1.5),
-    // 辅助文字（时间、提示等）
-    bodySmall: TextStyle(fontSize: 12, color: Color(0xFFA5A19C)),
+    bodyLarge: TextStyle(fontSize: 16, color: Color(0xFFA1A1AA), height: 1.5),
+    bodyMedium: TextStyle(fontSize: 14, color: Color(0xFFA1A1AA), height: 1.5),
+    bodySmall: TextStyle(fontSize: 12, color: Color(0xFF71717A)),
   ),
   appBarTheme: const AppBarTheme(
     backgroundColor: Colors.transparent,
     elevation: 0,
-    foregroundColor: Color(0xFFEAE5E0),
+    foregroundColor: Color(0xFFA1A1AA),
     titleTextStyle: TextStyle(
       fontSize: 24,
       fontWeight: FontWeight.bold,
-      color: Color(0xFFEAE5E0),
+      color: Color(0xFFA1A1AA),
     ),
   ),
   floatingActionButtonTheme: const FloatingActionButtonThemeData(
-    backgroundColor: Color(0xFFEAE5E0), // 反转设计 - 浅色背景
-    foregroundColor: Color(0xFF2B2A28), // 深色文字
+    backgroundColor: Color(0xFFE58F6F), // 强调色
+    foregroundColor: Color(0xFFFFFFFF),
     shape: StadiumBorder(),
     elevation: 4,
   ),
-  // 添加自定义颜色扩展
-  extensions: const <ThemeExtension<dynamic>>[
-    darkShareColors,
-  ],
+  extensions: const <ThemeExtension<dynamic>>[darkShareColors],
 );

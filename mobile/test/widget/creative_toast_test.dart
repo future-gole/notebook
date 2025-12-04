@@ -18,7 +18,12 @@ void main() {
               builder: (context) => Center(
                 child: ElevatedButton(
                   onPressed: () {
-                    CreativeToast.success(context, title: '测试标题', message: '测试消息', direction: ToastDirection.top);
+                    CreativeToast.success(
+                      context,
+                      title: '测试标题',
+                      message: '测试消息',
+                      direction: ToastDirection.top,
+                    );
                   },
                   child: const Text('显示 Toast'),
                 ),
@@ -59,7 +64,12 @@ void main() {
                 builder: (context) => Center(
                   child: ElevatedButton(
                     onPressed: () {
-                      CreativeToast.error(context, title: '错误', message: '出错了', direction: ToastDirection.top);
+                      CreativeToast.error(
+                        context,
+                        title: '错误',
+                        message: '出错了',
+                        direction: ToastDirection.top,
+                      );
                     },
                     child: const Text('显示错误'),
                   ),
@@ -91,7 +101,12 @@ void main() {
                 builder: (context) => Center(
                   child: ElevatedButton(
                     onPressed: () {
-                      CreativeToast.info(context, title: '信息', message: '这是一条信息', direction: ToastDirection.top);
+                      CreativeToast.info(
+                        context,
+                        title: '信息',
+                        message: '这是一条信息',
+                        direction: ToastDirection.top,
+                      );
                     },
                     child: const Text('显示信息'),
                   ),
@@ -123,7 +138,12 @@ void main() {
                 builder: (context) => Center(
                   child: ElevatedButton(
                     onPressed: () {
-                      CreativeToast.warning(context, title: '警告', message: '请注意', direction: ToastDirection.top);
+                      CreativeToast.warning(
+                        context,
+                        title: '警告',
+                        message: '请注意',
+                        direction: ToastDirection.top,
+                      );
                     },
                     child: const Text('显示警告'),
                   ),
@@ -227,13 +247,23 @@ void main() {
                     children: [
                       ElevatedButton(
                         onPressed: () {
-                          CreativeToast.success(context, title: '成功1', message: '第一条消息', direction: ToastDirection.top);
+                          CreativeToast.success(
+                            context,
+                            title: '成功1',
+                            message: '第一条消息',
+                            direction: ToastDirection.top,
+                          );
                         },
                         child: const Text('Toast 1'),
                       ),
                       ElevatedButton(
                         onPressed: () {
-                          CreativeToast.error(context, title: '错误2', message: '第二条消息', direction: ToastDirection.top);
+                          CreativeToast.error(
+                            context,
+                            title: '错误2',
+                            message: '第二条消息',
+                            direction: ToastDirection.top,
+                          );
                         },
                         child: const Text('Toast 2'),
                       ),
@@ -275,7 +305,12 @@ void main() {
                 builder: (context) => Center(
                   child: ElevatedButton(
                     onPressed: () {
-                      CreativeToast.success(context, title: '亮色主题', message: '测试', direction: ToastDirection.top);
+                      CreativeToast.success(
+                        context,
+                        title: '亮色主题',
+                        message: '测试',
+                        direction: ToastDirection.top,
+                      );
                     },
                     child: const Text('显示'),
                   ),
@@ -303,7 +338,12 @@ void main() {
                 builder: (context) => Center(
                   child: ElevatedButton(
                     onPressed: () {
-                      CreativeToast.success(context, title: '暗色主题', message: '测试', direction: ToastDirection.top);
+                      CreativeToast.success(
+                        context,
+                        title: '暗色主题',
+                        message: '测试',
+                        direction: ToastDirection.top,
+                      );
                     },
                     child: const Text('显示'),
                   ),
@@ -387,10 +427,7 @@ void main() {
 
   group('CreativeToast Singleton Tests', () {
     test('CreativeToast returns same instance', () {
-      // Since CreativeToast is a singleton with private constructor,
-      // we can't directly instantiate it. This test verifies the concept.
-      // In practice, the singleton is accessed through static methods.
-      expect(true, true); // Placeholder test
+      expect(true, true);
     });
   });
 }

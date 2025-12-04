@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
@@ -6,6 +7,7 @@ import 'package:pocketmind/domain/entities/note_entity.dart';
 import 'package:pocketmind/page/widget/glass_nav_bar.dart';
 import 'package:pocketmind/page/widget/note_Item.dart';
 import 'package:pocketmind/page/home/note_add_sheet.dart';
+import 'package:pocketmind/page/home/desktop/desktop_home_screen.dart';
 import 'package:pocketmind/providers/infrastructure_providers.dart';
 import 'package:pocketmind/providers/nav_providers.dart';
 import 'package:pocketmind/providers/note_providers.dart';
@@ -20,6 +22,10 @@ class HomeScreen extends ConsumerStatefulWidget {
 
 class _HomeScreenState extends ConsumerState<HomeScreen>
     with SingleTickerProviderStateMixin {
+  // 判断是否为桌面端平台
+  bool get _isDesktop =>
+      Platform.isWindows || Platform.isMacOS || Platform.isLinux;
+
   // 滚动控制器，用于保持滚动位置
   final ScrollController _scrollController = ScrollController();
 
@@ -121,11 +127,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 
   @override
   Widget build(BuildContext context) {
+    // 桌面端使用专门的桌面布局
+    if (_isDesktop) {
+      return const DesktopHomeScreen();
+    }
+
+    // 移动端布局
     // 对应 Category 下的 note
     final noteByCategory = ref.watch(noteByCategoryProvider);
     final noteService = ref.watch(noteServiceProvider);
     // 获取当前布局模式
-    final currentLayout = ref.watch(appConfigProvider).waterfallLayoutEnabled ? NoteLayout.grid : NoteLayout.list;
+    final currentLayout = ref.watch(appConfigProvider).waterfallLayoutEnabled
+        ? NoteLayout.grid
+        : NoteLayout.list;
     // 获取搜索查询
     final searchQuery = ref.watch(searchQueryProvider);
     // 获取搜索结果
@@ -135,7 +149,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       // 使用主题背景色
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
 
-      // 移除 AppBar
       body: SafeArea(
         bottom: false,
         child: Column(
@@ -265,38 +278,37 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       ),
 
       // FAB - 使用主题样式（药丸形状）
-        floatingActionButton: FloatingActionButton(
-          onPressed: () {
-            _showAddNotePage(context);
-          },
-          elevation: 12,
-          child: Container(
-            width: 56,
-            height: 56,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  Theme.of(context).colorScheme.tertiary,
-                  Theme.of(context).colorScheme.tertiary.withValues(alpha: 0.85),
-                ],
-              ),
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: Theme.of(context).colorScheme.tertiary.withValues(alpha: 0.4),
-                  blurRadius: 16,
-                  offset: const Offset(0, 6),
-                ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          _showAddNotePage(context);
+        },
+        elevation: 12,
+        child: Container(
+          width: 56,
+          height: 56,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Theme.of(context).colorScheme.tertiary,
+                Theme.of(context).colorScheme.tertiary.withValues(alpha: 0.85),
               ],
             ),
-            child: const Icon(
-              Icons.add,
-              size: 28,
-            ),
+            shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(
+                color: Theme.of(
+                  context,
+                ).colorScheme.tertiary.withValues(alpha: 0.4),
+                blurRadius: 16,
+                offset: const Offset(0, 6),
+              ),
+            ],
           ),
-        )
+          child: const Icon(Icons.add, size: 28),
+        ),
+      ),
     );
   }
 
@@ -316,8 +328,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 
       builder: (context) {
         return Padding(
-            padding: EdgeInsets.only(top:MediaQuery.of(context).size.height * 0.10),
-            child: NoteEditorSheet());
+          padding: EdgeInsets.only(
+            top: MediaQuery.of(context).size.height * 0.10,
+          ),
+          child: NoteEditorSheet(),
+        );
       },
     );
   }
