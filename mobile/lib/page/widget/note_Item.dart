@@ -1,15 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:pocketmind/providers/note_providers.dart';
 import 'package:pocketmind/domain/entities/note_entity.dart';
 import 'package:pocketmind/service/note_service.dart';
 import 'package:pocketmind/util/url_helper.dart';
 import 'link_preview_card.dart';
-import '../home/note_add_sheet.dart';
 import '../home/note_detail_page.dart';
-import 'package:pocketmind/util/link_preview_cache.dart';
-import 'package:pocketmind/util/app_config.dart';
 import 'load_image_widget.dart';
+import 'local_text_card.dart';
 
 String tag = "noteItem";
 
@@ -39,24 +37,7 @@ class _NoteItemState extends ConsumerState<NoteItem>
   @override
   bool get wantKeepAlive => true;
 
-  final _config = AppConfig();
-  bool _titleEnabled = false;
   bool _isHovered = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadTitleSetting();
-  }
-
-  Future<void> _loadTitleSetting() async {
-    await _config.init();
-    if (mounted) {
-      setState(() {
-        _titleEnabled = _config.titleEnabled;
-      });
-    }
-  }
 
   // 显示笔记详情页
   void _showNoteDetail(BuildContext context) {
@@ -89,10 +70,10 @@ class _NoteItemState extends ConsumerState<NoteItem>
 
     // 桌面端样式调整
     final margin = widget.isDesktop
-        ? const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0)
+        ? EdgeInsets.symmetric(horizontal: 8.w, vertical: 8.w)
         : (widget.isGridMode
-              ? const EdgeInsets.symmetric(horizontal: 4.0, vertical: 4.0)
-              : const EdgeInsets.symmetric(horizontal: 4.0, vertical: 4.0));
+              ? EdgeInsets.symmetric(horizontal: 4.w, vertical: 4.w)
+              : EdgeInsets.symmetric(horizontal: 4.w, vertical: 4.w));
 
     // 桌面端悬停效果
     final transform = widget.isDesktop && _isHovered
@@ -132,71 +113,18 @@ class _NoteItemState extends ConsumerState<NoteItem>
         margin: margin,
         decoration: BoxDecoration(
           color: Theme.of(context).cardColor,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(16.r),
           border: Border.all(color: borderColor, width: 1),
           boxShadow: shadow,
         ),
         child: InkWell(
           onTap: () => _showNoteDetail(context),
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(16.r),
           child: isTextOnly
               // 1. 纯文本模式：
-              ? Container(
-                  // 给卡片一个最小高度，
-                  constraints: const BoxConstraints(minHeight: 80.0),
-                  padding: EdgeInsets.all(widget.isDesktop ? 24.0 : 16.0),
-                  child: _titleEnabled && widget.note.title != null
-                      // 启用标题且标题存在时，显示标题+内容
-                      ? Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            // 标题
-                            Text(
-                              widget.note.title!,
-                              style: TextStyle(
-                                fontSize: widget.isDesktop ? 22 : 20,
-                                fontWeight: FontWeight.w600,
-                                color: colorScheme.primary,
-                              ),
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            const SizedBox(height: 8),
-                            // 分割线
-                            Divider(
-                              color: colorScheme.primary.withOpacity(0.1),
-                              thickness: 1,
-                            ),
-                            const SizedBox(height: 8),
-                            // 内容
-                            Text(
-                              content ?? "",
-                              style: TextStyle(
-                                fontSize: widget.isDesktop ? 17 : 16,
-                                fontWeight: FontWeight.w300,
-                                color: colorScheme.onSurface,
-                                height: 1.6,
-                              ),
-                              maxLines: 5,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ],
-                        )
-                      // 不显示标题时，居中显示内容
-                      : Center(
-                          child: Text(
-                            content ?? "",
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontSize: widget.isDesktop ? 26 : 25,
-                              fontWeight: FontWeight.w300,
-                              color: colorScheme.primary,
-                              height: 1.7,
-                            ),
-                            maxLines: 8,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
+              ? LocalTextCard(
+                  note: widget.note,
+                  isDesktop: widget.isDesktop,
                 )
               : isLocalImage
               // 2. 本地图片模式
@@ -205,8 +133,8 @@ class _NoteItemState extends ConsumerState<NoteItem>
                   children: [
                     // 图片部分
                     ClipRRect(
-                      borderRadius: const BorderRadius.vertical(
-                        top: Radius.circular(16),
+                      borderRadius: BorderRadius.vertical(
+                        top: Radius.circular(16.r),
                       ),
                       child: AspectRatio(
                         aspectRatio: widget.isGridMode ? 1.0 : 16 / 9,
@@ -216,11 +144,11 @@ class _NoteItemState extends ConsumerState<NoteItem>
                     // 图片下面的文字部分
                     if (content != null && content.isNotEmpty)
                       Padding(
-                        padding: EdgeInsets.all(widget.isDesktop ? 16.0 : 12.0),
+                        padding: EdgeInsets.all(widget.isDesktop ? 16.w : 12.w),
                         child: Text(
                           content,
                           style: textTheme.bodyMedium?.copyWith(
-                            fontSize: widget.isDesktop ? 15 : null,
+                            fontSize: widget.isDesktop ? 15.sp : null,
                           ),
                           maxLines: 3,
                           overflow: TextOverflow.ellipsis,
@@ -243,33 +171,35 @@ class _NoteItemState extends ConsumerState<NoteItem>
                       publishDate: _formatDate(widget.note.time),
                     ),
                     // 链接卡片下面的文字部分
-                    if (content != null && content.isNotEmpty)
-                      ...[
-                      Divider(
-                        color: colorScheme.outline,
-                        thickness: 1.0,
-                        height: 5.0,
-                        indent: 12.0, // 左侧缩进
-                        endIndent: 12.0, // 右侧缩进
-                      ),
+                    if (content != null && content.isNotEmpty) ...[
+                      if (widget.isGridMode)
+                        Divider(
+                          color: colorScheme.outline,
+                          thickness: 1.0,
+                          height: 5.w,
+                          indent: 12.w, // 左侧缩进
+                          endIndent: 12.w, // 右侧缩进
+                        ),
                       Padding(
                         padding: EdgeInsets.symmetric(
-                            horizontal: 12.0, vertical: 8),
+                          horizontal: 12.w,
+                          vertical: 8.w,
+                        ),
                         child: Text(
                           content,
                           style: textTheme.bodyMedium?.copyWith(
-                            fontSize: widget.isDesktop ? 15 : null,
+                            fontSize: widget.isDesktop ? 15.sp : null,
                           ),
                           maxLines: 3,
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                    ]
+                    ],
                   ],
                 )
               // 4. 其他URL
               : Container(
-                  padding: EdgeInsets.all(widget.isDesktop ? 24.0 : 16.0),
+                  padding: EdgeInsets.all(widget.isDesktop ? 24.w : 16.w),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -277,7 +207,7 @@ class _NoteItemState extends ConsumerState<NoteItem>
                         Text(
                           widget.note.url!,
                           style: TextStyle(
-                            fontSize: 14,
+                            fontSize: 14.sp,
                             color: colorScheme.primary,
                             decoration: TextDecoration.underline,
                           ),
@@ -289,7 +219,7 @@ class _NoteItemState extends ConsumerState<NoteItem>
                         Text(
                           content,
                           style: textTheme.bodyMedium?.copyWith(
-                            fontSize: widget.isDesktop ? 15 : null,
+                            fontSize: widget.isDesktop ? 15.sp : null,
                           ),
                           maxLines: 5,
                           overflow: TextOverflow.ellipsis,

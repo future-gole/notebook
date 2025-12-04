@@ -1,5 +1,6 @@
 import 'dart:ui'; // 用于 ImageFilter.blur
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pocketmind/page/widget/categories_bar.dart' show CategoriesBar;
 import 'package:pocketmind/providers/nav_providers.dart';
@@ -17,7 +18,6 @@ class GlassNavBar extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-
     // 获取当前主题亮度
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
@@ -25,9 +25,7 @@ class GlassNavBar extends ConsumerWidget {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         // 传递正确的宽度约束下去
-        Expanded(
-          child: CategoriesBar(),
-        ),
+        Expanded(child: CategoriesBar()),
 
         const SizedBox(width: 8),
 
@@ -39,7 +37,7 @@ class GlassNavBar extends ConsumerWidget {
           isDark: isDark,
         ),
 
-        const SizedBox(width: 8),
+        SizedBox(width: 8.w),
 
         // 设置按钮
         _buildIconButton(
@@ -77,8 +75,8 @@ class GlassNavBar extends ConsumerWidget {
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.08),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+            blurRadius: 8.r,
+            offset: Offset(0, 2.h),
           ),
         ],
       ),
@@ -86,7 +84,7 @@ class GlassNavBar extends ConsumerWidget {
         icon: Icon(icon),
         onPressed: onPressed,
         color: Theme.of(context).colorScheme.primary,
-        iconSize: 22,
+        iconSize: 22.sp,
       ),
     );
   }

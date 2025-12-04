@@ -1,5 +1,6 @@
 // 主题定义 - 统一的亮色/暗色主题
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 // 流动背景颜色 - 亮色模式
 class LightFlowingBackgroundColors {
@@ -90,27 +91,35 @@ final ThemeData calmBeigeTheme = ThemeData(
   cardColor: const Color(0xFFFFFFFF), // 卡片背景
   shadowColor: Colors.black.withOpacity(0.05),
   fontFamily: 'SF Pro',
-  textTheme: const TextTheme(
+  textTheme: TextTheme(
     titleLarge: TextStyle(
-      fontSize: 24,
+      fontSize: 24.sp,
       fontWeight: FontWeight.bold,
       color: Color(0xFF3A3A35),
     ),
     titleMedium: TextStyle(
-      fontSize: 18,
+      fontSize: 18.sp,
       fontWeight: FontWeight.bold,
       color: Color(0xFF3A3A35),
     ),
-    bodyLarge: TextStyle(fontSize: 16, color: Color(0xFF3A3A35), height: 1.5),
-    bodyMedium: TextStyle(fontSize: 14, color: Color(0xFF3A3A35), height: 1.5),
-    bodySmall: TextStyle(fontSize: 12, color: Color(0xFF9B9691)),
+    bodyLarge: TextStyle(
+      fontSize: 16.sp,
+      color: Color(0xFF3A3A35),
+      height: 1.5,
+    ),
+    bodyMedium: TextStyle(
+      fontSize: 14.sp,
+      color: Color(0xFF3A3A35),
+      height: 1.5,
+    ),
+    bodySmall: TextStyle(fontSize: 12.sp, color: Color(0xFF9B9691)),
   ),
-  appBarTheme: const AppBarTheme(
+  appBarTheme: AppBarTheme(
     backgroundColor: Colors.transparent,
     elevation: 0,
     foregroundColor: Color(0xFF3A3A35),
     titleTextStyle: TextStyle(
-      fontSize: 24,
+      fontSize: 24.sp,
       fontWeight: FontWeight.bold,
       color: Color(0xFF3A3A35),
     ),
@@ -149,32 +158,40 @@ final ThemeData quietNightTheme = ThemeData(
     onSurfaceVariant: Color(0xFFC6C1C1),
     outlineVariant: Color(0xFF3F3F46),
   ),
-  scaffoldBackgroundColor: const Color(0xFF202022), // Scaffold 背景
+  scaffoldBackgroundColor: const Color(0xFF09090B), // Scaffold 背景
   canvasColor: const Color(0xFF09090B),
-  cardColor: const Color(0xFF202022), // 卡片背景 - 提亮
+  cardColor: const Color(0xFF18181B), // 卡片背景 - 提亮
   shadowColor: Colors.black.withOpacity(0.3),
   fontFamily: 'SF Pro',
-  textTheme: const TextTheme(
+  textTheme: TextTheme(
     titleLarge: TextStyle(
-      fontSize: 24,
+      fontSize: 24.sp,
       fontWeight: FontWeight.bold,
       color: Color(0xFFA1A1AA),
     ),
     titleMedium: TextStyle(
-      fontSize: 18,
+      fontSize: 18.sp,
       fontWeight: FontWeight.bold,
       color: Color(0xFFA1A1AA),
     ),
-    bodyLarge: TextStyle(fontSize: 16, color: Color(0xFFA1A1AA), height: 1.5),
-    bodyMedium: TextStyle(fontSize: 14, color: Color(0xFFA1A1AA), height: 1.5),
-    bodySmall: TextStyle(fontSize: 12, color: Color(0xFF71717A)),
+    bodyLarge: TextStyle(
+      fontSize: 16.sp,
+      color: Color(0xFFA1A1AA),
+      height: 1.5,
+    ),
+    bodyMedium: TextStyle(
+      fontSize: 14.sp,
+      color: Color(0xFFA1A1AA),
+      height: 1.5,
+    ),
+    bodySmall: TextStyle(fontSize: 12.sp, color: Color(0xFF71717A)),
   ),
-  appBarTheme: const AppBarTheme(
+  appBarTheme: AppBarTheme(
     backgroundColor: Colors.transparent,
     elevation: 0,
     foregroundColor: Color(0xFFA1A1AA),
     titleTextStyle: TextStyle(
-      fontSize: 24,
+      fontSize: 24.sp,
       fontWeight: FontWeight.bold,
       color: Color(0xFFA1A1AA),
     ),

@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pocketmind/providers/infrastructure_providers.dart';
 
@@ -19,9 +20,9 @@ class LayoutToggleButton extends ConsumerWidget {
         color: isDark
             ? Colors.white.withOpacity(0.05)
             : Colors.black.withOpacity(0.03),
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(8.r),
       ),
-      padding: const EdgeInsets.all(4),
+      padding: EdgeInsets.all(4.w),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -34,7 +35,7 @@ class LayoutToggleButton extends ConsumerWidget {
               }
             },
           ),
-          const SizedBox(width: 4),
+          SizedBox(width: 4),
           _LayoutButton(
             icon: Icons.view_list_rounded,
             isActive: !isGridMode,
@@ -82,29 +83,29 @@ class _LayoutButtonState extends State<_LayoutButton> {
         onTap: widget.onTap,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 150),
-          padding: const EdgeInsets.all(6),
+          padding: EdgeInsets.all(6.w),
           decoration: BoxDecoration(
             color: widget.isActive
                 ? (isDark ? Colors.white.withOpacity(0.1) : Colors.white)
                 : (_isHovered
-                    ? (isDark
-                        ? Colors.white.withOpacity(0.05)
-                        : Colors.black.withOpacity(0.03))
-                    : Colors.transparent),
-            borderRadius: BorderRadius.circular(6),
+                      ? (isDark
+                            ? Colors.white.withOpacity(0.05)
+                            : Colors.black.withOpacity(0.03))
+                      : Colors.transparent),
+            borderRadius: BorderRadius.circular(6.r),
             boxShadow: widget.isActive
                 ? [
                     BoxShadow(
                       color: Colors.black.withOpacity(isDark ? 0.2 : 0.05),
-                      blurRadius: 4,
-                      offset: const Offset(0, 1),
+                      blurRadius: 4.r,
+                      offset: Offset(0, 1.h),
                     ),
                   ]
                 : null,
           ),
           child: Icon(
             widget.icon,
-            size: 18,
+            size: 18.sp,
             color: widget.isActive
                 ? colorScheme.tertiary
                 : colorScheme.secondary,
@@ -141,18 +142,18 @@ class _ThemeToggleButtonState extends State<ThemeToggleButton> {
         },
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 150),
-          padding: const EdgeInsets.all(8),
+          padding: EdgeInsets.all(8.w),
           decoration: BoxDecoration(
             color: _isHovered
                 ? (isDark
                       ? Colors.white.withOpacity(0.05)
                       : Colors.black.withOpacity(0.03))
                 : Colors.transparent,
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(8.r),
           ),
           child: Icon(
             isDark ? Icons.dark_mode_outlined : Icons.light_mode_outlined,
-            size: 20,
+            size: 20.sp,
             color: colorScheme.secondary,
           ),
         ),
@@ -184,12 +185,12 @@ class DesktopHeader extends ConsumerWidget {
     // Windows 平台预留右侧窗口控制按钮空间
     // 在小窗口模式下减少右侧留白，避免溢出
     final rightPadding = Platform.isWindows
-        ? (screenWidth < 600 ? 60.0 : 140.0)
-        : 24.0;
+        ? (screenWidth < 600 ? 60.w : 140.w)
+        : 24.w;
 
     return Container(
-      height: 72,
-      padding: EdgeInsets.fromLTRB(32, 0, rightPadding, 0),
+      height: 72.w,
+      padding: EdgeInsets.fromLTRB(32.w, 0, rightPadding, 0),
       child: Row(
         children: [
           // 搜索栏 - 居中对齐，限制最大宽度
@@ -206,7 +207,7 @@ class DesktopHeader extends ConsumerWidget {
             ),
           ),
 
-          const SizedBox(width: 24),
+          SizedBox(width: 24),
 
           // 右侧功能按钮组
           Row(
@@ -219,7 +220,7 @@ class DesktopHeader extends ConsumerWidget {
                 height: 20,
                 color: colorScheme.outlineVariant,
               ),
-              const SizedBox(width: 8),
+              SizedBox(width: 8),
               const LayoutToggleButton(),
             ],
           ),
@@ -247,12 +248,12 @@ class _DesktopSearchBar extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Container(
-      height: 40,
+      height: 40.w,
       decoration: BoxDecoration(
         color: isDark
             ? Colors.white.withOpacity(0.05)
             : Colors.black.withOpacity(0.03),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(20.r),
         border: Border.all(
           color: isDark
               ? Colors.white.withOpacity(0.08)
@@ -263,8 +264,12 @@ class _DesktopSearchBar extends StatelessWidget {
       child: Row(
         children: [
           Padding(
-            padding: const EdgeInsets.only(left: 14),
-            child: Icon(Icons.search, size: 18, color: colorScheme.secondary),
+            padding: EdgeInsets.only(left: 14.w),
+            child: Icon(
+              Icons.search,
+              size: 18.sp,
+              color: colorScheme.secondary,
+            ),
           ),
           Expanded(
             child: TextField(
@@ -273,14 +278,14 @@ class _DesktopSearchBar extends StatelessWidget {
               decoration: InputDecoration(
                 hintText: '搜索收藏...',
                 border: InputBorder.none,
-                contentPadding: const EdgeInsets.symmetric(horizontal: 12),
+                contentPadding: EdgeInsets.symmetric(horizontal: 12.w),
                 hintStyle: TextStyle(
                   color: colorScheme.secondary.withOpacity(0.6),
-                  fontSize: 14,
+                  fontSize: 14.sp,
                 ),
                 isDense: true,
               ),
-              style: TextStyle(color: colorScheme.primary, fontSize: 14),
+              style: TextStyle(color: colorScheme.primary, fontSize: 14.sp),
               onSubmitted: (_) => onSubmitted?.call(),
             ),
           ),
@@ -288,10 +293,10 @@ class _DesktopSearchBar extends StatelessWidget {
             valueListenable: controller,
             builder: (context, value, child) {
               if (value.text.isEmpty) {
-                return const SizedBox(width: 14);
+                return SizedBox(width: 14);
               }
               return Padding(
-                padding: const EdgeInsets.only(right: 8),
+                padding: EdgeInsets.only(right: 8),
                 child: GestureDetector(
                   onTap: () {
                     controller.clear();

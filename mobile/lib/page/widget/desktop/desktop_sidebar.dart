@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pocketmind/providers/category_providers.dart';
 import 'package:pocketmind/providers/nav_providers.dart';
@@ -11,7 +12,7 @@ import 'sidebar_item.dart';
 /// 包含 App 名称、分类列表和设置入口
 class DesktopSidebar extends ConsumerWidget {
   /// 侧边栏宽度
-  static const double width = 260.0;
+  static final double width = 260.w;
 
   const DesktopSidebar({super.key});
 
@@ -25,7 +26,7 @@ class DesktopSidebar extends ConsumerWidget {
     final activeIndex = ref.watch(activeNavIndexProvider);
 
     // macOS 红绿灯按钮预留空间
-    final topPadding = Platform.isMacOS ? 28.0 : 0.0;
+    final topPadding = Platform.isMacOS ? 28.w : 0.0;
 
     return Container(
       width: width,
@@ -39,19 +40,19 @@ class DesktopSidebar extends ConsumerWidget {
 
           // App 名称区域
           Padding(
-            padding: const EdgeInsets.fromLTRB(20, 24, 20, 32),
+            padding: EdgeInsets.fromLTRB(20.w, 24.w, 20.w, 32.w),
             child: Row(
               children: [
                 // App Logo
                 Container(
-                  width: 28,
-                  height: 28,
+                  width: 28.w,
+                  height: 28.w,
                   decoration: BoxDecoration(
                     color: colorScheme.tertiary,
-                    borderRadius: BorderRadius.circular(6),
+                    borderRadius: BorderRadius.circular(6.r),
                   ),
                   alignment: Alignment.center,
-                  child: const Text(
+                  child: Text(
                     'P',
                     style: TextStyle(
                       color: Colors.white,
@@ -61,7 +62,7 @@ class DesktopSidebar extends ConsumerWidget {
                     ),
                   ),
                 ),
-                const SizedBox(width: 10),
+                SizedBox(width: 10),
                 // App 名称 - 使用衬线字体
                 Text(
                   'PocketMind',
@@ -79,7 +80,7 @@ class DesktopSidebar extends ConsumerWidget {
 
           // 分类标题
           Padding(
-            padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
+            padding: EdgeInsets.fromLTRB(20, 0, 20, 12),
             child: Text(
               '分类',
               style: TextStyle(
@@ -125,7 +126,7 @@ class DesktopSidebar extends ConsumerWidget {
                   },
                 );
               },
-              loading: () => const Center(
+              loading: () => Center(
                 child: Padding(
                   padding: EdgeInsets.all(20),
                   child: CircularProgressIndicator(strokeWidth: 2),
@@ -140,7 +141,7 @@ class DesktopSidebar extends ConsumerWidget {
 
           // 底部分隔线
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
+            padding: EdgeInsets.symmetric(horizontal: 20),
             child: Divider(
               height: 1,
               thickness: 0.5,
@@ -152,7 +153,7 @@ class DesktopSidebar extends ConsumerWidget {
           const _SettingsButton(),
 
           // 底部安全区域
-          const SizedBox(height: 16),
+          SizedBox(height: 16),
         ],
       ),
     );
@@ -229,29 +230,29 @@ class _SettingsButtonState extends State<_SettingsButton> {
         onTap: () => Navigator.of(context).pushNamed('/settings'),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 150),
-          margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          margin: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.w),
+          padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.w),
           decoration: BoxDecoration(
             color: _isHovered
                 ? (isDark
                       ? Colors.white.withOpacity(0.05)
                       : Colors.black.withOpacity(0.03))
                 : Colors.transparent,
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(8.r),
           ),
           child: Row(
             children: [
               Icon(
                 Icons.settings_outlined,
-                size: 18,
+                size: 18.sp,
                 color: colorScheme.secondary,
               ),
-              const SizedBox(width: 10),
+              SizedBox(width: 10.w),
               Text(
                 '设置',
                 style: TextStyle(
                   color: colorScheme.secondary,
-                  fontSize: 14,
+                  fontSize: 14.sp,
                   fontWeight: FontWeight.w400,
                 ),
               ),

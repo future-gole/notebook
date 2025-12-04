@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:pocketmind/domain/entities/note_entity.dart';
 import 'package:pocketmind/providers/note_providers.dart';
 import 'package:pocketmind/providers/category_providers.dart';
@@ -139,28 +140,28 @@ class _NoteDetailPageState extends ConsumerState<NoteDetailPage>
             Expanded(
               child: SingleChildScrollView(
                 controller: _scrollController,
-                padding: const EdgeInsets.only(bottom: 80), // 留出底部操作栏空间
+                padding: EdgeInsets.only(bottom: 80.h), // 留出底部操作栏空间
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // 1. 原始数据区（可编辑）
                     _buildOriginalDataSection(colorScheme, textTheme),
 
-                    const SizedBox(height: 24),
+                    SizedBox(height: 24.h),
 
                     // 2. AI 洞察区
                     _buildAIInsightSection(colorScheme, textTheme),
 
-                    const SizedBox(height: 32),
+                    SizedBox(height: 32.h),
 
                     // 3. 元数据/标签区
                     _buildTagsSection(colorScheme, textTheme),
 
-                    const SizedBox(height: 32),
+                    SizedBox(height: 32.h),
 
                     // // 4. 用户注解区 mymind有，但是感觉暂且没用
                     // _buildUserNotesSection(colorScheme, textTheme),
-                    const SizedBox(height: 24),
+                    SizedBox(height: 24.h),
                   ],
                 ),
               ),
@@ -177,13 +178,13 @@ class _NoteDetailPageState extends ConsumerState<NoteDetailPage>
   /// 顶部导航栏
   Widget _buildTopBar(ColorScheme colorScheme) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 8.h),
       decoration: BoxDecoration(
         color: colorScheme.surface,
         border: Border(
           bottom: BorderSide(
             color: colorScheme.outlineVariant.withValues(alpha: 0.3),
-            width: 1,
+            width: 1.w,
           ),
         ),
       ),
@@ -208,7 +209,7 @@ class _NoteDetailPageState extends ConsumerState<NoteDetailPage>
                   controller: _titleController,
                   maxLines: null,
                   style: TextStyle(
-                    fontSize: 18,
+                    fontSize: 18.sp,
                     fontWeight: FontWeight.w600,
                     color: colorScheme.primary,
                   ),
@@ -217,7 +218,7 @@ class _NoteDetailPageState extends ConsumerState<NoteDetailPage>
                 // child: Text(
                 //   widget.note.title!,
                 //   style: TextStyle(
-                //     fontSize: 18,
+                //     fontSize: 18.sp,
                 //     fontWeight: FontWeight.w600,
                 //     color: colorScheme.primary,
                 //   ),
@@ -230,7 +231,7 @@ class _NoteDetailPageState extends ConsumerState<NoteDetailPage>
             const Spacer(),
 
           // 占位（保持对称）
-          const SizedBox(width: 48),
+          SizedBox(width: 48.w),
         ],
       ),
     );
@@ -245,17 +246,17 @@ class _NoteDetailPageState extends ConsumerState<NoteDetailPage>
     final isHttpsUrl = UrlHelper.containsHttpsUrl(widget.note.url);
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 24.h),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // 本地图片显示（如果是本地图片）
           if (isLocalImage) ...[
             ClipRRect(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(12.r),
               child: LocalImageWidget(relativePath: widget.note.url!),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h),
           ],
 
           // 内容编辑框
@@ -271,7 +272,7 @@ class _NoteDetailPageState extends ConsumerState<NoteDetailPage>
               border: InputBorder.none,
             ),
             style: textTheme.bodyLarge?.copyWith(
-              fontSize: 17,
+              fontSize: 17.sp,
               height: 1.6,
               color: colorScheme.onSurface,
             ),
@@ -282,14 +283,14 @@ class _NoteDetailPageState extends ConsumerState<NoteDetailPage>
           if (widget.note.url != null &&
               widget.note.url!.isNotEmpty &&
               !isLocalImage) ...[
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h),
             Container(
-              padding: const EdgeInsets.all(12),
+              padding: EdgeInsets.all(12.r),
               decoration: BoxDecoration(
                 color: colorScheme.surfaceContainerHighest.withValues(
                   alpha: 0.1,
                 ),
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(8.r),
                 border: Border.all(
                   color: colorScheme.outlineVariant.withValues(alpha: 0.3),
                 ),
@@ -298,10 +299,10 @@ class _NoteDetailPageState extends ConsumerState<NoteDetailPage>
                 children: [
                   Icon(
                     Icons.link,
-                    size: 16,
+                    size: 16.sp,
                     color: colorScheme.surfaceContainerHighest,
                   ),
-                  const SizedBox(width: 8),
+                  SizedBox(width: 8.w),
                   Expanded(
                     child: GestureDetector(
                       onTap: isHttpsUrl
@@ -332,14 +333,14 @@ class _NoteDetailPageState extends ConsumerState<NoteDetailPage>
   /// 2. AI 洞察区
   Widget _buildAIInsightSection(ColorScheme colorScheme, TextTheme textTheme) {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 20),
-      padding: const EdgeInsets.all(20),
+      margin: EdgeInsets.symmetric(horizontal: 20.w),
+      padding: EdgeInsets.all(20.r),
       decoration: BoxDecoration(
         color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(16.r),
         border: Border.all(
           color: colorScheme.outlineVariant.withValues(alpha: 0.2),
-          width: 1,
+          width: 1.w,
         ),
       ),
       child: Column(
@@ -350,30 +351,30 @@ class _NoteDetailPageState extends ConsumerState<NoteDetailPage>
             children: [
               Icon(
                 Icons.auto_awesome,
-                size: 20,
+                size: 20.sp,
                 color: colorScheme.surfaceContainerHighest,
               ),
-              const SizedBox(width: 8),
+              SizedBox(width: 8.w),
               Text(
                 'AI 洞察',
                 style: textTheme.titleSmall?.copyWith(
-                  fontSize: 13,
+                  fontSize: 13.sp,
                   fontWeight: FontWeight.w600,
-                  letterSpacing: 1.2,
+                  letterSpacing: 1.2.sp,
                   color: colorScheme.surfaceContainerHighest,
                 ),
               ),
             ],
           ),
 
-          const SizedBox(height: 12),
+          SizedBox(height: 12.h),
 
           // TODO: AI 内容占位符
           Container(
-            padding: const EdgeInsets.all(16),
+            padding: EdgeInsets.all(16.r),
             decoration: BoxDecoration(
               color: colorScheme.surface,
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(12.r),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -386,21 +387,21 @@ class _NoteDetailPageState extends ConsumerState<NoteDetailPage>
                     height: 1.5,
                   ),
                 ),
-                const SizedBox(height: 12),
+                SizedBox(height: 12.h),
                 // Row(
                 //   children: [
                 //     Icon(
                 //       Icons.info_outline,
-                //       size: 14,
+                //       size: 14.sp,
                 //       color: colorScheme.secondary,
                 //     ),
-                //     const SizedBox(width: 6),
+                //     SizedBox(width: 6.w),
                 //     Expanded(
                 //       child: Text(
                 //         'TODO: 接入后端 AI 服务',
                 //         style: textTheme.bodySmall?.copyWith(
                 //           color: colorScheme.secondary,
-                //           fontSize: 11,
+                //           fontSize: 11.sp,
                 //         ),
                 //       ),
                 //     ),
@@ -417,7 +418,7 @@ class _NoteDetailPageState extends ConsumerState<NoteDetailPage>
   /// 3. 元数据/标签区
   Widget _buildTagsSection(ColorScheme colorScheme, TextTheme textTheme) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
+      padding: EdgeInsets.symmetric(horizontal: 20.w),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -427,9 +428,9 @@ class _NoteDetailPageState extends ConsumerState<NoteDetailPage>
               Text(
                 '思维标签',
                 style: textTheme.titleSmall?.copyWith(
-                  fontSize: 13,
+                  fontSize: 13.sp,
                   fontWeight: FontWeight.w600,
-                  letterSpacing: 1.2,
+                  letterSpacing: 1.2.sp,
                   color: colorScheme.primary,
                 ),
               ),
@@ -439,32 +440,32 @@ class _NoteDetailPageState extends ConsumerState<NoteDetailPage>
                 onPressed: _showAddTagDialog,
                 icon: Icon(
                   Icons.add_circle_outline,
-                  size: 18,
+                  size: 18.sp,
                   color: colorScheme.surfaceContainerHighest,
                 ),
                 label: Text(
                   '添加标签',
                   style: TextStyle(
-                    fontSize: 13,
+                    fontSize: 13.sp,
                     color: colorScheme.surfaceContainerHighest,
                   ),
                 ),
                 style: TextButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 6,
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 12.w,
+                    vertical: 6.h,
                   ),
                 ),
               ),
             ],
           ),
 
-          const SizedBox(height: 12),
+          SizedBox(height: 12.h),
 
           // 标签列表
           if (_tags.isEmpty)
             Container(
-              padding: const EdgeInsets.symmetric(vertical: 20),
+              padding: EdgeInsets.symmetric(vertical: 20.h),
               child: Center(
                 child: Text(
                   '还没有标签。点击"添加标签"创建一个。',
@@ -477,8 +478,8 @@ class _NoteDetailPageState extends ConsumerState<NoteDetailPage>
             )
           else
             Wrap(
-              spacing: 8,
-              runSpacing: 8,
+              spacing: 8.w,
+              runSpacing: 8.h,
               children: _tags
                   .map((tag) => _buildTagChip(tag, colorScheme))
                   .toList(),
@@ -491,13 +492,13 @@ class _NoteDetailPageState extends ConsumerState<NoteDetailPage>
   /// 标签芯片
   Widget _buildTagChip(String tag, ColorScheme colorScheme) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+      padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 8.h),
       decoration: BoxDecoration(
         color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(20.r),
         border: Border.all(
           color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
-          width: 1,
+          width: 1.w,
         ),
       ),
       child: Row(
@@ -506,15 +507,15 @@ class _NoteDetailPageState extends ConsumerState<NoteDetailPage>
           Text(
             tag,
             style: TextStyle(
-              fontSize: 13,
+              fontSize: 13.sp,
               color: colorScheme.primary,
               fontWeight: FontWeight.w500,
             ),
           ),
-          const SizedBox(width: 6),
+          SizedBox(width: 6.w),
           GestureDetector(
             onTap: () => _removeTag(tag),
-            child: Icon(Icons.close, size: 14, color: colorScheme.secondary),
+            child: Icon(Icons.close, size: 14.sp, color: colorScheme.secondary),
           ),
         ],
       ),
@@ -524,7 +525,7 @@ class _NoteDetailPageState extends ConsumerState<NoteDetailPage>
   /// 4. 用户注解区
   Widget _buildUserNotesSection(ColorScheme colorScheme, TextTheme textTheme) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
+      padding: EdgeInsets.symmetric(horizontal: 20.w),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -532,23 +533,23 @@ class _NoteDetailPageState extends ConsumerState<NoteDetailPage>
           Text(
             '思维笔记',
             style: textTheme.titleSmall?.copyWith(
-              fontSize: 13,
+              fontSize: 13.sp,
               fontWeight: FontWeight.w600,
-              letterSpacing: 1.2,
+              letterSpacing: 1.2.sp,
               color: colorScheme.primary,
             ),
           ),
 
-          const SizedBox(height: 12),
+          SizedBox(height: 12.h),
 
           // 多行输入框
           Container(
             decoration: BoxDecoration(
               color: colorScheme.surface,
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(12.r),
               border: Border.all(
                 color: colorScheme.outlineVariant.withValues(alpha: 0.3),
-                width: 1,
+                width: 1.w,
               ),
             ),
             child: TextField(
@@ -561,7 +562,7 @@ class _NoteDetailPageState extends ConsumerState<NoteDetailPage>
                   fontStyle: FontStyle.italic,
                 ),
                 border: InputBorder.none,
-                contentPadding: const EdgeInsets.all(16),
+                contentPadding: EdgeInsets.all(16.r),
               ),
               style: textTheme.bodyMedium?.copyWith(
                 color: colorScheme.onSurface,
@@ -582,18 +583,18 @@ class _NoteDetailPageState extends ConsumerState<NoteDetailPage>
         border: Border(
           top: BorderSide(
             color: colorScheme.outlineVariant.withValues(alpha: 0.3),
-            width: 1,
+            width: 1.w,
           ),
         ),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 8,
-            offset: const Offset(0, -2),
+            blurRadius: 8.r,
+            offset: Offset(0, -2.h),
           ),
         ],
       ),
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
@@ -638,18 +639,18 @@ class _NoteDetailPageState extends ConsumerState<NoteDetailPage>
 
     return InkWell(
       onTap: onPressed,
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(12.r),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+        padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, color: color, size: 24),
-            const SizedBox(height: 4),
+            Icon(icon, color: color, size: 24.sp),
+            SizedBox(height: 4.h),
             Text(
               label,
               style: TextStyle(
-                fontSize: 12,
+                fontSize: 12.sp,
                 color: color,
                 fontWeight: FontWeight.w500,
               ),
@@ -734,7 +735,12 @@ class _NoteDetailPageState extends ConsumerState<NoteDetailPage>
   void _addTag(String tag) {
     if (tag.isEmpty) return;
     if (_tags.contains(tag)) {
-      CreativeToast.warning(context, title: '标签已存在', message: '该标签已经添加过了', direction: ToastDirection.top);
+      CreativeToast.warning(
+        context,
+        title: '标签已存在',
+        message: '该标签已经添加过了',
+        direction: ToastDirection.top,
+      );
       return;
     }
 
@@ -770,12 +776,10 @@ class _NoteDetailPageState extends ConsumerState<NoteDetailPage>
     final categoriesAsync = ref.watch(allCategoriesProvider);
 
     return Container(
-      constraints: BoxConstraints(
-        maxHeight: MediaQuery.of(context).size.height * 0.6,
-      ),
+      constraints: BoxConstraints(maxHeight: 0.6.sh),
       decoration: BoxDecoration(
         color: colorScheme.surface,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
       ),
       child: SafeArea(
         child: Column(
@@ -788,13 +792,13 @@ class _NoteDetailPageState extends ConsumerState<NoteDetailPage>
                   SlideTransition(
                     position: _categoryBarSlideAnimation,
                     child: Container(
-                      padding: const EdgeInsets.all(20),
+                      padding: EdgeInsets.all(20.r),
                       child: Row(
                         children: [
                           Text(
                             '选择分类',
                             style: TextStyle(
-                              fontSize: 18,
+                              fontSize: 18.sp,
                               fontWeight: FontWeight.w600,
                               color: colorScheme.primary,
                             ),
@@ -825,7 +829,7 @@ class _NoteDetailPageState extends ConsumerState<NoteDetailPage>
               child: categoriesAsync.when(
                 data: (categories) {
                   return ListView.builder(
-                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    padding: EdgeInsets.symmetric(vertical: 8.h),
                     itemCount: categories.length,
                     itemBuilder: (context, index) {
                       final category = categories[index];
@@ -837,7 +841,7 @@ class _NoteDetailPageState extends ConsumerState<NoteDetailPage>
                           color: isSelected
                               ? colorScheme.surfaceContainerHighest
                               : colorScheme.secondary,
-                          size: 12,
+                          size: 12.sp,
                         ),
                         title: Text(
                           category.name,
@@ -880,7 +884,7 @@ class _NoteDetailPageState extends ConsumerState<NoteDetailPage>
   /// 构建添加分类输入栏
   Widget _buildAddCategoryBar(ColorScheme colorScheme) {
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.all(20.r),
       child: Row(
         children: [
           Expanded(
@@ -902,7 +906,7 @@ class _NoteDetailPageState extends ConsumerState<NoteDetailPage>
               style: TextStyle(color: colorScheme.onSurface),
             ),
           ),
-          const SizedBox(width: 8),
+          SizedBox(width: 8.w),
           IconButton(
             icon: Icon(Icons.check, color: colorScheme.surfaceContainerHighest),
             onPressed: () async {
@@ -961,7 +965,12 @@ class _NoteDetailPageState extends ConsumerState<NoteDetailPage>
   void _onSharePressed() {
     // TODO: 实现分享功能
     PMlog.d(_tag, "Share pressed");
-    CreativeToast.info(context, title: '即将上线', message: '分享功能正在开发中', direction: ToastDirection.top);
+    CreativeToast.info(
+      context,
+      title: '即将上线',
+      message: '分享功能正在开发中',
+      direction: ToastDirection.top,
+    );
   }
 
   /// Delete 按钮
@@ -1015,8 +1024,12 @@ class _NoteDetailPageState extends ConsumerState<NoteDetailPage>
 
     if (mounted) {
       Navigator.of(context).pop(); // 返回上一页
-      CreativeToast.success(context, title: '笔记已删除', message: '该笔记已被永久删除',
-          direction: ToastDirection.top);
+      CreativeToast.success(
+        context,
+        title: '笔记已删除',
+        message: '该笔记已被永久删除',
+        direction: ToastDirection.top,
+      );
     }
   }
 

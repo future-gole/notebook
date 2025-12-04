@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart';
 
 class CreativeTimePicker extends StatefulWidget {
@@ -179,14 +180,14 @@ class _CreativeTimePickerState extends State<CreativeTimePicker>
           final angle = index * 30 * (math.pi / 180);
           return Transform.translate(
             offset: Offset(
-              (size / 2 - 10) * math.sin(angle),
-              -(size / 2 - 10) * math.cos(angle),
+              (size / 2 - 10.w) * math.sin(angle),
+              -(size / 2 - 10.w) * math.cos(angle),
             ),
             child: Transform.rotate(
               angle: angle,
               child: Container(
-                width: 2,
-                height: 8,
+                width: 2.w,
+                height: 8.h,
                 color: _glassBorderColor.withOpacity(0.3),
               ),
             ),
@@ -210,26 +211,26 @@ class _CreativeTimePickerState extends State<CreativeTimePicker>
                   child: Column(
                     children: [
                       Container(
-                        width: 32,
-                        height: 32,
+                        width: 32.w,
+                        height: 32.w,
                         decoration: BoxDecoration(
                           color: Colors.white,
                           shape: BoxShape.circle,
                           boxShadow: [
                             BoxShadow(
                               color: Colors.white.withOpacity(0.6),
-                              blurRadius: 15,
+                              blurRadius: 15.r,
                             ),
                           ],
                           border: Border.all(
                             color: Colors.white.withOpacity(0.5),
-                            width: 2,
+                            width: 2.w,
                           ),
                         ),
                         child: Center(
                           child: Container(
-                            width: 8,
-                            height: 8,
+                            width: 8.w,
+                            height: 8.w,
                             decoration: const BoxDecoration(
                               color: Color(0xFF0F172A), // slate-900
                               shape: BoxShape.circle,
@@ -238,8 +239,8 @@ class _CreativeTimePickerState extends State<CreativeTimePicker>
                         ),
                       ),
                       Container(
-                        width: 1,
-                        height: size / 2 - 32,
+                        width: 1.w,
+                        height: size / 2 - 32.w,
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
                             begin: Alignment.topCenter,
@@ -287,21 +288,25 @@ class _CreativeTimePickerState extends State<CreativeTimePicker>
                   child: Align(
                     alignment: Alignment.topCenter,
                     child: Container(
-                      width: 40,
-                      height: 40,
+                      width: 40.w,
+                      height: 40.w,
                       margin: const EdgeInsets.only(top: 0), // Adjust if needed
                       decoration: BoxDecoration(
                         color: _knobColor,
                         shape: BoxShape.circle,
-                        boxShadow: const [
-                          BoxShadow(color: Colors.black26, blurRadius: 8),
+                        boxShadow: [
+                          BoxShadow(color: Colors.black26, blurRadius: 8.r),
                         ],
                         border: Border.all(
                           color: Colors.white.withOpacity(0.8),
-                          width: 2,
+                          width: 2.w,
                         ),
                       ),
-                      child: Icon(_themeIcon, color: _themeIconColor, size: 20),
+                      child: Icon(
+                        _themeIcon,
+                        color: _themeIconColor,
+                        size: 20.sp,
+                      ),
                     ),
                   ),
                 ),
@@ -323,7 +328,7 @@ class _CreativeTimePickerState extends State<CreativeTimePicker>
                   child: Text(
                     '$_hour',
                     style: TextStyle(
-                      fontSize: 64,
+                      fontSize: 64.sp,
                       fontWeight: FontWeight.bold,
                       color: _draggingType == 'hour'
                           ? _textColor
@@ -336,7 +341,7 @@ class _CreativeTimePickerState extends State<CreativeTimePicker>
                   child: Text(
                     ':',
                     style: TextStyle(
-                      fontSize: 32,
+                      fontSize: 32.sp,
                       color: _textColor.withOpacity(0.5),
                     ),
                   ),
@@ -345,7 +350,7 @@ class _CreativeTimePickerState extends State<CreativeTimePicker>
                   child: Text(
                     _minute.toString().padLeft(2, '0'),
                     style: TextStyle(
-                      fontSize: 64,
+                      fontSize: 64.sp,
                       fontWeight: FontWeight.bold,
                       color: _draggingType == 'minute'
                           ? _textColor
@@ -356,20 +361,17 @@ class _CreativeTimePickerState extends State<CreativeTimePicker>
                 ),
               ],
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: 8.h),
             GestureDetector(
               onTap: () => setState(() {
                 _isAm = !_isAm;
                 _updateTheme();
               }),
               child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 4,
-                ),
+                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
                 decoration: BoxDecoration(
                   color: _glassColor,
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(20.r),
                   border: Border.all(color: _glassBorderColor),
                 ),
                 child: Text(
@@ -377,7 +379,7 @@ class _CreativeTimePickerState extends State<CreativeTimePicker>
                   style: TextStyle(
                     color: _textColor,
                     fontWeight: FontWeight.bold,
-                    fontSize: 14,
+                    fontSize: 14.sp,
                   ),
                 ),
               ),
@@ -403,7 +405,7 @@ class _CreativeTimePickerState extends State<CreativeTimePicker>
     return Container(
       width: size,
       height: size,
-      padding: const EdgeInsets.all(24),
+      padding: EdgeInsets.all(24.r),
       child: Column(
         children: [
           // Header (Month Year)
@@ -425,7 +427,7 @@ class _CreativeTimePickerState extends State<CreativeTimePicker>
                 DateFormat('yyyy年 MM月').format(_calendarFocusedDay),
                 style: TextStyle(
                   color: _textColor,
-                  fontSize: 18,
+                  fontSize: 18.sp,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -442,7 +444,7 @@ class _CreativeTimePickerState extends State<CreativeTimePicker>
               ),
             ],
           ),
-          const SizedBox(height: 10),
+          SizedBox(height: 10.h),
           // Weekday Headers
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -452,21 +454,21 @@ class _CreativeTimePickerState extends State<CreativeTimePicker>
                     d,
                     style: TextStyle(
                       color: _textColor.withOpacity(0.6),
-                      fontSize: 12,
+                      fontSize: 12.sp,
                     ),
                   ),
                 )
                 .toList(),
           ),
-          const SizedBox(height: 10),
+          SizedBox(height: 10.h),
           // Days Grid
           Expanded(
             child: GridView.builder(
               physics: const NeverScrollableScrollPhysics(),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 7,
-                mainAxisSpacing: 8,
-                crossAxisSpacing: 8,
+                mainAxisSpacing: 8.h,
+                crossAxisSpacing: 8.w,
               ),
               itemCount: 42, // 6 rows * 7 cols
               itemBuilder: (context, index) {
@@ -546,16 +548,16 @@ class _CreativeTimePickerState extends State<CreativeTimePicker>
               top: MediaQuery.of(context).size.height * 0.25,
               left: MediaQuery.of(context).size.width * 0.25,
               child: Container(
-                width: 200,
-                height: 200,
+                width: 200.w,
+                height: 200.w,
                 decoration: BoxDecoration(
                   color: Colors.white.withOpacity(0.1),
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
                       color: Colors.white.withOpacity(0.1),
-                      blurRadius: 50,
-                      spreadRadius: 20,
+                      blurRadius: 50.r,
+                      spreadRadius: 20.r,
                     ),
                   ],
                 ),
@@ -564,7 +566,7 @@ class _CreativeTimePickerState extends State<CreativeTimePicker>
 
             // Title
             Positioned(
-              top: 60,
+              top: 60.h,
               left: 0,
               right: 0,
               child: Center(
@@ -572,7 +574,7 @@ class _CreativeTimePickerState extends State<CreativeTimePicker>
                   '设置闹钟',
                   style: TextStyle(
                     color: Colors.white.withOpacity(0.8),
-                    fontSize: 18,
+                    fontSize: 18.sp,
                     letterSpacing: 3,
                     fontWeight: FontWeight.w300,
                   ),
@@ -605,8 +607,8 @@ class _CreativeTimePickerState extends State<CreativeTimePicker>
                             boxShadow: [
                               BoxShadow(
                                 color: Colors.black.withOpacity(0.2),
-                                blurRadius: 20,
-                                spreadRadius: 5,
+                                blurRadius: 20.r,
+                                spreadRadius: 5.r,
                               ),
                             ],
                           ),
@@ -642,7 +644,7 @@ class _CreativeTimePickerState extends State<CreativeTimePicker>
 
             // Bottom Actions
             Positioned(
-              bottom: 50,
+              bottom: 50.h,
               left: 0,
               right: 0,
               child: Column(
@@ -651,15 +653,15 @@ class _CreativeTimePickerState extends State<CreativeTimePicker>
                   // Name Input (Toggleable)
                   AnimatedContainer(
                     duration: const Duration(milliseconds: 300),
-                    height: _showNameInput ? 60 : 0,
-                    margin: const EdgeInsets.only(bottom: 20),
-                    padding: const EdgeInsets.symmetric(horizontal: 40),
+                    height: _showNameInput ? 60.h : 0,
+                    margin: EdgeInsets.only(bottom: 20.h),
+                    padding: EdgeInsets.symmetric(horizontal: 40.w),
                     child: SingleChildScrollView(
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        padding: EdgeInsets.symmetric(horizontal: 16.w),
                         decoration: BoxDecoration(
                           color: _glassColor,
-                          borderRadius: BorderRadius.circular(16),
+                          borderRadius: BorderRadius.circular(16.r),
                           border: Border.all(color: _glassBorderColor),
                         ),
                         child: TextField(
@@ -674,7 +676,7 @@ class _CreativeTimePickerState extends State<CreativeTimePicker>
                             icon: Icon(
                               Icons.bookmark,
                               color: _textColor.withOpacity(0.7),
-                              size: 20,
+                              size: 20.sp,
                             ),
                           ),
                         ),
@@ -691,16 +693,16 @@ class _CreativeTimePickerState extends State<CreativeTimePicker>
                     },
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 300),
-                      margin: const EdgeInsets.only(bottom: 20),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 20,
-                        vertical: 10,
+                      margin: EdgeInsets.only(bottom: 20.h),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 20.w,
+                        vertical: 10.h,
                       ),
                       decoration: BoxDecoration(
                         color: _isDatePickerMode
                             ? _glassColor.withOpacity(0.3)
                             : _glassColor,
-                        borderRadius: BorderRadius.circular(20),
+                        borderRadius: BorderRadius.circular(20.r),
                         border: Border.all(
                           color: _isDatePickerMode
                               ? _accentColor.withOpacity(0.5)
@@ -713,14 +715,14 @@ class _CreativeTimePickerState extends State<CreativeTimePicker>
                           Icon(
                             Icons.calendar_today,
                             color: _textColor.withOpacity(0.8),
-                            size: 16,
+                            size: 16.sp,
                           ),
-                          const SizedBox(width: 8),
+                          SizedBox(width: 8.w),
                           Text(
                             DateFormat('yyyy年MM月dd日').format(_selectedDate),
                             style: TextStyle(
                               color: _textColor,
-                              fontSize: 16,
+                              fontSize: 16.sp,
                               fontWeight: FontWeight.w500,
                             ),
                           ),
@@ -756,8 +758,8 @@ class _CreativeTimePickerState extends State<CreativeTimePicker>
                           });
                         },
                         child: Container(
-                          width: 56,
-                          height: 56,
+                          width: 56.w,
+                          height: 56.w,
                           decoration: BoxDecoration(
                             color: _glassColor.withOpacity(0.05),
                             shape: BoxShape.circle,
@@ -769,7 +771,7 @@ class _CreativeTimePickerState extends State<CreativeTimePicker>
                           ),
                         ),
                       ),
-                      const SizedBox(width: 24),
+                      SizedBox(width: 24.w),
 
                       // Add Label Button
                       GestureDetector(
@@ -779,8 +781,8 @@ class _CreativeTimePickerState extends State<CreativeTimePicker>
                           });
                         },
                         child: Container(
-                          width: 56,
-                          height: 56,
+                          width: 56.w,
+                          height: 56.w,
                           decoration: BoxDecoration(
                             color: _showNameInput
                                 ? _glassColor.withOpacity(0.2)
@@ -794,7 +796,7 @@ class _CreativeTimePickerState extends State<CreativeTimePicker>
                           ),
                         ),
                       ),
-                      const SizedBox(width: 24),
+                      SizedBox(width: 24.w),
 
                       // Confirm Button
                       GestureDetector(
@@ -822,18 +824,18 @@ class _CreativeTimePickerState extends State<CreativeTimePicker>
                         },
                         child: AnimatedContainer(
                           duration: const Duration(milliseconds: 300),
-                          height: 56,
-                          padding: const EdgeInsets.symmetric(horizontal: 32),
+                          height: 56.w,
+                          padding: EdgeInsets.symmetric(horizontal: 32.w),
                           decoration: BoxDecoration(
                             color: _alarmSet
                                 ? const Color(0xFF10B981)
                                 : Colors.white,
-                            borderRadius: BorderRadius.circular(28),
+                            borderRadius: BorderRadius.circular(28.r),
                             boxShadow: [
                               BoxShadow(
                                 color: Colors.black.withOpacity(0.1),
-                                blurRadius: 10,
-                                offset: const Offset(0, 4),
+                                blurRadius: 10.r,
+                                offset: Offset(0, 4.h),
                               ),
                             ],
                           ),
@@ -845,14 +847,14 @@ class _CreativeTimePickerState extends State<CreativeTimePicker>
                                     ? Colors.white
                                     : const Color(0xFF0F172A),
                               ),
-                              const SizedBox(width: 12),
+                              SizedBox(width: 12.w),
                               Text(
                                 _alarmSet ? '已设定' : '定闹钟',
                                 style: TextStyle(
                                   color: _alarmSet
                                       ? Colors.white
                                       : const Color(0xFF0F172A),
-                                  fontSize: 18,
+                                  fontSize: 18.sp,
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
@@ -868,7 +870,7 @@ class _CreativeTimePickerState extends State<CreativeTimePicker>
 
             // Status Text
             Positioned(
-              bottom: 120,
+              bottom: 120.h,
               left: 0,
               right: 0,
               child: AnimatedOpacity(
@@ -879,7 +881,7 @@ class _CreativeTimePickerState extends State<CreativeTimePicker>
                     '闹钟将于 ${_isAm ? '上午' : '下午'} $_hour:${_minute.toString().padLeft(2, '0')} 响起',
                     style: TextStyle(
                       color: Colors.white.withOpacity(0.6),
-                      fontSize: 14,
+                      fontSize: 14.sp,
                     ),
                   ),
                 ),
@@ -888,8 +890,8 @@ class _CreativeTimePickerState extends State<CreativeTimePicker>
 
             // Cancel Button (Top Left)
             Positioned(
-              top: 50,
-              left: 20,
+              top: 50.h,
+              left: 20.w,
               child: IconButton(
                 icon: const Icon(Icons.close, color: Colors.white),
                 onPressed:

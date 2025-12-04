@@ -1,9 +1,10 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+
 /// 构建通用的文本输入框
 /// [expands] 为 true 时，输入框会尝试填满父容器高度（需要父容器有固定高度限制，如 Expanded）
-class MyTextField extends StatelessWidget{
-
+class MyTextField extends StatelessWidget {
   const MyTextField({
     super.key,
     required this.controller,
@@ -12,13 +13,13 @@ class MyTextField extends StatelessWidget{
     this.maxLines = 1,
     this.autofocus = false,
     this.expands = false,
-    this.padding = const EdgeInsets.all(20),
-    });
+    this.padding,
+  });
 
   final TextEditingController controller;
   final String hintText;
   final ColorScheme colorScheme;
-  final EdgeInsetsGeometry padding;
+  final EdgeInsetsGeometry? padding;
 
   final int? maxLines;
 
@@ -26,26 +27,26 @@ class MyTextField extends StatelessWidget{
 
   final bool expands;
 
-
   @override
   Widget build(BuildContext context) {
+    final effectivePadding = padding ?? EdgeInsets.all(20.w);
     return Container(
-      padding: padding,
+      padding: effectivePadding,
       decoration: BoxDecoration(
         color: colorScheme.surface,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(16.r),
       ),
       child: TextField(
         controller: controller,
         decoration: InputDecoration(
           hintText: hintText,
-          hintStyle: TextStyle(color: colorScheme.secondary, fontSize: 16),
+          hintStyle: TextStyle(color: colorScheme.secondary, fontSize: 16.sp),
           border: InputBorder.none,
           isDense: true,
           contentPadding: EdgeInsets.zero,
         ),
         style: TextStyle(
-          fontSize: 16,
+          fontSize: 16.sp,
           color: colorScheme.onSurface,
           height: 1.5,
         ),

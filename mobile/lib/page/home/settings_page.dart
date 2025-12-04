@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:pocketmind/util/app_config.dart';
 import 'package:pocketmind/page/home/sync_settings_page.dart';
 import 'dart:io';
@@ -99,7 +100,12 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
     _applyProxySettings();
 
     if (mounted) {
-      CreativeToast.success(context, title: '设置已保存', message: '您的设置已成功保存', direction: ToastDirection.bottom);
+      CreativeToast.success(
+        context,
+        title: '设置已保存',
+        message: '您的设置已成功保存',
+        direction: ToastDirection.bottom,
+      );
     }
   }
 
@@ -134,27 +140,27 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
         ],
       ),
       body: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(16.r),
         children: [
           // Title 显示设置
           _buildSectionTitle('显示设置', theme),
           _buildTitleSettingCard(theme),
-          const SizedBox(height: 24),
+          SizedBox(height: 24.h),
 
           // 提醒设置
           _buildSectionTitle('提醒设置', theme),
           _buildNotificationCard(theme),
-          const SizedBox(height: 24),
+          SizedBox(height: 24.h),
 
           // 局域网同步设置
           _buildSectionTitle('数据同步', theme),
           _buildSyncSettingCard(theme),
-          const SizedBox(height: 24),
+          SizedBox(height: 24.h),
 
           // 存储管理
           _buildSectionTitle('存储管理', theme),
           _buildStorageCard(theme),
-          const SizedBox(height: 24),
+          SizedBox(height: 24.h),
 
           // API 环境设置
           // todo 暂且不需要
@@ -165,12 +171,12 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
           // 网络代理设置
           _buildSectionTitle('网络代理', theme),
           _buildProxyCard(theme),
-          const SizedBox(height: 24),
+          SizedBox(height: 24.h),
 
           // LinkPreview API 设置
           _buildSectionTitle('LinkPreview API', theme),
           _buildApiKeyCard(theme),
-          const SizedBox(height: 24),
+          SizedBox(height: 24.h),
           // 说明
           _buildInfoCard(theme),
         ],
@@ -180,7 +186,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
 
   Widget _buildSectionTitle(String title, ThemeData theme) {
     return Padding(
-      padding: const EdgeInsets.only(left: 4, bottom: 12),
+      padding: EdgeInsets.only(left: 4.w, bottom: 12.h),
       child: Text(title, style: theme.textTheme.titleMedium),
     );
   }
@@ -190,11 +196,11 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
       color: theme.cardColor,
       elevation: 0,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.r),
         side: BorderSide(color: theme.dividerColor.withOpacity(0.1)),
       ),
       child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 16),
+        padding: EdgeInsets.symmetric(horizontal: 16.w),
         child: Column(
           children: [
             SwitchListTile(
@@ -209,7 +215,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                 setState(() => _isWaterfallLayout = value);
               },
             ),
-            const Divider(height: 10),
+            Divider(height: 10.h),
             SwitchListTile(
               contentPadding: EdgeInsets.zero,
               title: Text('显示标题字段', style: theme.textTheme.bodyLarge),
@@ -233,11 +239,11 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
       color: theme.cardColor,
       elevation: 0,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.r),
         side: BorderSide(color: theme.dividerColor.withOpacity(0.1)),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(16.r),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -255,9 +261,9 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                 setState(() => _highPrecisionNotification = value);
               },
             ),
-            const Divider(height: 24),
+            Divider(height: 24.h),
             Text('提醒强度', style: theme.textTheme.bodyMedium),
-            const SizedBox(height: 12),
+            SizedBox(height: 12.h),
             _buildIntensityOption(
               theme,
               2,
@@ -265,7 +271,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
               '弹窗 + 声音 + 震动',
               Icons.notifications_active,
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: 8.h),
             _buildIntensityOption(
               theme,
               1,
@@ -273,7 +279,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
               '声音 + 状态栏',
               Icons.notifications,
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: 8.h),
             _buildIntensityOption(
               theme,
               0,
@@ -292,7 +298,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
       color: theme.cardColor,
       elevation: 0,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.r),
         side: BorderSide(color: theme.dividerColor.withOpacity(0.1)),
       ),
       child: ListTile(
@@ -315,32 +321,32 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
       color: theme.cardColor,
       elevation: 0,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.r),
         side: BorderSide(color: theme.dividerColor.withOpacity(0.1)),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(16.r),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
                 Icon(Icons.storage, color: theme.colorScheme.primary),
-                const SizedBox(width: 12),
+                SizedBox(width: 12.w),
                 Text('清理数据', style: theme.textTheme.bodyLarge),
               ],
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h),
             Text('定期清理已删除的笔记和孤立的图片文件，释放存储空间', style: theme.textTheme.bodySmall),
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h),
             ElevatedButton.icon(
               onPressed: _performCleanup,
               icon: const Icon(Icons.cleaning_services),
               label: const Text('执行清理'),
               style: ElevatedButton.styleFrom(
-                minimumSize: const Size(double.infinity, 44),
+                minimumSize: Size(double.infinity, 44.h),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(8.r),
                 ),
               ),
             ),
@@ -447,24 +453,24 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
       color: theme.cardColor,
       elevation: 0,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.r),
         side: BorderSide(color: theme.dividerColor.withOpacity(0.1)),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(16.r),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
                 Icon(Icons.cloud_outlined, color: theme.colorScheme.primary),
-                const SizedBox(width: 12),
+                SizedBox(width: 12.w),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text('API 环境切换', style: theme.textTheme.bodyLarge),
-                      const SizedBox(height: 4),
+                      SizedBox(height: 4.h),
                       Text(
                         getCurrentEnvDescription(),
                         style: theme.textTheme.bodySmall?.copyWith(
@@ -477,7 +483,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                 ),
               ],
             ),
-            const Divider(height: 24),
+            Divider(height: 24.h),
             // 环境选择
             ...Environment.values.map((env) {
               return RadioListTile<Environment>(
@@ -525,11 +531,11 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
       color: theme.cardColor,
       elevation: 0,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.r),
         side: BorderSide(color: theme.dividerColor.withOpacity(0.1)),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(16.r),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -548,7 +554,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
             ),
 
             if (_proxyEnabled) ...[
-              const Divider(height: 32),
+              Divider(height: 32.h),
 
               // 代理主机
               TextField(
@@ -558,11 +564,11 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                   hintText: '127.0.0.1',
                   prefixIcon: const Icon(Icons.computer),
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(8.r),
                   ),
                 ),
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: 16.h),
 
               // 代理端口
               TextField(
@@ -573,7 +579,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                   hintText: '7890',
                   prefixIcon: const Icon(Icons.settings_ethernet),
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(8.r),
                   ),
                 ),
               ),
@@ -589,45 +595,45 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
       color: theme.cardColor,
       elevation: 0,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.r),
         side: BorderSide(color: theme.dividerColor.withOpacity(0.1)),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(16.r),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text('API Key', style: theme.textTheme.bodyLarge),
-            const SizedBox(height: 8),
+            SizedBox(height: 8.h),
             Text(
               '用于国外网站（X/Twitter/YouTube）链接预览',
               style: theme.textTheme.bodySmall,
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h),
             TextField(
               controller: _apiKeyController,
               decoration: InputDecoration(
                 hintText: '输入 LinkPreview.net API Key',
                 prefixIcon: const Icon(Icons.vpn_key),
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(8.r),
                 ),
               ),
               maxLines: 1,
             ),
-            const Divider(height: 32),
+            Divider(height: 32.h),
             Text(
               '获取的meta元数据进行本地缓存,减少对应api的开销',
               style: theme.textTheme.bodySmall,
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h),
             TextField(
               controller: _meteCacheTimeController,
               decoration: InputDecoration(
                 hintText: '输入缓存的时间（天)',
                 prefixIcon: const Icon(Icons.timer),
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(8.r),
                 ),
               ),
               maxLines: 1,
@@ -642,9 +648,9 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
     return Card(
       color: theme.colorScheme.surfaceContainerHighest.withOpacity(0.1),
       elevation: 0,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(16.r),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -653,9 +659,9 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                 Icon(
                   Icons.info_outline,
                   color: theme.colorScheme.surfaceContainerHighest,
-                  size: 20,
+                  size: 20.sp,
                 ),
-                const SizedBox(width: 8),
+                SizedBox(width: 8.w),
                 Text(
                   '使用说明',
                   style: theme.textTheme.bodyLarge?.copyWith(
@@ -664,15 +670,15 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                 ),
               ],
             ),
-            const SizedBox(height: 12),
+            SizedBox(height: 12.h),
             _buildInfoItem('• 代理设置', '启用代理后，国外网站（X/Twitter）的图片才能正常显示', theme),
-            const SizedBox(height: 8),
+            SizedBox(height: 8.h),
             _buildInfoItem(
               '• API Key',
               '从 linkpreview.net 获取，用于国外网站链接预览',
               theme,
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: 8.h),
             _buildInfoItem('• 国内网站', '国内网站无需代理，自动使用直连方式', theme),
           ],
         ),
@@ -691,7 +697,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
             color: theme.colorScheme.surfaceContainerHighest,
           ),
         ),
-        const SizedBox(height: 4),
+        SizedBox(height: 4.h),
         Text(content, style: theme.textTheme.bodySmall),
       ],
     );
@@ -709,14 +715,14 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
 
     return InkWell(
       onTap: () => setState(() => _notificationIntensity = value),
-      borderRadius: BorderRadius.circular(8),
+      borderRadius: BorderRadius.circular(8.r),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+        padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
         decoration: BoxDecoration(
           color: isSelected
               ? colorScheme.primaryContainer.withOpacity(0.4)
               : Colors.transparent,
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(8.r),
           border: Border.all(
             color: isSelected
                 ? colorScheme.primary
@@ -731,9 +737,9 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
               color: isSelected
                   ? colorScheme.primary
                   : theme.iconTheme.color?.withOpacity(0.7),
-              size: 20,
+              size: 20.sp,
             ),
-            const SizedBox(width: 12),
+            SizedBox(width: 12.w),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -748,14 +754,14 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                     ),
                   ),
                   if (subtitle.isNotEmpty) ...[
-                    const SizedBox(height: 2),
+                    SizedBox(height: 2.h),
                     Text(
                       subtitle,
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: isSelected
                             ? colorScheme.primary.withOpacity(0.8)
                             : null,
-                        fontSize: 11,
+                        fontSize: 11.sp,
                       ),
                     ),
                   ],
@@ -763,7 +769,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
               ),
             ),
             if (isSelected)
-              Icon(Icons.check_circle, color: colorScheme.primary, size: 18),
+              Icon(Icons.check_circle, color: colorScheme.primary, size: 18.sp),
           ],
         ),
       ),

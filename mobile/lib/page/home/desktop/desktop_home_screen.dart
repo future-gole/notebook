@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:pocketmind/domain/entities/note_entity.dart';
 import 'package:pocketmind/page/widget/note_Item.dart';
@@ -69,7 +70,7 @@ class _DesktopHomeScreenState extends ConsumerState<DesktopHomeScreen> {
             child: Column(
               children: [
                 // macOS 顶部预留空间 (窗口控制按钮)
-                if (Platform.isMacOS) const SizedBox(height: 28),
+                if (Platform.isMacOS) SizedBox(height: 28.h),
 
                 // 顶部导航栏
                 DesktopHeader(
@@ -116,8 +117,8 @@ class _DesktopHomeScreenState extends ConsumerState<DesktopHomeScreen> {
         onPressed: () => _showAddNotePage(context),
         elevation: 8,
         child: Container(
-          width: 56,
-          height: 56,
+          width: 56.w,
+          height: 56.w,
           decoration: BoxDecoration(
             gradient: LinearGradient(
               begin: Alignment.topLeft,
@@ -131,12 +132,12 @@ class _DesktopHomeScreenState extends ConsumerState<DesktopHomeScreen> {
             boxShadow: [
               BoxShadow(
                 color: colorScheme.tertiary.withOpacity(0.4),
-                blurRadius: 16,
-                offset: const Offset(0, 6),
+                blurRadius: 16.r,
+                offset: Offset(0, 6.h),
               ),
             ],
           ),
-          child: const Icon(Icons.add, size: 28),
+          child: Icon(Icons.add, size: 28.sp),
         ),
       ),
     );
@@ -149,29 +150,24 @@ class _DesktopHomeScreenState extends ConsumerState<DesktopHomeScreen> {
       barrierDismissible: true,
       builder: (context) {
         return Dialog(
-          insetPadding: const EdgeInsets.symmetric(
-            horizontal: 80,
-            vertical: 40,
-          ),
+          insetPadding: EdgeInsets.symmetric(horizontal: 80.w, vertical: 40.h),
           backgroundColor: Colors.transparent,
           child: Container(
-            width: 600,
-            constraints: BoxConstraints(
-              maxHeight: MediaQuery.of(context).size.height * 0.85,
-            ),
+            width: 600.w,
+            constraints: BoxConstraints(maxHeight: 0.85.sh),
             decoration: BoxDecoration(
               color: Theme.of(context).colorScheme.surface,
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(16.r),
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withOpacity(0.2),
-                  blurRadius: 20,
-                  offset: const Offset(0, 10),
+                  blurRadius: 20.r,
+                  offset: Offset(0, 10.h),
                 ),
               ],
             ),
             child: ClipRRect(
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(16.r),
               child: NoteEditorSheet(),
             ),
           ),
@@ -201,17 +197,17 @@ class _DesktopHomeScreenState extends ConsumerState<DesktopHomeScreen> {
         children: [
           Icon(
             Icons.note_add_outlined,
-            size: 100,
+            size: 100.sp,
             color: colorScheme.secondary.withOpacity(0.4),
           ),
-          const SizedBox(height: 24),
+          SizedBox(height: 24.h),
           Text(
             '你的思绪将汇聚于此',
             style: Theme.of(
               context,
             ).textTheme.titleLarge?.copyWith(color: colorScheme.secondary),
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12.h),
           Text(
             '点击右下角，捕捉第一个灵感',
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
@@ -253,17 +249,17 @@ class _DesktopHomeScreenState extends ConsumerState<DesktopHomeScreen> {
         children: [
           Icon(
             Icons.search_off,
-            size: 100,
+            size: 100.sp,
             color: colorScheme.secondary.withOpacity(0.4),
           ),
-          const SizedBox(height: 24),
+          SizedBox(height: 24.h),
           Text(
             '未找到相关笔记',
             style: Theme.of(
               context,
             ).textTheme.titleLarge?.copyWith(color: colorScheme.secondary),
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12.h),
           Text(
             '尝试使用其他关键词',
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
@@ -293,10 +289,10 @@ class _DesktopHomeScreenState extends ConsumerState<DesktopHomeScreen> {
             controller: _scrollController,
             key: const PageStorageKey('desktop_masonry_grid_view'),
             crossAxisCount: crossAxisCount,
-            crossAxisSpacing: 16,
-            mainAxisSpacing: 16,
-            cacheExtent: 500.0,
-            padding: const EdgeInsets.all(24),
+            crossAxisSpacing: 8.w,
+            mainAxisSpacing: 8.h,
+            cacheExtent: 500.h,
+            padding: EdgeInsets.all(24.r),
             itemCount: notes.length,
             itemBuilder: (context, index) {
               final note = notes[index];
@@ -315,17 +311,17 @@ class _DesktopHomeScreenState extends ConsumerState<DesktopHomeScreen> {
           // 列表布局 - 限制最大宽度使其居中
           return Center(
             child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 800),
+              constraints: BoxConstraints(maxWidth: 800.w),
               child: ListView.builder(
                 controller: _scrollController,
                 key: const PageStorageKey('desktop_list_view'),
-                cacheExtent: 500.0,
-                padding: const EdgeInsets.all(24),
+                cacheExtent: 500.h,
+                padding: EdgeInsets.all(24.r),
                 itemCount: notes.length,
                 itemBuilder: (context, index) {
                   final note = notes[index];
                   return Padding(
-                    padding: const EdgeInsets.only(bottom: 12),
+                    padding: EdgeInsets.only(bottom: 12.h),
                     child: RepaintBoundary(
                       child: NoteItem(
                         note: note,

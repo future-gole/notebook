@@ -1,6 +1,7 @@
 // 路径: lib/pages/edit_note_page.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:pocketmind/api/note_api_service.dart';
 import 'package:pocketmind/providers/note_providers.dart';
 import 'package:pocketmind/providers/category_providers.dart';
@@ -128,7 +129,7 @@ class EditNotePageState extends ConsumerState<EditNotePage> {
 
     return Container(
       color: Colors.transparent, // 透明背景以显示底层 FlowingBackground
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         child: Row(
@@ -142,7 +143,7 @@ class EditNotePageState extends ConsumerState<EditNotePage> {
                 tab: EditTab.title,
                 colorScheme: colorScheme,
               ),
-              const SizedBox(width: 40),
+              SizedBox(width: 40.w),
             ],
             _buildNavTab(
               icon: Icons.note_outlined,
@@ -150,28 +151,28 @@ class EditNotePageState extends ConsumerState<EditNotePage> {
               tab: EditTab.content,
               colorScheme: colorScheme,
             ),
-            const SizedBox(width: 40),
+            SizedBox(width: 40.w),
             _buildNavTab(
               icon: Icons.circle_outlined,
               label: '分类',
               tab: EditTab.category,
               colorScheme: colorScheme,
             ),
-            const SizedBox(width: 40),
+            SizedBox(width: 40.w),
             _buildNavTab(
               icon: Icons.local_offer_outlined,
               label: '标签',
               tab: EditTab.tags,
               colorScheme: colorScheme,
             ),
-            const SizedBox(width: 40),
+            SizedBox(width: 40.w),
             _buildNavTab(
               icon: Icons.question_answer_outlined,
               label: 'AI',
               tab: EditTab.AI,
               colorScheme: colorScheme,
             ),
-            const SizedBox(width: 40),
+            SizedBox(width: 40.w),
             _buildNavTab(
               icon: Icons.alarm,
               label: '提醒',
@@ -199,13 +200,13 @@ class EditNotePageState extends ConsumerState<EditNotePage> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, color: color, size: 24),
-          const SizedBox(height: 4),
+          Icon(icon, color: color, size: 24.sp),
+          SizedBox(height: 4.h),
           Text(
             label,
             style: TextStyle(
               color: color,
-              fontSize: 14,
+              fontSize: 14.sp,
               fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
             ),
           ),
@@ -217,10 +218,10 @@ class EditNotePageState extends ConsumerState<EditNotePage> {
   // 构建内容/标题/AI编辑页面
   Widget _buildNotesContent(ColorScheme colorScheme) {
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.all(20.r),
       decoration: BoxDecoration(
         color: colorScheme.surface,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(16.r),
       ),
       alignment: Alignment.topLeft,
       child: TextField(
@@ -231,13 +232,13 @@ class EditNotePageState extends ConsumerState<EditNotePage> {
             : _aiController,
         decoration: InputDecoration(
           hintText: _currentTab == EditTab.AI ? "敬请期待" : "开始输入...",
-          hintStyle: TextStyle(color: colorScheme.secondary, fontSize: 16),
+          hintStyle: TextStyle(color: colorScheme.secondary, fontSize: 16.sp),
           border: InputBorder.none,
           isDense: true,
           contentPadding: EdgeInsets.zero,
         ),
         style: TextStyle(
-          fontSize: 16,
+          fontSize: 16.sp,
           color: colorScheme.onSurface,
           height: 1.5,
         ),
@@ -251,10 +252,10 @@ class EditNotePageState extends ConsumerState<EditNotePage> {
 
   Widget _buildTagsContent(ColorScheme colorScheme) {
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.all(20.r),
       decoration: BoxDecoration(
         color: colorScheme.surface,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(16.r),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -264,29 +265,32 @@ class EditNotePageState extends ConsumerState<EditNotePage> {
             controller: _tagController,
             decoration: InputDecoration(
               hintText: "添加标签...",
-              hintStyle: TextStyle(color: colorScheme.secondary, fontSize: 16),
+              hintStyle: TextStyle(
+                color: colorScheme.secondary,
+                fontSize: 16.sp,
+              ),
               border: InputBorder.none,
               isDense: true,
               contentPadding: EdgeInsets.zero,
             ),
-            style: TextStyle(fontSize: 16, color: colorScheme.onSurface),
+            style: TextStyle(fontSize: 16.sp, color: colorScheme.onSurface),
           ),
-          const SizedBox(height: 24),
+          SizedBox(height: 24.h),
           Text(
             "最近标签",
             style: TextStyle(
               color: colorScheme.secondary.withValues(alpha: 0.6),
-              fontSize: 12,
+              fontSize: 12.sp,
               fontWeight: FontWeight.w500,
               letterSpacing: 0.5,
             ),
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12.h),
           Text(
             "暂无最近使用的标签",
             style: TextStyle(
               color: colorScheme.secondary.withValues(alpha: 0.4),
-              fontSize: 14,
+              fontSize: 14.sp,
             ),
           ),
         ],
@@ -329,10 +333,10 @@ class EditNotePageState extends ConsumerState<EditNotePage> {
     final categoriesAsync = ref.watch(categoriesProvider);
 
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.all(20.r),
       decoration: BoxDecoration(
         color: colorScheme.surface,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(16.r),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -374,7 +378,7 @@ class EditNotePageState extends ConsumerState<EditNotePage> {
                       title: Text(
                         category.name,
                         style: TextStyle(
-                          fontSize: 16,
+                          fontSize: 16.sp,
                           color: colorScheme.onSurface,
                         ),
                       ),
@@ -390,39 +394,39 @@ class EditNotePageState extends ConsumerState<EditNotePage> {
                     );
                   }),
                   if (_isAddingCategory) ...[
-                    const SizedBox(height: 16),
+                    SizedBox(height: 16.h),
                     Container(
-                      margin: const EdgeInsets.symmetric(horizontal: 10),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 12,
+                      margin: EdgeInsets.symmetric(horizontal: 10.w),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 16.w,
+                        vertical: 12.h,
                       ),
                       decoration: BoxDecoration(
                         color: colorScheme.surface.withValues(alpha: 0.9),
-                        borderRadius: BorderRadius.circular(20),
+                        borderRadius: BorderRadius.circular(20.r),
                         border: Border.all(
                           color: colorScheme.primary.withValues(alpha: 0.3),
-                          width: 1,
+                          width: 1.w,
                         ),
                         boxShadow: [
                           BoxShadow(
                             color: colorScheme.primary.withValues(alpha: 0.1),
-                            blurRadius: 8,
-                            offset: const Offset(0, 2),
+                            blurRadius: 8.r,
+                            offset: Offset(0, 2.h),
                           ),
                         ],
                       ),
                       child: Row(
                         children: [
                           Container(
-                            width: 4,
-                            height: 20,
+                            width: 4.w,
+                            height: 20.h,
                             decoration: BoxDecoration(
                               color: colorScheme.primary,
-                              borderRadius: BorderRadius.circular(2),
+                              borderRadius: BorderRadius.circular(2.r),
                             ),
                           ),
-                          const SizedBox(width: 12),
+                          SizedBox(width: 12.w),
                           Expanded(
                             child: TextField(
                               controller: _categoryController,
@@ -433,7 +437,7 @@ class EditNotePageState extends ConsumerState<EditNotePage> {
                                   color: colorScheme.secondary.withValues(
                                     alpha: 0.4,
                                   ),
-                                  fontSize: 16,
+                                  fontSize: 16.sp,
                                   fontStyle: FontStyle.italic,
                                 ),
                                 border: InputBorder.none,
@@ -441,32 +445,32 @@ class EditNotePageState extends ConsumerState<EditNotePage> {
                                 contentPadding: EdgeInsets.zero,
                               ),
                               style: TextStyle(
-                                fontSize: 16,
+                                fontSize: 16.sp,
                                 color: colorScheme.onSurface,
                                 fontWeight: FontWeight.w500,
                               ),
                               onSubmitted: (_) => _confirmAddCategory(),
                             ),
                           ),
-                          const SizedBox(width: 12),
+                          SizedBox(width: 12.w),
                           GestureDetector(
                             onTap: _confirmAddCategory,
                             child: Container(
-                              padding: const EdgeInsets.all(4),
+                              padding: EdgeInsets.all(4.r),
                               decoration: BoxDecoration(
                                 color: colorScheme.primary.withValues(
                                   alpha: 0.1,
                                 ),
-                                borderRadius: BorderRadius.circular(12),
+                                borderRadius: BorderRadius.circular(12.r),
                               ),
                               child: Icon(
                                 Icons.check,
                                 color: colorScheme.primary,
-                                size: 20,
+                                size: 20.sp,
                               ),
                             ),
                           ),
-                          const SizedBox(width: 8),
+                          SizedBox(width: 8.w),
                           GestureDetector(
                             onTap: _cancelAddingCategory,
                             child: Icon(
@@ -474,30 +478,30 @@ class EditNotePageState extends ConsumerState<EditNotePage> {
                               color: colorScheme.secondary.withValues(
                                 alpha: 0.6,
                               ),
-                              size: 20,
+                              size: 20.sp,
                             ),
                           ),
                         ],
                       ),
                     ),
                   ] else ...[
-                    const SizedBox(height: 16),
+                    SizedBox(height: 16.h),
                     GestureDetector(
                       onTap: _startAddingCategory,
                       child: Container(
-                        padding: const EdgeInsets.all(12),
+                        padding: EdgeInsets.all(12.r),
                         decoration: BoxDecoration(
                           color: colorScheme.primary.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(50),
+                          borderRadius: BorderRadius.circular(50.r),
                           border: Border.all(
                             color: colorScheme.primary.withValues(alpha: 0.2),
-                            width: 1,
+                            width: 1.w,
                           ),
                         ),
                         child: Icon(
                           Icons.add,
                           color: colorScheme.primary,
-                          size: 24,
+                          size: 24.sp,
                         ),
                       ),
                     ),
@@ -520,10 +524,10 @@ class EditNotePageState extends ConsumerState<EditNotePage> {
     final shortcuts = _config.reminderShortcuts;
 
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.all(20.r),
       decoration: BoxDecoration(
         color: colorScheme.surface,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(16.r),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -532,43 +536,43 @@ class EditNotePageState extends ConsumerState<EditNotePage> {
           if (_scheduledTime != null) ...[
             // 已设置提醒的展示卡片
             Container(
-              padding: const EdgeInsets.all(24),
+              padding: EdgeInsets.all(24.r),
               decoration: BoxDecoration(
                 color: colorScheme.surfaceContainerHighest.withOpacity(0.15),
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(20.r),
                 border: Border.all(
                   color: colorScheme.surfaceContainerHighest.withOpacity(0.3),
-                  width: 1,
+                  width: 1.w,
                 ),
               ),
               child: Column(
                 children: [
                   Icon(
                     Icons.notifications_active_outlined,
-                    size: 48,
+                    size: 48.sp,
                     color: colorScheme.surfaceContainerHighest,
                   ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: 16.h),
                   Text(
                     "已设置提醒",
                     style: TextStyle(
                       color: colorScheme.secondary,
-                      fontSize: 14,
+                      fontSize: 14.sp,
                       fontWeight: FontWeight.w500,
                       letterSpacing: 0.5,
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  SizedBox(height: 8.h),
                   Text(
                     DateFormat('MMM d, y • h:mm a').format(_scheduledTime!),
                     style: TextStyle(
                       color: colorScheme.onSurface,
-                      fontSize: 24,
+                      fontSize: 24.sp,
                       fontWeight: FontWeight.bold,
                       fontFamily: 'SF Pro Display',
                     ),
                   ),
-                  const SizedBox(height: 24),
+                  SizedBox(height: 24.h),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -577,7 +581,7 @@ class EditNotePageState extends ConsumerState<EditNotePage> {
                         onPressed: _pickCustomTime,
                         icon: Icon(
                           Icons.edit_outlined,
-                          size: 18,
+                          size: 18.sp,
                           color: colorScheme.primary,
                         ),
                         label: Text(
@@ -588,17 +592,17 @@ class EditNotePageState extends ConsumerState<EditNotePage> {
                           ),
                         ),
                         style: TextButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 12,
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 16.w,
+                            vertical: 12.h,
                           ),
                           backgroundColor: colorScheme.surface,
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(12.r),
                           ),
                         ),
                       ),
-                      const SizedBox(width: 12),
+                      SizedBox(width: 12.w),
                       // 删除提醒按钮
                       TextButton.icon(
                         onPressed: () {
@@ -608,7 +612,7 @@ class EditNotePageState extends ConsumerState<EditNotePage> {
                         },
                         icon: Icon(
                           Icons.close,
-                          size: 18,
+                          size: 18.sp,
                           color: colorScheme.error,
                         ),
                         label: Text(
@@ -619,13 +623,13 @@ class EditNotePageState extends ConsumerState<EditNotePage> {
                           ),
                         ),
                         style: TextButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 12,
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 16.w,
+                            vertical: 12.h,
                           ),
                           backgroundColor: colorScheme.error.withOpacity(0.1),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(12.r),
                           ),
                         ),
                       ),
@@ -643,7 +647,7 @@ class EditNotePageState extends ConsumerState<EditNotePage> {
                   "设置提醒",
                   style: TextStyle(
                     color: colorScheme.onSurface,
-                    fontSize: 20,
+                    fontSize: 20.sp,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -658,19 +662,19 @@ class EditNotePageState extends ConsumerState<EditNotePage> {
                       "长按删除快捷方式",
                       style: TextStyle(
                         color: colorScheme.secondary.withOpacity(0.5),
-                        fontSize: 12,
+                        fontSize: 12.sp,
                       ),
                     ),
                   ),
               ],
             ),
-            const SizedBox(height: 24),
+            SizedBox(height: 24.h),
             // 快速选项网格
             LayoutBuilder(
               builder: (context, constraints) {
                 return Wrap(
-                  spacing: 12,
-                  runSpacing: 12,
+                  spacing: 12.w,
+                  runSpacing: 12.h,
                   children: [
                     // 稍后 (固定)
                     _buildQuickOption(
@@ -687,7 +691,7 @@ class EditNotePageState extends ConsumerState<EditNotePage> {
                           );
                         });
                       },
-                      width: (constraints.maxWidth - 12) / 2,
+                      width: (constraints.maxWidth - 12.w) / 2,
                     ),
                     // 动态快捷方式
                     ...shortcuts.asMap().entries.map((entry) {
@@ -729,7 +733,7 @@ class EditNotePageState extends ConsumerState<EditNotePage> {
                               _scheduledTime = scheduled;
                             });
                           },
-                          width: (constraints.maxWidth - 12) / 2,
+                          width: (constraints.maxWidth - 12.w) / 2,
                         ),
                       );
                     }),
@@ -740,7 +744,7 @@ class EditNotePageState extends ConsumerState<EditNotePage> {
                       label: "自定义时间",
                       timeLabel: "选择...",
                       onTap: _pickCustomTime,
-                      width: (constraints.maxWidth - 12) / 2,
+                      width: (constraints.maxWidth - 12.w) / 2,
                       isPrimary: true,
                     ),
                   ],
@@ -778,37 +782,40 @@ class EditNotePageState extends ConsumerState<EditNotePage> {
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(16.r),
         child: Container(
           width: width,
-          padding: const EdgeInsets.all(16),
+          padding: EdgeInsets.all(16.r),
           decoration: BoxDecoration(
             color: bgColor,
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(16.r),
             border: isPrimary
                 ? null
                 : Border.all(
                     color: colorScheme.outline.withOpacity(0.1),
-                    width: 1,
+                    width: 1.w,
                   ),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(icon, color: iconColor, size: 24),
-              const SizedBox(height: 12),
+              Icon(icon, color: iconColor, size: 24.sp),
+              SizedBox(height: 12.h),
               Text(
                 label,
                 style: TextStyle(
                   color: fgColor,
-                  fontSize: 14,
+                  fontSize: 14.sp,
                   fontWeight: FontWeight.w600,
                 ),
               ),
-              const SizedBox(height: 4),
+              SizedBox(height: 4.h),
               Text(
                 timeLabel,
-                style: TextStyle(color: fgColor.withOpacity(0.7), fontSize: 12),
+                style: TextStyle(
+                  color: fgColor.withOpacity(0.7),
+                  fontSize: 12.sp,
+                ),
               ),
             ],
           ),
@@ -852,8 +859,8 @@ class EditNotePageState extends ConsumerState<EditNotePage> {
 
     return Padding(
       padding: EdgeInsets.only(
-        left: 20,
-        right: 20,
+        left: 20.w,
+        right: 20.w,
         top: topPadding, // 从系统状态栏下方开始
       ),
       child: Stack(
@@ -864,16 +871,14 @@ class EditNotePageState extends ConsumerState<EditNotePage> {
 
           // 背景容器（从导航栏下方开始）
           Positioned(
-            top: 72, // 导航栏高度
+            top: 72.h, // 导航栏高度
             left: 0,
             right: 0,
             bottom: 0,
             child: Container(
               decoration: BoxDecoration(
                 color: colorScheme.surface.withValues(alpha: 0.95),
-                borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(24),
-                ),
+                borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -881,7 +886,7 @@ class EditNotePageState extends ConsumerState<EditNotePage> {
                   // 当前标签页内容区域
                   Expanded(
                     child: Padding(
-                      padding: EdgeInsets.only(bottom: bottomInset, top: 8),
+                      padding: EdgeInsets.only(bottom: bottomInset, top: 8.h),
                       child: AnimatedSwitcher(
                         duration: const Duration(milliseconds: 300),
                         layoutBuilder:
@@ -916,7 +921,7 @@ class EditNotePageState extends ConsumerState<EditNotePage> {
                     ),
                   ),
 
-                  const SizedBox(height: 24),
+                  SizedBox(height: 24.h),
 
                   // Done 按钮
                   ElevatedButton(
@@ -924,24 +929,24 @@ class EditNotePageState extends ConsumerState<EditNotePage> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: colorScheme.tertiary,
                       foregroundColor: colorScheme.onTertiary,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 64,
-                        vertical: 16,
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 64.w,
+                        vertical: 16.h,
                       ),
                       shape: const StadiumBorder(),
                       elevation: 0,
                     ),
-                    child: const Text(
+                    child: Text(
                       "Done",
                       style: TextStyle(
                         fontWeight: FontWeight.w600,
-                        fontSize: 17,
+                        fontSize: 17.sp,
                         letterSpacing: 0.3,
                       ),
                     ),
                   ),
 
-                  SizedBox(height: bottomPadding > 0 ? bottomPadding : 40),
+                  SizedBox(height: bottomPadding > 0 ? bottomPadding : 40.h),
                 ],
               ),
             ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:pocketmind/util/image_storage_helper.dart';
 import 'package:pocketmind/util/logger_service.dart';
 
@@ -6,10 +7,7 @@ class LocalImageWidget extends StatelessWidget {
   static const _tag = 'LocalImageWidget';
   final String relativePath;
 
-  const LocalImageWidget({
-    super.key,
-    required this.relativePath
-  });
+  const LocalImageWidget({super.key, required this.relativePath});
 
   @override
   Widget build(BuildContext context) {
@@ -26,7 +24,7 @@ class LocalImageWidget extends StatelessWidget {
             child: const Center(child: CircularProgressIndicator()),
           );
         }
-        
+
         if (snapshot.hasData && snapshot.data == true) {
           return Image.file(
             imageFile,

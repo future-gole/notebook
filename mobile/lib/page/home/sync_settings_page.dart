@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../sync/sync_service.dart';
 import '../../sync/models/device_info.dart';
@@ -34,24 +35,24 @@ class _SyncSettingsPageState extends ConsumerState<SyncSettingsPage> {
     return Scaffold(
       appBar: AppBar(title: const Text('局域网同步')),
       body: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(16.r),
         children: [
           // 同步开关设置卡片
           _buildSyncSettingsCard(syncState, syncNotifier),
-          const SizedBox(height: 16),
+          SizedBox(height: 16.h),
 
           // 本机设备信息
           _buildLocalDeviceCard(syncState, syncNotifier),
-          const SizedBox(height: 16),
+          SizedBox(height: 16.h),
 
           // 发现的设备
           _buildDiscoveredDevicesCard(syncState, syncNotifier),
-          const SizedBox(height: 16),
+          SizedBox(height: 16.h),
 
           // 同步状态
           _buildSyncStatusCard(syncState),
 
-          const SizedBox(height: 16),
+          SizedBox(height: 16.h),
 
           // 诊断信息
           _buildDiagnosticsCard(syncState),
@@ -63,9 +64,9 @@ class _SyncSettingsPageState extends ConsumerState<SyncSettingsPage> {
             ? null
             : () => _discoverAndSync(syncNotifier),
         icon: _isScanning || syncState.isSyncing
-            ? const SizedBox(
-                width: 24,
-                height: 24,
+            ? SizedBox(
+                width: 24.w,
+                height: 24.w,
                 child: CircularProgressIndicator(
                   strokeWidth: 2,
                   color: Colors.white,
@@ -95,7 +96,7 @@ class _SyncSettingsPageState extends ConsumerState<SyncSettingsPage> {
   ) {
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(16.r),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -105,14 +106,17 @@ class _SyncSettingsPageState extends ConsumerState<SyncSettingsPage> {
                   Icons.settings,
                   color: Theme.of(context).colorScheme.primary,
                 ),
-                const SizedBox(width: 8),
-                const Text(
+                SizedBox(width: 8.w),
+                Text(
                   '同步设置',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                    fontSize: 18.sp,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ],
             ),
-            const SizedBox(height: 12),
+            SizedBox(height: 12.h),
             // 允许其他设备同步开关
             SwitchListTile(
               contentPadding: EdgeInsets.zero,
@@ -121,7 +125,7 @@ class _SyncSettingsPageState extends ConsumerState<SyncSettingsPage> {
                 state.isServerRunning ? '其他设备可以发现并同步此设备' : '其他设备无法发现此设备',
                 style: TextStyle(
                   color: state.isServerRunning ? Colors.green : Colors.grey,
-                  fontSize: 12,
+                  fontSize: 12.sp,
                 ),
               ),
               value: state.isServerRunning,
@@ -140,9 +144,9 @@ class _SyncSettingsPageState extends ConsumerState<SyncSettingsPage> {
             SwitchListTile(
               contentPadding: EdgeInsets.zero,
               title: const Text('启动时自动开启同步'),
-              subtitle: const Text(
+              subtitle: Text(
                 '下次打开应用时自动允许其他设备同步',
-                style: TextStyle(fontSize: 12),
+                style: TextStyle(fontSize: 12.sp),
               ),
               value: _syncAutoStart,
               onChanged: (value) async {
@@ -165,7 +169,7 @@ class _SyncSettingsPageState extends ConsumerState<SyncSettingsPage> {
 
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(16.r),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -175,35 +179,35 @@ class _SyncSettingsPageState extends ConsumerState<SyncSettingsPage> {
                   Icons.phone_android,
                   color: Theme.of(context).colorScheme.primary,
                 ),
-                const SizedBox(width: 8),
-                const Text(
+                SizedBox(width: 8.w),
+                Text(
                   '本机设备',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                    fontSize: 18.sp,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 const Spacer(),
                 Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 4,
-                  ),
+                  padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                   decoration: BoxDecoration(
                     color: state.isServerRunning ? Colors.green : Colors.grey,
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(12.r),
                   ),
                   child: Text(
                     state.isServerRunning ? '服务运行中' : '服务已停止',
-                    style: const TextStyle(color: Colors.white, fontSize: 12),
+                    style: TextStyle(color: Colors.white, fontSize: 12.sp),
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 12),
+            SizedBox(height: 12.h),
             if (device != null) ...[
               _buildInfoRow('设备名称', device.deviceName),
               _buildInfoRow('IP 地址', device.ipAddress ?? '未知'),
               _buildInfoRow('端口', device.port.toString()),
               _buildInfoRow('设备 ID', device.deviceId.substring(0, 8) + '...'),
-              const SizedBox(height: 12),
+              SizedBox(height: 12.h),
               // 测试服务器按钮
               if (state.isServerRunning)
                 SizedBox(
@@ -211,9 +215,9 @@ class _SyncSettingsPageState extends ConsumerState<SyncSettingsPage> {
                   child: OutlinedButton.icon(
                     onPressed: _isTesting ? null : () => _testServer(notifier),
                     icon: _isTesting
-                        ? const SizedBox(
-                            width: 16,
-                            height: 16,
+                        ? SizedBox(
+                            width: 16.w,
+                            height: 16.w,
                             child: CircularProgressIndicator(strokeWidth: 2),
                           )
                         : const Icon(Icons.network_check),
@@ -222,14 +226,14 @@ class _SyncSettingsPageState extends ConsumerState<SyncSettingsPage> {
                 ),
               if (_testResult != null)
                 Padding(
-                  padding: const EdgeInsets.only(top: 8),
+                  padding: EdgeInsets.only(top: 8.h),
                   child: Container(
-                    padding: const EdgeInsets.all(8),
+                    padding: EdgeInsets.all(8.r),
                     decoration: BoxDecoration(
                       color: _testResult!.startsWith('✅')
                           ? Colors.green.withAlpha(26)
                           : Colors.red.withAlpha(26),
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(8.r),
                     ),
                     child: Text(
                       _testResult!,
@@ -283,7 +287,7 @@ class _SyncSettingsPageState extends ConsumerState<SyncSettingsPage> {
   ) {
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(16.r),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -293,53 +297,53 @@ class _SyncSettingsPageState extends ConsumerState<SyncSettingsPage> {
                   Icons.devices,
                   color: Theme.of(context).colorScheme.primary,
                 ),
-                const SizedBox(width: 8),
-                const Text(
+                SizedBox(width: 8.w),
+                Text(
                   '已连接的设备',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                    fontSize: 18.sp,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 const Spacer(),
                 Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 4,
-                  ),
+                  padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                   decoration: BoxDecoration(
                     color: state.discoveredDevices.isNotEmpty
                         ? Colors.green
                         : Colors.grey,
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(12.r),
                   ),
                   child: Text(
                     '${state.discoveredDevices.length} 台',
-                    style: const TextStyle(color: Colors.white, fontSize: 12),
+                    style: TextStyle(color: Colors.white, fontSize: 12.sp),
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: 8.h),
             if (state.discoveredDevices.isNotEmpty)
               Container(
-                padding: const EdgeInsets.all(8),
+                padding: EdgeInsets.all(8.r),
                 decoration: BoxDecoration(
                   color: Colors.green.withAlpha(26),
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(8.r),
                 ),
-                child: const Row(
+                child: Row(
                   children: [
-                    Icon(Icons.sync, color: Colors.green, size: 16),
-                    SizedBox(width: 8),
+                    Icon(Icons.sync, color: Colors.green, size: 16.sp),
+                    SizedBox(width: 8.w),
                     Text(
                       '实时同步已启用 - 数据变化将自动同步',
-                      style: TextStyle(color: Colors.green, fontSize: 12),
+                      style: TextStyle(color: Colors.green, fontSize: 12.sp),
                     ),
                   ],
                 ),
               ),
-            const SizedBox(height: 12),
+            SizedBox(height: 12.h),
             if (state.discoveredDevices.isEmpty)
-              const Padding(
-                padding: EdgeInsets.symmetric(vertical: 16),
+              Padding(
+                padding: EdgeInsets.symmetric(vertical: 16.h),
                 child: Center(
                   child: Text(
                     '未发现其他设备\n点击下方按钮扫描并连接',
@@ -372,10 +376,10 @@ class _SyncSettingsPageState extends ConsumerState<SyncSettingsPage> {
       title: Row(
         children: [
           Text(device.deviceName),
-          const SizedBox(width: 8),
+          SizedBox(width: 8.w),
           Container(
-            width: 8,
-            height: 8,
+            width: 8.w,
+            height: 8.w,
             decoration: const BoxDecoration(
               color: Colors.green,
               shape: BoxShape.circle,
@@ -385,9 +389,9 @@ class _SyncSettingsPageState extends ConsumerState<SyncSettingsPage> {
       ),
       subtitle: Text('${device.ipAddress}:${device.port} · 已连接'),
       trailing: state.isSyncing
-          ? const SizedBox(
-              width: 24,
-              height: 24,
+          ? SizedBox(
+              width: 24.w,
+              height: 24.w,
               child: CircularProgressIndicator(strokeWidth: 2),
             )
           : IconButton(
@@ -402,7 +406,7 @@ class _SyncSettingsPageState extends ConsumerState<SyncSettingsPage> {
   Widget _buildSyncStatusCard(SyncServiceState state) {
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(16.r),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -412,33 +416,32 @@ class _SyncSettingsPageState extends ConsumerState<SyncSettingsPage> {
                   Icons.history,
                   color: Theme.of(context).colorScheme.primary,
                 ),
-                const SizedBox(width: 8),
-                const Text(
+                SizedBox(width: 8.w),
+                Text(
                   '同步状态',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                    fontSize: 18.sp,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ],
             ),
-            const SizedBox(height: 12),
+            SizedBox(height: 12.h),
             if (state.lastSyncTime != null)
               _buildInfoRow('上次同步', _formatDateTime(state.lastSyncTime!)),
             if (state.lastError != null)
               Padding(
-                padding: const EdgeInsets.only(top: 8),
+                padding: EdgeInsets.only(top: 8.h),
                 child: Container(
-                  padding: const EdgeInsets.all(8),
+                  padding: EdgeInsets.all(8.r),
                   decoration: BoxDecoration(
                     color: Colors.red.withAlpha(26),
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(8.r),
                   ),
                   child: Row(
                     children: [
-                      const Icon(
-                        Icons.error_outline,
-                        color: Colors.red,
-                        size: 20,
-                      ),
-                      const SizedBox(width: 8),
+                      Icon(Icons.error_outline, color: Colors.red, size: 20.sp),
+                      SizedBox(width: 8.w),
                       Expanded(
                         child: Text(
                           state.lastError!,
@@ -461,7 +464,7 @@ class _SyncSettingsPageState extends ConsumerState<SyncSettingsPage> {
   Widget _buildDiagnosticsCard(SyncServiceState state) {
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(16.r),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -471,27 +474,30 @@ class _SyncSettingsPageState extends ConsumerState<SyncSettingsPage> {
                   Icons.bug_report,
                   color: Theme.of(context).colorScheme.primary,
                 ),
-                const SizedBox(width: 8),
-                const Text(
+                SizedBox(width: 8.w),
+                Text(
                   '诊断信息',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                    fontSize: 18.sp,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ],
             ),
-            const SizedBox(height: 12),
+            SizedBox(height: 12.h),
             const Text(
               '如果设备无法相互发现，请检查：',
               style: TextStyle(fontWeight: FontWeight.w500),
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: 8.h),
             _buildCheckItem('两台设备连接到同一 WiFi 网络'),
             _buildCheckItem('两台设备都开启了"允许其他设备同步"'),
             _buildCheckItem('防火墙允许端口 54321 的访问'),
             _buildCheckItem('路由器未开启 AP 隔离功能'),
-            const SizedBox(height: 12),
-            const Text(
+            SizedBox(height: 12.h),
+            Text(
               '提示：\n• 企业/公共 WiFi 通常会隔离设备\n• 手机热点可能无法被其他设备发现\n• 建议使用家庭 WiFi 或专用路由器',
-              style: TextStyle(color: Colors.grey, fontSize: 12),
+              style: TextStyle(color: Colors.grey, fontSize: 12.sp),
             ),
           ],
         ),
@@ -502,7 +508,7 @@ class _SyncSettingsPageState extends ConsumerState<SyncSettingsPage> {
   /// 检查项
   Widget _buildCheckItem(String text) {
     return Padding(
-      padding: const EdgeInsets.only(left: 8, top: 4),
+      padding: EdgeInsets.only(left: 8.w, top: 4.h),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -518,7 +524,7 @@ class _SyncSettingsPageState extends ConsumerState<SyncSettingsPage> {
   /// 信息行
   Widget _buildInfoRow(String label, String value) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
+      padding: EdgeInsets.symmetric(vertical: 4.h),
       child: Row(
         children: [
           Text('$label: ', style: const TextStyle(color: Colors.grey)),
@@ -543,7 +549,12 @@ class _SyncSettingsPageState extends ConsumerState<SyncSettingsPage> {
 
       // 显示同步结果
       if (results.isEmpty) {
-        CreativeToast.warning(context, title: '未发现设备', message: '局域网中未发现其他可同步设备', direction: ToastDirection.bottom);
+        CreativeToast.warning(
+          context,
+          title: '未发现设备',
+          message: '局域网中未发现其他可同步设备',
+          direction: ToastDirection.bottom,
+        );
       } else {
         final successCount = results.values.where((r) => r.success).length;
         final totalChanges = results.values
@@ -579,9 +590,19 @@ class _SyncSettingsPageState extends ConsumerState<SyncSettingsPage> {
     if (!mounted) return;
 
     if (result.success) {
-      CreativeToast.success(context, title: '同步成功', message: '${result.totalChanges} 条变更已同步', direction: ToastDirection.bottom);
+      CreativeToast.success(
+        context,
+        title: '同步成功',
+        message: '${result.totalChanges} 条变更已同步',
+        direction: ToastDirection.bottom,
+      );
     } else {
-      CreativeToast.error(context, title: '同步失败', message: result.error ?? '未知错误', direction: ToastDirection.bottom);
+      CreativeToast.error(
+        context,
+        title: '同步失败',
+        message: result.error ?? '未知错误',
+        direction: ToastDirection.bottom,
+      );
     }
   }
 

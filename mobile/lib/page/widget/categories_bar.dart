@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:pocketmind/providers/category_providers.dart';
 import 'package:pocketmind/providers/nav_providers.dart';
 import 'package:pocketmind/providers/note_providers.dart';
@@ -10,7 +11,6 @@ import 'package:pocketmind/providers/note_providers.dart';
 import 'item_bar.dart';
 
 class CategoriesBar extends ConsumerWidget {
-
   const CategoriesBar({super.key});
 
   @override
@@ -35,23 +35,23 @@ class CategoriesBar extends ConsumerWidget {
             // 主导航栏（毛玻璃效果）
             Flexible(
               child: ClipRRect(
-                borderRadius: BorderRadius.circular(100.0),
+                borderRadius: BorderRadius.circular(100.0.r),
                 child: BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0),
+                  filter: ImageFilter.blur(sigmaX: 10.0.r, sigmaY: 10.0.r),
                   child: Container(
-                    padding: const EdgeInsets.all(8.0),
+                    padding: EdgeInsets.all(8.0.r),
                     decoration: BoxDecoration(
                       // 根据主题调整毛玻璃颜色 - 亮色模式使用更深的背景
                       color: isDark
                           ? Colors.white.withValues(alpha: 0.1)
                           : Colors.black.withValues(alpha: 0.05), // 改用黑色半透明
-                      borderRadius: BorderRadius.circular(100.0),
+                      borderRadius: BorderRadius.circular(100.0.r),
                       // 添加边框以在亮色模式下提供对比度
                       border: Border.all(
                         color: isDark
                             ? Colors.white.withValues(alpha: 0.2)
                             : Colors.black.withValues(alpha: 0.08), // 使用黑色半透明边框
-                        width: 1.0,
+                        width: 1.0.w,
                       ),
                       // 添加微妙阴影
                       boxShadow: [
@@ -59,9 +59,9 @@ class CategoriesBar extends ConsumerWidget {
                           color: Colors.black.withValues(
                             alpha: isDark ? 0.3 : 0.08,
                           ),
-                          blurRadius: 12,
+                          blurRadius: 12.r,
                           spreadRadius: 0,
-                          offset: const Offset(0, 2),
+                          offset: Offset(0, 2.h),
                         ),
                       ],
                     ),
@@ -74,18 +74,21 @@ class CategoriesBar extends ConsumerWidget {
                           final item = navItems[index];
                           return GestureDetector(
                             // 删除对应的
-                            onLongPressUp: ( ) => _onDeletePressed(context, ref, item.categoryId),
+                            onLongPressUp: () =>
+                                _onDeletePressed(context, ref, item.categoryId),
                             child: Padding(
                               padding: EdgeInsets.only(
-                                right: index == navItems.length - 1 ? 0 : 6.0,
+                                right: index == navItems.length - 1 ? 0 : 6.0.w,
                               ),
                               child: ItemBar(
                                 svgPath: item.svgPath,
                                 text: item.text,
                                 isActive: activeIndex == index,
                                 onTap: () {
-                                  ref.read(activeNavIndexProvider.notifier)
-                                      .state = index;
+                                  ref
+                                          .read(activeNavIndexProvider.notifier)
+                                          .state =
+                                      index;
                                 },
                               ),
                             ),
@@ -108,17 +111,14 @@ class CategoriesBar extends ConsumerWidget {
     );
   }
 
-  void _onDeletePressed(BuildContext context,WidgetRef ref,int categoryId) {
+  void _onDeletePressed(BuildContext context, WidgetRef ref, int categoryId) {
     showDialog(
       context: context,
       builder: (context) {
         final colorScheme = Theme.of(context).colorScheme;
         return AlertDialog(
           backgroundColor: colorScheme.surface,
-          title: Text(
-            '删除分类',
-            style: TextStyle(color: colorScheme.primary),
-          ),
+          title: Text('删除分类', style: TextStyle(color: colorScheme.primary)),
           content: Text(
             '确定要删除这个分类吗？此操作无法撤销。',
             style: TextStyle(color: colorScheme.onSurface),
@@ -131,8 +131,12 @@ class CategoriesBar extends ConsumerWidget {
             TextButton(
               onPressed: () async {
                 // 删除对应分类下的笔记
-                await ref.read(noteServiceProvider).deleteAllNoteByCategoryId(categoryId);
-                await ref.read(categoryServiceProvider).deleteCategory(categoryId);
+                await ref
+                    .read(noteServiceProvider)
+                    .deleteAllNoteByCategoryId(categoryId);
+                await ref
+                    .read(categoryServiceProvider)
+                    .deleteCategory(categoryId);
                 // 下标切换为home
                 ref.watch(activeNavIndexProvider.notifier).state = 1;
                 Navigator.of(context).pop();

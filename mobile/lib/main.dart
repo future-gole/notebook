@@ -125,17 +125,27 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ScreenUtilInit(
-      designSize: const Size(375, 812),
-      builder: (context, child) => MaterialApp(
-        debugShowCheckedModeBanner: false,
-        title: 'PocketMind',
-        theme: calmBeigeTheme,
-        darkTheme: quietNightTheme,
-        themeMode: ThemeMode.system,
-        home: HomeScreen(),
-        routes: {'/settings': (context) => const SettingsPage()},
-      ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isDesktop = constraints.maxWidth > 600;
+
+        final double designWidth = isDesktop ? 1280 : 400;
+        final double designHeight = isDesktop ? 720 : 869;
+        return ScreenUtilInit(
+          designSize: Size(designWidth, designHeight),
+          minTextAdapt: true,
+          splitScreenMode: true,
+          builder: (context, child) => MaterialApp(
+            debugShowCheckedModeBanner: false,
+            title: 'PocketMind',
+            theme: calmBeigeTheme,
+            darkTheme: quietNightTheme,
+            themeMode: ThemeMode.system,
+            home: HomeScreen(),
+            routes: {'/settings': (context) => const SettingsPage()},
+          ),
+        );
+      },
     );
   }
 }

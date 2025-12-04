@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:pocketmind/domain/entities/note_entity.dart';
 import 'package:pocketmind/page/widget/text_field.dart';
 import 'package:pocketmind/page/widget/categories_bar.dart' show CategoriesBar;
@@ -106,13 +107,23 @@ class _NoteEditorSheetState extends ConsumerState<NoteEditorSheet>
 
     // 如果未启用标题，只检查内容
     if (content.isEmpty) {
-      CreativeToast.error(context, title: '内容为空', message: '请输入笔记内容', direction: ToastDirection.top);
+      CreativeToast.error(
+        context,
+        title: '内容为空',
+        message: '请输入笔记内容',
+        direction: ToastDirection.top,
+      );
       return;
     }
 
     // 如果启用标题，也检查标题
     if (_titleEnabled && title.isEmpty) {
-      CreativeToast.error(context, title: '标题为空', message: '请输入笔记标题', direction: ToastDirection.top);
+      CreativeToast.error(
+        context,
+        title: '标题为空',
+        message: '请输入笔记标题',
+        direction: ToastDirection.top,
+      );
       return;
     }
 
@@ -132,7 +143,12 @@ class _NoteEditorSheetState extends ConsumerState<NoteEditorSheet>
     if (!context.mounted) return;
 
     // 显示成功提示
-    CreativeToast.success(context, title: '笔记已保存', message: '您的笔记已成功保存', direction: ToastDirection.top);
+    CreativeToast.success(
+      context,
+      title: '笔记已保存',
+      message: '您的笔记已成功保存',
+      direction: ToastDirection.top,
+    );
 
     // 关闭模态框
     Navigator.of(context).pop();
@@ -148,17 +164,17 @@ class _NoteEditorSheetState extends ConsumerState<NoteEditorSheet>
         color: isDark
             ? Colors.white.withValues(alpha: 0.1)
             : Colors.black.withValues(alpha: 0.05),
-        borderRadius: BorderRadius.circular(28),
+        borderRadius: BorderRadius.circular(28.r),
         border: Border.all(
           color: isDark
               ? Colors.white.withValues(alpha: 0.2)
               : Colors.black.withValues(alpha: 0.08),
-          width: 1.0,
+          width: 1.0.w,
         ),
       ),
       child: Row(
         children: [
-          const SizedBox(width: 20),
+          SizedBox(width: 20.w),
           // 搜索输入框
           Expanded(
             child: TextField(
@@ -213,11 +229,11 @@ class _NoteEditorSheetState extends ConsumerState<NoteEditorSheet>
         constraints: const BoxConstraints.expand(),
         decoration: BoxDecoration(
           color: colorScheme.surface,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
         ),
         child: SafeArea(
           child: Padding(
-            padding: const EdgeInsets.all(20),
+            padding: EdgeInsets.all(20.r),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
@@ -237,12 +253,12 @@ class _NoteEditorSheetState extends ConsumerState<NoteEditorSheet>
                 ),
 
                 // --- 顶部标题栏 ---
-                const SizedBox(height: 20),
+                SizedBox(height: 20.h),
 
                 // --- 标题输入框 (仅在启用时显示) ---
                 if (_titleEnabled)
                   Padding(
-                    padding: const EdgeInsets.only(bottom: 16),
+                    padding: EdgeInsets.only(bottom: 16.h),
                     child: MyTextField(
                       controller: _titleController,
                       hintText: '给你的笔记起个名字...',
@@ -261,7 +277,7 @@ class _NoteEditorSheetState extends ConsumerState<NoteEditorSheet>
                     maxLines: null, // 允许无限换行
                     expands: true, // 强制填满 Expanded 提供的空间
                     autofocus: !_titleEnabled, // 如果没标题且是新建，聚焦内容
-                    padding: const EdgeInsets.all(20),
+                    padding: EdgeInsets.all(20.r),
                   ),
                 ),
               ],

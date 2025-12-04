@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:pocketmind/domain/entities/note_entity.dart';
 import 'package:pocketmind/page/widget/glass_nav_bar.dart';
@@ -154,20 +155,20 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         child: Column(
           children: [
             // 顶部间距
-            const SizedBox(height: 8),
+            SizedBox(height: 8.h),
 
             // 导航栏 / 搜索栏 切换区域
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 4),
+              padding: EdgeInsets.symmetric(horizontal: 4.w),
               child: SizedBox(
-                height: 56, // 固定高度，防止切换时跳动
+                height: 56.h, // 固定高度，防止切换时跳动
                 child: Stack(
                   children: [
                     // GlassNavBar - 向左滑出
                     SlideTransition(
                       position: _navBarSlideAnimation,
                       child: Padding(
-                        padding: const EdgeInsets.only(right: 8), // 添加右侧间距
+                        padding: EdgeInsets.only(right: 8.w), // 添加右侧间距
                         child: GlassNavBar(onSearchPressed: _toggleSearchMode),
                       ),
                     ),
@@ -175,7 +176,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                     SlideTransition(
                       position: _searchBarSlideAnimation,
                       child: Padding(
-                        padding: const EdgeInsets.only(left: 8), // 添加左侧间距
+                        padding: EdgeInsets.only(left: 8.w), // 添加左侧间距
                         child: _buildSearchBar(),
                       ),
                     ),
@@ -184,7 +185,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
               ),
             ),
 
-            const SizedBox(height: 12),
+            SizedBox(height: 12.h),
 
             // 笔记列表（根据布局模式切换 或 搜索结果）
             Expanded(
@@ -227,12 +228,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                                   children: [
                                     Icon(
                                       Icons.note_add_outlined,
-                                      size: 80,
+                                      size: 80.sp,
                                       color: Theme.of(
                                         context,
                                       ).colorScheme.secondary,
                                     ),
-                                    const SizedBox(height: 16),
+                                    SizedBox(height: 16.h),
                                     Text(
                                       '你的思绪将汇聚于此',
                                       style: Theme.of(context)
@@ -244,7 +245,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                                             ).colorScheme.secondary,
                                           ),
                                     ),
-                                    const SizedBox(height: 8),
+                                    SizedBox(height: 8.h),
                                     Text(
                                       '点击右下角，捕捉第一个灵感',
                                       style: Theme.of(
@@ -284,8 +285,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         },
         elevation: 12,
         child: Container(
-          width: 56,
-          height: 56,
+          width: 56.w,
+          height: 56.w,
           decoration: BoxDecoration(
             gradient: LinearGradient(
               begin: Alignment.topLeft,
@@ -301,12 +302,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                 color: Theme.of(
                   context,
                 ).colorScheme.tertiary.withValues(alpha: 0.4),
-                blurRadius: 16,
-                offset: const Offset(0, 6),
+                blurRadius: 16.r,
+                offset: Offset(0, 6.h),
               ),
             ],
           ),
-          child: const Icon(Icons.add, size: 28),
+          child: Icon(Icons.add, size: 28.sp),
         ),
       ),
     );
@@ -328,9 +329,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 
       builder: (context) {
         return Padding(
-          padding: EdgeInsets.only(
-            top: MediaQuery.of(context).size.height * 0.10,
-          ),
+          padding: EdgeInsets.only(top: 0.1.sh),
           child: NoteEditorSheet(),
         );
       },
@@ -347,18 +346,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         color: isDark
             ? Colors.white.withValues(alpha: 0.1)
             : Colors.black.withValues(alpha: 0.05),
-        borderRadius: BorderRadius.circular(28),
+        borderRadius: BorderRadius.circular(28.r),
         border: Border.all(
           color: isDark
               ? Colors.white.withValues(alpha: 0.2)
               : Colors.black.withValues(alpha: 0.08),
-          width: 1.0,
+          width: 1.0.w,
         ),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.08),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+            blurRadius: 8.r,
+            offset: Offset(0, 2.h),
           ),
         ],
       ),
@@ -393,7 +392,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
             valueListenable: _searchController,
             builder: (context, value, child) {
               if (value.text.isEmpty) {
-                return const SizedBox(width: 48); // 占位，保持布局稳定
+                return SizedBox(width: 48.w); // 占位，保持布局稳定
               }
               return IconButton(
                 icon: const Icon(Icons.clear),
@@ -402,7 +401,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                   _searchFocusNode.requestFocus();
                 },
                 color: colorScheme.onSurface.withValues(alpha: 0.6),
-                iconSize: 20,
+                iconSize: 20.sp,
               );
             },
           ),
@@ -426,17 +425,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
               children: [
                 Icon(
                   Icons.search_off,
-                  size: 80,
+                  size: 80.sp,
                   color: Theme.of(context).colorScheme.secondary,
                 ),
-                const SizedBox(height: 16),
+                SizedBox(height: 16.h),
                 Text(
                   '未找到相关笔记',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     color: Theme.of(context).colorScheme.secondary,
                   ),
                 ),
-                const SizedBox(height: 8),
+                SizedBox(height: 8.h),
                 Text('尝试使用其他关键词', style: Theme.of(context).textTheme.bodySmall),
               ],
             ),
@@ -466,8 +465,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         controller: _scrollController,
         key: const PageStorageKey('masonry_grid_view'),
         crossAxisCount: 2,
-        cacheExtent: 500.0,
-        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+        cacheExtent: 500.h,
+        padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 8.h),
         itemCount: notes.length,
         itemBuilder: (context, index) {
           final note = notes[index];
@@ -486,8 +485,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       return ListView.builder(
         controller: _scrollController,
         key: const PageStorageKey('list_view'),
-        cacheExtent: 500.0,
-        padding: const EdgeInsets.symmetric(horizontal: 4),
+        cacheExtent: 500.h,
+        padding: EdgeInsets.symmetric(horizontal: 4.w),
         itemCount: notes.length,
         itemBuilder: (context, index) {
           final note = notes[index];

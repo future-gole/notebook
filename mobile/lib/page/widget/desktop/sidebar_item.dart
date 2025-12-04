@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 侧边栏分类条目组件
 /// 可复用的侧边栏导航项，支持选中态和悬停效果
@@ -54,8 +55,8 @@ class _SidebarItemState extends State<SidebarItem> {
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 150),
           curve: Curves.easeOut,
-          margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          margin: EdgeInsets.symmetric(horizontal: 12.w, vertical: 2.w),
+          padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.w),
           decoration: BoxDecoration(
             color: backgroundColor,
             borderRadius: BorderRadius.circular(8),
@@ -67,18 +68,18 @@ class _SidebarItemState extends State<SidebarItem> {
                 '·',
                 style: TextStyle(
                   color: textColor,
-                  fontSize: 14,
+                  fontSize: 14.sp,
                   fontWeight: FontWeight.w500,
                 ),
               ),
-              const SizedBox(width: 10),
+              SizedBox(width: 10.w),
               // 分类名称
               Expanded(
                 child: Text(
                   widget.text,
                   style: TextStyle(
                     color: textColor,
-                    fontSize: 14,
+                    fontSize: 14.sp,
                     fontWeight: widget.isActive
                         ? FontWeight.w600
                         : FontWeight.w400,
@@ -90,20 +91,20 @@ class _SidebarItemState extends State<SidebarItem> {
               // 更多选项按钮 (仅在悬停或激活且有删除回调时显示)
               if ((_isHovered || widget.isActive) && widget.onDelete != null)
                 SizedBox(
-                  width: 24,
-                  height: 24,
+                  width: 24.w,
+                  height: 24.w,
                   child: PopupMenuButton<String>(
                     padding: EdgeInsets.zero,
                     icon: Icon(
                       Icons.more_horiz,
-                      size: 16,
+                      size: 16.sp,
                       color: textColor.withOpacity(0.6),
                     ),
                     tooltip: '更多选项',
                     elevation: 4,
                     color: colorScheme.surface,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(8.r),
                     ),
                     onSelected: (value) {
                       if (value == 'delete') {
@@ -113,19 +114,19 @@ class _SidebarItemState extends State<SidebarItem> {
                     itemBuilder: (context) => [
                       PopupMenuItem(
                         value: 'delete',
-                        height: 32,
+                        height: 32.w,
                         child: Row(
                           children: [
                             Icon(
                               Icons.delete_outline,
-                              size: 16,
+                              size: 16.sp,
                               color: colorScheme.error,
                             ),
-                            const SizedBox(width: 8),
+                            SizedBox(width: 8.w),
                             Text(
                               '删除',
                               style: TextStyle(
-                                fontSize: 13,
+                                fontSize: 13.sp,
                                 color: colorScheme.error,
                               ),
                             ),

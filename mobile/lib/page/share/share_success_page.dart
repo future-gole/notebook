@@ -2,16 +2,17 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:lottie/lottie.dart';
 import 'package:pocketmind/providers/http_providers.dart';
 import 'package:pocketmind/service/page_analysis_service.dart';
 import 'package:pocketmind/util/logger_service.dart';
-import 'package:pocketmind/util/theme_data.dart' show sharePageColors, SharePageThemeColors;
+import 'package:pocketmind/util/theme_data.dart'
+    show sharePageColors, SharePageThemeColors;
 
 final String _tag = "ShareSuccessPage";
 
 class ShareSuccessPage extends ConsumerStatefulWidget {
-
   final VoidCallback onDismiss;
   final VoidCallback onAddDetailsClicked;
 
@@ -38,7 +39,6 @@ class _ShareSuccessPageState extends ConsumerState<ShareSuccessPage>
       duration: const Duration(seconds: 3),
     );
     _startCountdown();
-
   }
 
   void _startCountdown() {
@@ -75,37 +75,37 @@ class _ShareSuccessPageState extends ConsumerState<ShareSuccessPage>
         // Logo/Icon - 使用点睛色
         Lottie.asset(
           'assets/lottie/success.json',
-          width: 200,
-          height: 200,
+          width: 200.w,
+          height: 200.h,
           fit: BoxFit.contain,
           repeat: false,
           animate: true,
         ),
-        const SizedBox(height: 24),
+        SizedBox(height: 24.h),
 
         // 主标题
         Text(
           "Good find!",
           style: TextStyle(
             color: shareColors?.primary,
-            fontSize: 32,
+            fontSize: 32.sp,
             fontWeight: FontWeight.bold,
             letterSpacing: -0.5,
           ),
         ),
-        const SizedBox(height: 8),
+        SizedBox(height: 8.h),
 
         // 副标题
         Text(
           "It's in your pocketmind.",
           style: TextStyle(
             color: shareColors?.secondary,
-            fontSize: 24,
+            fontSize: 24.sp,
             fontWeight: FontWeight.normal,
             letterSpacing: -0.3,
           ),
         ),
-        const SizedBox(height: 48),
+        SizedBox(height: 48.h),
 
         // "Add Details" 文本按钮
         GestureDetector(
@@ -115,17 +115,17 @@ class _ShareSuccessPageState extends ConsumerState<ShareSuccessPage>
               // 设置边框
               border: Border.all(
                 color: shareColors?.secondary ?? Colors.white,
-                width: 1.0, // 边框的宽度
+                width: 1.w, // 边框的宽度
               ),
               // 设置圆角
-              borderRadius: BorderRadius.circular(30.0),
+              borderRadius: BorderRadius.circular(30.r),
             ),
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
             child: Text(
               "Add Details",
               style: TextStyle(
                 color: shareColors?.secondary,
-                fontSize: 16,
+                fontSize: 16.sp,
                 fontFamily: "Poppins",
                 fontWeight: FontWeight.w600,
                 letterSpacing: 0.5,
@@ -133,18 +133,19 @@ class _ShareSuccessPageState extends ConsumerState<ShareSuccessPage>
             ),
           ),
         ),
-        const SizedBox(height: 16),
+        SizedBox(height: 16.h),
 
         // 进度条 - 极细的线 - 使用点睛色
         AnimatedBuilder(
           animation: _progressController,
           builder: (context, child) {
             return Container(
-              height: 2,
-              width: MediaQuery.of(context).size.width * _progressController.value,
+              height: 2.h,
+              width:
+                  MediaQuery.of(context).size.width * _progressController.value,
               decoration: BoxDecoration(
                 color: colorScheme.surfaceContainerHighest, // 点睛色
-                borderRadius: BorderRadius.circular(1),
+                borderRadius: BorderRadius.circular(1.r),
               ),
             );
           },

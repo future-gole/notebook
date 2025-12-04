@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:any_link_preview/any_link_preview.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -7,6 +8,7 @@ import 'package:pocketmind/api/link_preview_api_service.dart';
 import 'package:pocketmind/util/link_preview_cache.dart';
 
 import '../../util/logger_service.dart';
+import 'source_info.dart';
 
 /// 智能链接预览卡片组件
 /// - 国内网站：使用 any_link_preview + 本地缓存
@@ -72,6 +74,7 @@ class _LinkPreviewCardState extends State<LinkPreviewCard> {
                   metadata: metadata,
                   imageProvider: imageProvider,
                   onTap: widget.onTap,
+                  publishDate: widget.publishDate,
                 );
         },
         placeholderWidget: widget.isVertical
@@ -242,9 +245,9 @@ class _ApiLinkPreviewState extends ConsumerState<_ApiLinkPreview> {
 // 常量定义 (用于保证高度一致性)
 
 // 垂直布局下，图片区域的固定高度
-const double _kVerticalImageHeight = 100.0;
-// 垂直布局下，骨架屏和错误卡片“内容区域”的固定高度。
-const double _kVerticalPlaceholderContentHeight = 105.0;
+final double _kVerticalImageHeight = 100.w;
+// 垂直布局下，骨架屏和错误卡片"内容区域"的固定高度。
+final double _kVerticalPlaceholderContentHeight = 105.w;
 
 // 基础组件
 class _BaseCardContainer extends StatelessWidget {
@@ -268,7 +271,7 @@ class _BaseCardContainer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final borderRadius = (isVertical && hasContent)
-        ? const BorderRadius.only(
+        ? BorderRadius.only(
             topLeft: Radius.circular(16),
             topRight: Radius.circular(16),
           )
@@ -361,6 +364,7 @@ class _HorizontalPreviewCard extends StatelessWidget {
   final Metadata metadata;
   final ImageProvider? imageProvider;
   final VoidCallback onTap;
+  final String? publishDate;
 
   const _HorizontalPreviewCard({
     Key? key,
@@ -368,6 +372,7 @@ class _HorizontalPreviewCard extends StatelessWidget {
     required this.metadata,
     this.imageProvider,
     required this.onTap,
+    this.publishDate,
   }) : super(key: key);
 
   @override
@@ -379,7 +384,10 @@ class _HorizontalPreviewCard extends StatelessWidget {
       child: Row(
         children: [
           _CardImageSection(imageProvider: imageProvider, isVertical: false),
-          _HorizontalContentSection(metadata: metadata),
+          _HorizontalContentSection(
+            metadata: metadata,
+            publishData: publishDate,
+          ),
         ],
       ),
     );
@@ -418,22 +426,22 @@ class _VerticalSkeletonCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Container(
-                  height: 15,
+                  height: 15.w,
                   width: double.infinity,
                   color: Colors.grey[200],
                 ),
                 const SizedBox(height: 6),
-                Container(height: 15, width: 150, color: Colors.grey[200]),
+                Container(height: 15.w, width: 150.w, color: Colors.grey[200]),
                 // 使用 Spacer 或者 Expanded 来自动填充剩余空间,或者保持固定间距
                 // 这里为了精确控制骨架形状,保持原样即可,因为外层 Container 已经固定了总高度
                 const SizedBox(height: 14),
                 Container(
-                  height: 13,
+                  height: 13.w,
                   width: double.infinity,
                   color: Colors.grey[100],
                 ),
                 const SizedBox(height: 4),
-                Container(height: 13, width: 100, color: Colors.grey[100]),
+                Container(height: 13.w, width: 100.w, color: Colors.grey[100]),
               ],
             ),
           ),
@@ -454,7 +462,7 @@ class _HorizontalSkeletonCard extends StatelessWidget {
       child: Row(
         children: [
           Container(
-            width: 120,
+            width: 120.w,
             height: double.infinity,
             color: Colors.grey[200],
           ),
@@ -464,15 +472,23 @@ class _HorizontalSkeletonCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Container(height: 16, width: 180, color: Colors.grey[200]),
+                  Container(
+                    height: 16.w,
+                    width: 180.w,
+                    color: Colors.grey[200],
+                  ),
                   const SizedBox(height: 10),
                   Container(
-                    height: 13,
+                    height: 13.w,
                     width: double.infinity,
                     color: Colors.grey[100],
                   ),
                   const SizedBox(height: 4),
-                  Container(height: 13, width: 120, color: Colors.grey[100]),
+                  Container(
+                    height: 13.w,
+                    width: 120.w,
+                    color: Colors.grey[100],
+                  ),
                 ],
               ),
             ),
@@ -511,7 +527,7 @@ class _VerticalErrorCard extends StatelessWidget {
             child: Icon(
               Icons.broken_image_outlined,
               color: Colors.grey[300],
-              size: 40,
+              size: 40.w,
             ),
           ),
           // 内容区域 - 强制高度,确保与骨架屏一致
@@ -560,13 +576,13 @@ class _HorizontalErrorCard extends StatelessWidget {
       child: Row(
         children: [
           Container(
-            width: 120,
+            width: 120.w,
             height: double.infinity,
             color: Colors.grey[100],
             child: Icon(
               Icons.broken_image_outlined,
               color: Colors.grey[300],
-              size: 30,
+              size: 30.w,
             ),
           ),
           Expanded(
@@ -588,7 +604,7 @@ class _HorizontalErrorCard extends StatelessWidget {
                     url,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: TextStyle(color: Colors.grey[300], fontSize: 12),
+                    style: TextStyle(color: Colors.grey[300], fontSize: 12.sp),
                   ),
                 ],
               ),
@@ -616,10 +632,10 @@ class _CardImageSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // 桌面端图片高度增加
-    final height = isDesktop ? 180.0 : _kVerticalImageHeight;
+    final height = isDesktop ? 180.w : _kVerticalImageHeight;
 
     return Container(
-      width: isVertical ? double.infinity : 120,
+      width: isVertical ? double.infinity : 120.w,
       height: isVertical ? height : double.infinity,
       decoration: imageProvider != null
           ? BoxDecoration(
@@ -632,7 +648,7 @@ class _CardImageSection extends StatelessWidget {
           ? Center(
               child: Icon(
                 Icons.image_not_supported_outlined,
-                size: isVertical ? 50 : 40,
+                size: isVertical ? 50.w : 40.w,
                 color: Theme.of(context).colorScheme.secondary.withOpacity(0.5),
               ),
             )
@@ -686,10 +702,7 @@ class _VerticalContentSection extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
             ),
             const SizedBox(height: 8),
-            _SourceInfo(
-              metadata: metadata,
-              publishDate: publishDate,
-            ),
+            SourceInfo(metadata: metadata, publishDate: publishDate),
           ],
         ),
       );
@@ -703,8 +716,9 @@ class _VerticalContentSection extends StatelessWidget {
             Text(
               metadata.title ?? 'No Title',
               style: textTheme.titleMedium?.copyWith(
+                fontFamilyFallback: const ['Merriweather_24pt'],
                 fontWeight: FontWeight.bold,
-                fontSize: isDesktop ? 18 : 15,
+                fontSize: isDesktop ? 20.sp : 18.sp,
               ),
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
@@ -714,17 +728,14 @@ class _VerticalContentSection extends StatelessWidget {
               metadata.desc ?? 'No description available',
               style: textTheme.bodyMedium?.copyWith(
                 color: colorScheme.secondary,
-                fontSize: isDesktop ? 14 : 13,
+                fontSize: isDesktop ? 14.sp : 13.sp,
                 height: 1.4,
               ),
               maxLines: isDesktop ? 3 : 2,
               overflow: TextOverflow.ellipsis,
             ),
             const SizedBox(height: 12),
-            _SourceInfo(
-              metadata: metadata,
-              publishDate: publishDate,
-            ),
+            SourceInfo(metadata: metadata, publishDate: publishDate),
           ],
         ),
       );
@@ -734,9 +745,13 @@ class _VerticalContentSection extends StatelessWidget {
 
 class _HorizontalContentSection extends StatelessWidget {
   final Metadata metadata;
+  final String? publishData;
 
-  const _HorizontalContentSection({Key? key, required this.metadata})
-    : super(key: key);
+  const _HorizontalContentSection({
+    Key? key,
+    required this.metadata,
+    this.publishData,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -753,7 +768,7 @@ class _HorizontalContentSection extends StatelessWidget {
               metadata.title ?? 'No Title',
               style: textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.bold,
-                fontSize: 16,
+                fontSize: 16.sp,
               ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
@@ -770,7 +785,7 @@ class _HorizontalContentSection extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 8),
-            _SourceInfo(metadata: metadata),
+            SourceInfo(metadata: metadata, publishDate: publishData),
           ],
         ),
       ),
@@ -778,62 +793,4 @@ class _HorizontalContentSection extends StatelessWidget {
   }
 }
 
-class _SourceInfo extends StatelessWidget {
-  final Metadata metadata;
-  final String? publishDate;
 
-  const _SourceInfo({
-    Key? key,
-    required this.metadata,
-    this.publishDate,
-  }) : super(key: key);
-
-  String _getDomain(String? url) {
-    if (url == null || url.isEmpty) return '';
-    try {
-      final uri = Uri.parse(url);
-      return uri.host.replaceFirst('www.', '');
-    } catch (e) {
-      return '';
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
-    // 域名 • 日期
-    final domain = _getDomain(metadata.url);
-    return Row(
-      children: [
-        Text(
-          domain,
-          style: TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.w600,
-            color: colorScheme.primary.withOpacity(0.7),
-          ),
-        ),
-        if (publishDate != null) ...[
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 6),
-            child: Text(
-              '•',
-              style: TextStyle(
-                fontSize: 12,
-                color: colorScheme.secondary.withOpacity(0.5),
-              ),
-            ),
-          ),
-          Text(
-            publishDate!,
-            style: TextStyle(
-              fontSize: 12,
-              color: colorScheme.secondary.withOpacity(0.7),
-            ),
-          ),
-        ],
-      ],
-    );
-  }
-}
