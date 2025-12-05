@@ -39,12 +39,13 @@ class _DesktopHomeScreenState extends ConsumerState<DesktopHomeScreen> {
 
   /// 动态计算网格列数
   /// 基于内容区域宽度自适应调整
+  /// 桌面端使用更少的列数，让卡片更宽更矮（类似杂志排版风格）
   int _calculateCrossAxisCount(double width) {
-    if (width < 600) return 2;
-    if (width < 900) return 3;
-    if (width < 1200) return 4;
-    if (width < 1600) return 5;
-    return 6;
+    if (width < 600) return 1;
+    if (width < 900) return 2;
+    if (width < 1400) return 3;
+    if (width < 1800) return 4;
+    return 5;
   }
 
   @override

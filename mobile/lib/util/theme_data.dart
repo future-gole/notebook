@@ -108,8 +108,8 @@ final ThemeData calmBeigeTheme = ThemeData(
       fontFamily: 'Merriweather',
       fontFamilyFallback: const ['LXGWWenKaiLite'],
       fontSize: 18.sp,
-      fontWeight: FontWeight.w900,
-      letterSpacing: -0.3,
+      fontWeight: FontWeight.w700,
+      letterSpacing: -0.5,
       height: 1.2,
       color: const Color(0xFF3A3A35),
     ),
@@ -128,7 +128,7 @@ final ThemeData calmBeigeTheme = ThemeData(
       fontFamilyFallback: const ['Merriweather'],
       fontSize: 14.sp,
       fontWeight: FontWeight.normal,
-      height: 1.6, // 保持呼吸感
+      height: 1.5,
       color: const Color(0xFF3A3A35),
     ),
 
@@ -137,7 +137,7 @@ final ThemeData calmBeigeTheme = ThemeData(
       fontFamilyFallback: const ['Merriweather'],
       fontSize: 12.sp,
       fontWeight: FontWeight.normal,
-      height: 1.5, // 小字号行高可以稍微小一点点
+      height: 1.4,
       color: const Color(0xFF3A3A35),
     ),
   ),
@@ -191,30 +191,25 @@ final ThemeData quietNightTheme = ThemeData(
   shadowColor: Colors.black.withOpacity(0.3),
   fontFamily: 'SF Pro',
   textTheme: TextTheme(
-    // ============================================
-    // 标题类 (Titles)
-    // 特点：Merriweather 优先，极粗，紧凑，有衬线的力量感
-    // ============================================
     titleLarge: TextStyle(
       fontFamily: 'Merriweather',
       fontFamilyFallback: const ['LXGWWenKaiLite'],
       fontSize: 32.sp,
       fontWeight: FontWeight.w900,
-      // 杂志感大标题稍微收紧字母间距，显得更精致
       letterSpacing: -0.5,
       // 标题行高要小，避免松散
       height: 1.2,
-      color: const Color(0xFFA1A1AA),
+      color: const Color(0xFFE4E4E6),
     ),
 
     titleMedium: TextStyle(
       fontFamily: 'Merriweather',
       fontFamilyFallback: const ['LXGWWenKaiLite'],
-      fontSize: 24.sp,
-      fontWeight: FontWeight.w900,
-      letterSpacing: -0.3,
-      height: 1.2,
-      color: const Color(0xFFA1A1AA),
+      fontSize: 18.sp,
+      fontWeight: FontWeight.w700,
+      letterSpacing: -0.5,
+      height: 1.25,
+      color: const Color(0xFFE4E4E6),
     ),
 
     bodyLarge: TextStyle(
@@ -222,7 +217,6 @@ final ThemeData quietNightTheme = ThemeData(
       fontFamilyFallback: const ['Merriweather'],
       fontSize: 16.sp,
       fontWeight: FontWeight.normal,
-      // 杂志感正文行高 1.6 倍，
       height: 1.6,
       color: const Color(0xFFA1A1AA),
     ),
@@ -232,7 +226,7 @@ final ThemeData quietNightTheme = ThemeData(
       fontFamilyFallback: const ['Merriweather'],
       fontSize: 14.sp,
       fontWeight: FontWeight.normal,
-      height: 1.6, // 保持呼吸感
+      height: 1.6,
       color: const Color(0xFFA1A1AA),
     ),
 
@@ -241,7 +235,7 @@ final ThemeData quietNightTheme = ThemeData(
       fontFamilyFallback: const ['Merriweather'],
       fontSize: 12.sp,
       fontWeight: FontWeight.normal,
-      height: 1.5, // 小字号行高可以稍微小一点点
+      height: 1.5,
       color: const Color(0xFF71717A),
     ),
   ),

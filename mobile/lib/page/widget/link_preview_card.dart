@@ -22,6 +22,7 @@ class LinkPreviewCard extends StatefulWidget {
   final VoidCallback onTap;
   final bool isDesktop;
   final String? publishDate;
+  final bool isHovered;
 
   const LinkPreviewCard({
     Key? key,
@@ -31,6 +32,7 @@ class LinkPreviewCard extends StatefulWidget {
     required this.onTap,
     this.isDesktop = false,
     this.publishDate,
+    this.isHovered = false,
   }) : super(key: key);
 
   @override
@@ -52,6 +54,7 @@ class _LinkPreviewCardState extends State<LinkPreviewCard> {
         onTap: widget.onTap,
         isDesktop: widget.isDesktop,
         publishDate: widget.publishDate,
+        isHovered: widget.isHovered,
       );
     } else {
       // 国内网站：直接使用 any_link_preview
@@ -67,6 +70,7 @@ class _LinkPreviewCardState extends State<LinkPreviewCard> {
                   onTap: widget.onTap,
                   isDesktop: widget.isDesktop,
                   publishDate: widget.publishDate,
+                  isHovered: widget.isHovered,
                 )
               : _HorizontalPreviewCard(
                   url: widget.url,
@@ -106,6 +110,7 @@ class _ApiLinkPreview extends ConsumerStatefulWidget {
   final VoidCallback onTap;
   final bool isDesktop;
   final String? publishDate;
+  final bool isHovered;
 
   const _ApiLinkPreview({
     Key? key,
@@ -115,6 +120,7 @@ class _ApiLinkPreview extends ConsumerStatefulWidget {
     required this.onTap,
     this.isDesktop = false,
     this.publishDate,
+    this.isHovered = false,
   }) : super(key: key);
 
   @override
@@ -229,6 +235,7 @@ class _ApiLinkPreviewState extends ConsumerState<_ApiLinkPreview> {
             onTap: widget.onTap,
             isDesktop: widget.isDesktop,
             publishDate: widget.publishDate,
+            isHovered: widget.isHovered,
           )
         : _HorizontalPreviewCard(
             url: widget.url,
@@ -304,6 +311,7 @@ class _VerticalPreviewCard extends StatelessWidget {
   final VoidCallback onTap;
   final bool isDesktop;
   final String? publishDate;
+  final bool isHovered;
 
   const _VerticalPreviewCard({
     Key? key,
@@ -314,6 +322,7 @@ class _VerticalPreviewCard extends StatelessWidget {
     required this.onTap,
     this.isDesktop = false,
     this.publishDate,
+    this.isHovered = false,
   }) : super(key: key);
 
   @override
@@ -351,6 +360,7 @@ class _VerticalPreviewCard extends StatelessWidget {
             fixedHeight: isEmptyContent,
             isDesktop: isDesktop,
             publishDate: publishDate,
+            isHovered: isHovered,
           ),
         ],
       ),
@@ -661,13 +671,15 @@ class _VerticalContentSection extends StatelessWidget {
   final bool fixedHeight;
   final bool isDesktop;
   final String? publishDate;
+  final bool isHovered;
 
   const _VerticalContentSection({
     Key? key,
     required this.metadata,
-    this.fixedHeight = false, // 默认不固定高度
+    this.fixedHeight = false,
     this.isDesktop = false,
     this.publishDate,
+    this.isHovered = false,
   }) : super(key: key);
 
   @override
@@ -675,28 +687,37 @@ class _VerticalContentSection extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
-    // 根据 fixedHeight 参数决定是否使用固定高度
+    // 标题样式 - 杂志感：衬线字体、紧凑行高、hover高亮
+    final titleStyle = textTheme.titleMedium?.copyWith(
+      fontSize: isDesktop ? 20.sp : 17.sp,
+      color: isHovered ? colorScheme.tertiary : null,
+    );
+
+    // 描述样式
+    final descStyle = textTheme.bodyMedium?.copyWith(
+      color: colorScheme.secondary,
+      fontSize: isDesktop ? 14.sp : 13.sp,
+    );
+
+    final padding = isDesktop ? 16.0 : 12.0;
+
     if (fixedHeight) {
       return Container(
-        height: _kVerticalPlaceholderContentHeight, // 固定高度
-        padding: const EdgeInsets.all(12.0),
+        height: _kVerticalPlaceholderContentHeight,
+        padding: EdgeInsets.all(padding),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
               metadata.title ?? 'No Title',
-              style: textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+              style: titleStyle,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),
             const SizedBox(height: 6),
             Text(
               metadata.desc ?? 'No description available',
-              style: textTheme.bodySmall?.copyWith(
-                color: colorScheme.secondary,
-              ),
+              style: descStyle,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),
@@ -705,35 +726,31 @@ class _VerticalContentSection extends StatelessWidget {
           ],
         ),
       );
-    } else {
-      // 正常内容,自适应高度
-      return Padding(
-        padding: const EdgeInsets.all(12.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              metadata.title ?? 'No Title',
-              style: textTheme.titleMedium,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
-            const SizedBox(height: 6),
-            Text(
-              metadata.desc ?? 'No description available',
-              style: textTheme.bodyMedium?.copyWith(
-                color: colorScheme.secondary,
-                fontSize: isDesktop ? 17.sp : 15.sp,
-              ),
-              maxLines: isDesktop ? 4 : 3,
-              overflow: TextOverflow.ellipsis,
-            ),
-            const SizedBox(height: 12),
-            SourceInfo(metadata: metadata, publishDate: publishDate),
-          ],
-        ),
-      );
     }
+
+    return Padding(
+      padding: EdgeInsets.all(padding),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            metadata.title ?? 'No Title',
+            style: titleStyle,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+          SizedBox(height: isDesktop ? 10.w : 8.w),
+          Text(
+            metadata.desc ?? 'No description available',
+            style: descStyle,
+            maxLines: isDesktop ? 4 : 3,
+            overflow: TextOverflow.ellipsis,
+          ),
+          SizedBox(height: isDesktop ? 14.w : 12.w),
+          SourceInfo(metadata: metadata, publishDate: publishDate),
+        ],
+      ),
+    );
   }
 }
 
@@ -786,5 +803,3 @@ class _HorizontalContentSection extends StatelessWidget {
     );
   }
 }
-
-

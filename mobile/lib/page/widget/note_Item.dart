@@ -50,7 +50,7 @@ class _NoteItemState extends ConsumerState<NoteItem>
 
   String _formatDate(DateTime? date) {
     if (date == null) return '';
-    return date.toString().substring(0, 10);
+    return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
   }
 
   @override
@@ -125,6 +125,7 @@ class _NoteItemState extends ConsumerState<NoteItem>
               ? LocalTextCard(
                   note: widget.note,
                   isDesktop: widget.isDesktop,
+                  isHovered: _isHovered,
                 )
               : isLocalImage
               // 2. 本地图片模式
@@ -169,6 +170,7 @@ class _NoteItemState extends ConsumerState<NoteItem>
                       onTap: () => _showNoteDetail(context),
                       isDesktop: widget.isDesktop,
                       publishDate: _formatDate(widget.note.time),
+                      isHovered: _isHovered,
                     ),
                     // 链接卡片下面的文字部分
                     if (content != null && content.isNotEmpty) ...[
