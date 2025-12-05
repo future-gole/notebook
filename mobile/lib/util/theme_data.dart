@@ -86,6 +86,33 @@ final ThemeData calmBeigeTheme = ThemeData(
     onSurfaceVariant: Color(0xFF9B9691),
     outlineVariant: Color(0xFFD6D2CE),
   ),
+  switchTheme: SwitchThemeData(
+    // 1. 定义滑块颜色 (Thumb)
+    thumbColor: WidgetStateProperty.resolveWith<Color?>((states) {
+      if (states.contains(WidgetState.selected)) {
+        return const Color(0xFFD97757); // 【打开】状态：橙色
+      }
+      // 【关闭】状态：显式指定为灰色/白色，不要返回 null
+      return const Color(0xFF79747E);
+    }),
+
+    // 2. 定义轨道颜色 (Track)
+    trackColor: WidgetStateProperty.resolveWith<Color?>((states) {
+      if (states.contains(WidgetState.selected)) {
+        return const Color(0xFFD97757).withOpacity(0.5); // 【打开】状态：淡橙色
+      }
+      // 【关闭】状态：显式指定为浅灰色
+      return const Color(0xFFE7E0EC);
+    }),
+
+    // 3. 定义轨道边框
+    trackOutlineColor: WidgetStateProperty.resolveWith<Color?>((states) {
+      if (states.contains(WidgetState.selected)) {
+        return Colors.transparent; // 打开时不要边框
+      }
+      return const Color(0xFF79747E); // 关闭时显示深灰边框
+    }),
+  ),
   scaffoldBackgroundColor: const Color(0xFFF2F0ED), // Scaffold 背景
   canvasColor: const Color(0xFFF2F0ED),
   cardColor: const Color(0xFFFFFFFF), // 卡片背景
@@ -184,6 +211,33 @@ final ThemeData quietNightTheme = ThemeData(
     outline: Color(0xBB838282), // 分割线颜色
     onSurfaceVariant: Color(0xFFC6C1C1),
     outlineVariant: Color(0xFF3F3F46),
+  ),
+  switchTheme: SwitchThemeData(
+    // 1. 定义滑块颜色 (Thumb)
+    thumbColor: WidgetStateProperty.resolveWith<Color?>((states) {
+      if (states.contains(WidgetState.selected)) {
+        return const Color(0xFFD97757); // 【打开】状态：橙色
+      }
+      // 【关闭】状态：显式指定为灰色/白色，不要返回 null
+      return const Color(0xFF79747E);
+    }),
+
+    // 2. 定义轨道颜色 (Track)
+    trackColor: WidgetStateProperty.resolveWith<Color?>((states) {
+      if (states.contains(WidgetState.selected)) {
+        return const Color(0xFFD97757).withOpacity(0.5); // 【打开】状态：淡橙色
+      }
+      // 【关闭】状态：显式指定为浅灰色
+      return const Color(0xFFE7E0EC);
+    }),
+
+    // 3. 定义轨道边框 (可选，让关闭状态更清晰)
+    trackOutlineColor: WidgetStateProperty.resolveWith<Color?>((states) {
+      if (states.contains(WidgetState.selected)) {
+        return Colors.transparent; // 打开时不要边框
+      }
+      return const Color(0xFF79747E); // 关闭时显示深灰边框
+    }),
   ),
   scaffoldBackgroundColor: const Color(0xFF09090B), // Scaffold 背景
   canvasColor: const Color(0xFF09090B),

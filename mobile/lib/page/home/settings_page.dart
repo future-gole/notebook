@@ -614,6 +614,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
               controller: _apiKeyController,
               decoration: InputDecoration(
                 hintText: '输入 LinkPreview.net API Key',
+                hintStyle: theme.textTheme.bodySmall,
                 prefixIcon: const Icon(Icons.vpn_key),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8.r),
@@ -631,6 +632,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
               controller: _meteCacheTimeController,
               decoration: InputDecoration(
                 hintText: '输入缓存的时间（天)',
+                hintStyle: theme.textTheme.bodySmall,
                 prefixIcon: const Icon(Icons.timer),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8.r),
@@ -768,8 +770,6 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                 ],
               ),
             ),
-            if (isSelected)
-              Icon(Icons.check_circle, color: colorScheme.primary, size: 18.sp),
           ],
         ),
       ),

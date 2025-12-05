@@ -974,34 +974,18 @@ class _NoteDetailPageState extends ConsumerState<NoteDetailPage>
   }
 
   /// Delete 按钮
-  void _onDeletePressed() {
-    showDialog(
-      context: context,
-      builder: (context) {
-        final colorScheme = Theme.of(context).colorScheme;
-        return AlertDialog(
-          backgroundColor: colorScheme.surface,
-          title: Text('删除笔记', style: TextStyle(color: colorScheme.primary)),
-          content: Text(
-            '确定要删除这条笔记吗？此操作无法撤销。',
-            style: TextStyle(color: colorScheme.onSurface),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: Text('取消', style: TextStyle(color: colorScheme.secondary)),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                _deleteNote();
-              },
-              child: Text('删除', style: TextStyle(color: colorScheme.error)),
-            ),
-          ],
-        );
-      },
+  void _onDeletePressed() async {
+    bool? confirm = await showConfirmDialog(
+      context,
+      title: "删除笔记",
+      message: "确定要删除这条笔记吗？此操作无法撤销",
+      cancelText: "取消",
+      confirmText: "确认",
+
     );
+    if(confirm == true){
+      _deleteNote();
+    }
   }
 
   /// 删除笔记

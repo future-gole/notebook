@@ -197,7 +197,7 @@ class NotificationService {
         break;
     }
     String androidChannelId = 'reminder_channel_level_${config.notificationIntensity}';
-    String androidChannelName = 'Reminders (${config.notificationIntensity == 0 ? "Low" : config.notificationIntensity == 1 ? "Medium" : "High"})';
+    String androidChannelName = '${config.notificationIntensity == 0 ? "低" : config.notificationIntensity == 1 ? "中" : "高"} 强度提醒';
 
     try {
       await flutterLocalNotificationsPlugin.zonedSchedule(
@@ -210,7 +210,7 @@ class NotificationService {
           android: fln.AndroidNotificationDetails(
             androidChannelId, // 动态 ID
             androidChannelName,
-            channelDescription: 'Channel for note reminders',
+            channelDescription: '闹钟定时提醒',
             importance: androidImportance,
             priority: androidPriority,
           ),
