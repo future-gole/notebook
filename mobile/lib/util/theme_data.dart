@@ -93,26 +93,53 @@ final ThemeData calmBeigeTheme = ThemeData(
   fontFamily: 'SF Pro',
   textTheme: TextTheme(
     titleLarge: TextStyle(
+      fontFamily: 'Merriweather',
+      fontFamilyFallback: const ['LXGWWenKaiLite'],
       fontSize: 24.sp,
-      fontWeight: FontWeight.bold,
-      color: Color(0xFF3A3A35),
+      fontWeight: FontWeight.w900,
+      // 杂志感大标题稍微收紧字母间距
+      letterSpacing: -0.5,
+      // 标题行高要小，避免松散
+      height: 1.2,
+      color: const Color(0xFF3A3A35),
     ),
+
     titleMedium: TextStyle(
+      fontFamily: 'Merriweather',
+      fontFamilyFallback: const ['LXGWWenKaiLite'],
       fontSize: 18.sp,
-      fontWeight: FontWeight.bold,
-      color: Color(0xFF3A3A35),
+      fontWeight: FontWeight.w900,
+      letterSpacing: -0.3,
+      height: 1.2,
+      color: const Color(0xFF3A3A35),
     ),
     bodyLarge: TextStyle(
+      fontFamily: 'LXGWWenKaiLite',
+      fontFamilyFallback: const ['Merriweather'],
       fontSize: 16.sp,
-      color: Color(0xFF3A3A35),
-      height: 1.5,
+      fontWeight: FontWeight.normal,
+      // 杂志感正文行高 1.6 倍
+      height: 1.6,
+      color: const Color(0xFF3A3A35),
     ),
+
     bodyMedium: TextStyle(
+      fontFamily: 'LXGWWenKaiLite',
+      fontFamilyFallback: const ['Merriweather'],
       fontSize: 14.sp,
-      color: Color(0xFF3A3A35),
-      height: 1.5,
+      fontWeight: FontWeight.normal,
+      height: 1.6, // 保持呼吸感
+      color: const Color(0xFF3A3A35),
     ),
-    bodySmall: TextStyle(fontSize: 12.sp, color: Color(0xFF9B9691)),
+
+    bodySmall: TextStyle(
+      fontFamily: 'LXGWWenKaiLite',
+      fontFamilyFallback: const ['Merriweather'],
+      fontSize: 12.sp,
+      fontWeight: FontWeight.normal,
+      height: 1.5, // 小字号行高可以稍微小一点点
+      color: const Color(0xFF3A3A35),
+    ),
   ),
   appBarTheme: AppBarTheme(
     backgroundColor: Colors.transparent,
@@ -164,27 +191,59 @@ final ThemeData quietNightTheme = ThemeData(
   shadowColor: Colors.black.withOpacity(0.3),
   fontFamily: 'SF Pro',
   textTheme: TextTheme(
+    // ============================================
+    // 标题类 (Titles)
+    // 特点：Merriweather 优先，极粗，紧凑，有衬线的力量感
+    // ============================================
     titleLarge: TextStyle(
-      fontSize: 24.sp,
-      fontWeight: FontWeight.bold,
-      color: Color(0xFFA1A1AA),
+      fontFamily: 'Merriweather',
+      fontFamilyFallback: const ['LXGWWenKaiLite'],
+      fontSize: 32.sp,
+      fontWeight: FontWeight.w900,
+      // 杂志感大标题稍微收紧字母间距，显得更精致
+      letterSpacing: -0.5,
+      // 标题行高要小，避免松散
+      height: 1.2,
+      color: const Color(0xFFA1A1AA),
     ),
+
     titleMedium: TextStyle(
-      fontSize: 18.sp,
-      fontWeight: FontWeight.bold,
-      color: Color(0xFFA1A1AA),
+      fontFamily: 'Merriweather',
+      fontFamilyFallback: const ['LXGWWenKaiLite'],
+      fontSize: 24.sp,
+      fontWeight: FontWeight.w900,
+      letterSpacing: -0.3,
+      height: 1.2,
+      color: const Color(0xFFA1A1AA),
     ),
+
     bodyLarge: TextStyle(
+      fontFamily: 'LXGWWenKaiLite',
+      fontFamilyFallback: const ['Merriweather'],
       fontSize: 16.sp,
-      color: Color(0xFFA1A1AA),
-      height: 1.5,
+      fontWeight: FontWeight.normal,
+      // 杂志感正文行高 1.6 倍，
+      height: 1.6,
+      color: const Color(0xFFA1A1AA),
     ),
+
     bodyMedium: TextStyle(
+      fontFamily: 'LXGWWenKaiLite',
+      fontFamilyFallback: const ['Merriweather'],
       fontSize: 14.sp,
-      color: Color(0xFFA1A1AA),
-      height: 1.5,
+      fontWeight: FontWeight.normal,
+      height: 1.6, // 保持呼吸感
+      color: const Color(0xFFA1A1AA),
     ),
-    bodySmall: TextStyle(fontSize: 12.sp, color: Color(0xFF71717A)),
+
+    bodySmall: TextStyle(
+      fontFamily: 'LXGWWenKaiLite',
+      fontFamilyFallback: const ['Merriweather'],
+      fontSize: 12.sp,
+      fontWeight: FontWeight.normal,
+      height: 1.5, // 小字号行高可以稍微小一点点
+      color: const Color(0xFF71717A),
+    ),
   ),
   appBarTheme: AppBarTheme(
     backgroundColor: Colors.transparent,

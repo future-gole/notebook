@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:any_link_preview/any_link_preview.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:pocketmind/util/link_preview_config.dart';
 import 'package:pocketmind/api/link_preview_api_service.dart';
 import 'package:pocketmind/util/link_preview_cache.dart';
@@ -715,11 +714,7 @@ class _VerticalContentSection extends StatelessWidget {
           children: [
             Text(
               metadata.title ?? 'No Title',
-              style: textTheme.titleMedium?.copyWith(
-                fontFamilyFallback: const ['Merriweather_24pt'],
-                fontWeight: FontWeight.bold,
-                fontSize: isDesktop ? 20.sp : 18.sp,
-              ),
+              style: textTheme.titleMedium,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),
@@ -728,10 +723,9 @@ class _VerticalContentSection extends StatelessWidget {
               metadata.desc ?? 'No description available',
               style: textTheme.bodyMedium?.copyWith(
                 color: colorScheme.secondary,
-                fontSize: isDesktop ? 14.sp : 13.sp,
-                height: 1.4,
+                fontSize: isDesktop ? 17.sp : 15.sp,
               ),
-              maxLines: isDesktop ? 3 : 2,
+              maxLines: isDesktop ? 4 : 3,
               overflow: TextOverflow.ellipsis,
             ),
             const SizedBox(height: 12),

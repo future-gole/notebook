@@ -110,10 +110,20 @@ flutter:
   # list giving the asset and other descriptors for the font. For
   # example:
   fonts:
-     - family: Merriweather_24pt
+     - family: Merriweather
        fonts:
-         - asset: assets/fonts/Merriweather_24pt-Bold.ttf
-           weight: 700
+          - asset: assets/fonts/Merriweather-VariableFont_opsz,wdth,wght.ttf
+            weight: 400
+          - asset: assets/fonts/Merriweather-VariableFont_opsz,wdth,wght.ttf
+            weight: 700
+          - asset: assets/fonts/Merriweather-VariableFont_opsz,wdth,wght.ttf
+            weight: 900
+     - family: LXGWWenKaiLite
+       fonts:
+          - asset: assets/fonts/LXGWWenKaiLite-Regular.ttf
+            weight: 400
+          - asset: assets/fonts/LXGWWenKaiLite-Medium.ttf
+            weight: 700
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
