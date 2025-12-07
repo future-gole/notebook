@@ -55,23 +55,35 @@ Your Second Brain, One Tap Away.
 
 如果没有提供直接分享到应用入口的app（如小红书）可以添加分享到 PocketMind 的快捷方式，复制链接后点击进行分享即可：
 
-https://github.com/user-attachments/assets/7e0ad71e-72d5-4eb4-a518-f76e96105b41
+[https://github.com/user-attachments/assets/85860a47-1291-40d2-8380-09b5f2d94775](https://github.com/user-attachments/assets/e0662d10-2aa6-4c4b-963e-46e8c9cb1750)
+
 
 如果提供了分享链接到应用的app，可以直接选择 PocketMind 即可分享啦：
 
-https://github.com/user-attachments/assets/85860a47-1291-40d2-8380-09b5f2d94775
+https://github.com/user-attachments/assets/67c92ac7-dd09-41ac-a08a-35ee215b5ee4
 
-| 瀑布流主页 | 搜索 | 详情 |
-|:---:|:---:|:---:|
-| ![Home](img.png) | ![search](img_2.png) | ![Detail](image.png) |
+手机端：
+| 瀑布流主页 | 搜索 | 详情 | 新增 |
+|:---:|:---:|:---:|:---:|
+| <img width="429" height="914" alt="image" src="https://github.com/user-attachments/assets/04a1b1f0-b6b5-4723-ba5f-6d0104e1705c" />|<img width="444" height="915" alt="image" src="https://github.com/user-attachments/assets/00035a73-17e3-48ee-9ba8-a29e8de1714a" /> | <img width="439" height="865" alt="image" src="https://github.com/user-attachments/assets/31e2cc24-b02f-4bec-9a68-177dd185409b" /> |<img width="444" height="900" alt="image" src="https://github.com/user-attachments/assets/d79d2c16-5b06-4263-96c1-7de87383d045" />|
 
+电脑端：
+| 瀑布流主页 | 搜索 |
+|:---:|:---:|
+| <img width="1561" height="846" alt="image" src="https://github.com/user-attachments/assets/db50f4a9-8d7f-43dc-8efb-c0ece8478e83" />| <img width="1565" height="854" alt="image" src="https://github.com/user-attachments/assets/bfe4ab59-1045-46f7-a4d7-68e20cf8b245" /> |
+| 详情 | 新增 |
+|<img width="1563" height="849" alt="image" src="https://github.com/user-attachments/assets/083c820c-a36c-4e5c-a426-5f1c622b17f2" /> |<img width="1565" height="833" alt="image" src="https://github.com/user-attachments/assets/66970ded-95fc-4c4d-b7f9-922bf382c6f7" /> |
 ---
-> 目前只支持 Android ，没有苹果设备无法适配😭
-## 当前计划
-1. 完善 AI 的支持
-2. 添加智能的提醒功能
-3. 增加 win 的适配，处理数据的传输
-4. 美化ui
+> 目前只支持 Android，win ，没有苹果设备无法适配😭
+
+## 计划
+- [x] 美化uxi
+- [x] 增加 win 的适配，处理数据的传输
+- [ ] 支持视频、文件的转存
+- [ ] 添加智能的提醒功能(基础提醒已经完成)
+- [ ] 完善 AI 的支持
+
+
 ## 开发初衷
 大概是懒癌后期😱，在X，微信公众号，B站，小红书等app查看一些文章的时候，总是收藏了但是需要的时候确不知道再哪一个app收藏夹里面了，并且也经常吃灰😥。
 
@@ -126,6 +138,7 @@ mobile/
 │   ├── providers/            # 状态管理 (Riverpod Providers 定义)
 │   │
 │   ├── util/                 # 工具类 (Url 处理, 主题, 全局配置)
+│   ├── sync/                 # 局域网同步
 │   │
 │   ├── main.dart             # 主应用 App 入口
 │   └── main_share.dart       # 分享扩展 (Share Extension) 入口
