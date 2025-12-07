@@ -8,21 +8,42 @@ import 'package:pocketmind/util/app_config.dart';
 import 'package:pocketmind/util/image_storage_helper.dart'
     show ImageStorageHelper;
 import 'package:pocketmind/util/logger_service.dart';
+import 'package:pocketmind/util/responsive_breakpoints.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:pocketmind/util/url_helper.dart';
+import 'package:any_link_preview/any_link_preview.dart';
 import '../widget/creative_toast.dart';
-
-import '../../util/link_preview_cache.dart';
-import '../widget/load_image_widget.dart';
+import '../widget/hero_gallery.dart';
 
 const String _tag = "NoteDetailPage";
 
+/// 中文日期格式化
+String _formatDateChinese(DateTime? date) {
+  if (date == null) return '';
+  final now = DateTime.now();
+  final diff = now.difference(date);
+
+  if (diff.inDays == 0) {
+    return '今天 ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
+  } else if (diff.inDays == 1) {
+    return '昨天 ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
+  } else if (diff.inDays < 7) {
+    return '${diff.inDays}天前';
+  } else {
+    return '${date.year}年${date.month}月${date.day}日';
+  }
+}
+
 /// 笔记详情页
-/// 采用垂直单列、内容优先的暗色模式设计
+/// 桌面端：左右分栏布局
+/// 移动端：垂直滚动布局
 class NoteDetailPage extends ConsumerStatefulWidget {
   final NoteEntity note;
 
-  const NoteDetailPage({super.key, required this.note});
+  /// 桌面端返回回调 - 用于清除选中状态
+  final VoidCallback? onBack;
+
+  const NoteDetailPage({super.key, required this.note, this.onBack});
 
   @override
   ConsumerState<NoteDetailPage> createState() => _NoteDetailPageState();
@@ -54,6 +75,12 @@ class _NoteDetailPageState extends ConsumerState<NoteDetailPage>
   // 当前选中的分类ID
   late int _selectedCategoryId;
 
+  // 链接预览数据（优先从 note 读取，没有则请求网络）
+  String? _previewImageUrl;
+  String? _previewTitle;
+  String? _previewDescription;
+  bool _isLoadingPreview = false;
+
   @override
   void initState() {
     super.initState();
@@ -76,8 +103,18 @@ class _NoteDetailPageState extends ConsumerState<NoteDetailPage>
           .toList();
     }
 
+    // 初始化预览数据（优先从数据库读取）
+    _previewImageUrl = widget.note.previewImageUrl;
+    _previewTitle = widget.note.previewTitle;
+    _previewDescription = widget.note.previewDescription;
+
     // 加载标题设置
     _loadTitleSetting();
+
+    // 如果没有缓存的预览数据，才请求网络
+    if (_previewImageUrl == null && _previewTitle == null) {
+      _loadLinkPreview();
+    }
 
     // 初始化动画控制器
     _addCategoryAnimationController = AnimationController(
@@ -111,6 +148,55 @@ class _NoteDetailPageState extends ConsumerState<NoteDetailPage>
     }
   }
 
+  /// 加载链接预览数据并保存到数据库
+  Future<void> _loadLinkPreview() async {
+    final url = widget.note.url;
+    final noteId = widget.note.id;
+
+    // 只有网络链接才需要加载预览
+    if (url == null ||
+        noteId == null ||
+        !UrlHelper.containsHttpsUrl(url) ||
+        UrlHelper.isLocalImagePath(url)) {
+      return;
+    }
+
+    setState(() => _isLoadingPreview = true);
+
+    try {
+      // 使用 AnyLinkPreview 获取元数据（复用现有逻辑）
+      final metadata = await AnyLinkPreview.getMetadata(
+        link: url,
+        cache: const Duration(hours: 24),
+      );
+
+      if (mounted && metadata != null) {
+        setState(() {
+          _previewImageUrl = metadata.image;
+          _previewTitle = metadata.title;
+          _previewDescription = metadata.desc;
+          _isLoadingPreview = false;
+        });
+
+        // 保存到数据库，下次不再请求
+        final noteService = ref.read(noteServiceProvider);
+        await noteService.updatePreviewData(
+          noteId: noteId,
+          previewImageUrl: metadata.image,
+          previewTitle: metadata.title,
+          previewDescription: metadata.desc,
+        );
+      }
+    } catch (e) {
+      PMlog.e(_tag, '预览加载失败: $e');
+      if (mounted) {
+        setState(() {
+          _isLoadingPreview = false;
+        });
+      }
+    }
+  }
+
   @override
   void dispose() {
     _scrollController.dispose();
@@ -127,6 +213,10 @@ class _NoteDetailPageState extends ConsumerState<NoteDetailPage>
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
+    final screenWidth = MediaQuery.of(context).size.width;
+    final showSidebar = ResponsiveBreakpoints.shouldShowNoteDetailSidebar(
+      screenWidth,
+    );
 
     return Scaffold(
       backgroundColor: colorScheme.surface,
@@ -136,41 +226,190 @@ class _NoteDetailPageState extends ConsumerState<NoteDetailPage>
             // 顶部导航栏
             _buildTopBar(colorScheme),
 
-            // 可滚动内容区域
+            // 主内容区域
             Expanded(
-              child: SingleChildScrollView(
-                controller: _scrollController,
-                padding: EdgeInsets.only(bottom: 80.h), // 留出底部操作栏空间
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // 1. 原始数据区（可编辑）
-                    _buildOriginalDataSection(colorScheme, textTheme),
-
-                    SizedBox(height: 24.h),
-
-                    // 2. AI 洞察区
-                    _buildAIInsightSection(colorScheme, textTheme),
-
-                    SizedBox(height: 32.h),
-
-                    // 3. 元数据/标签区
-                    _buildTagsSection(colorScheme, textTheme),
-
-                    SizedBox(height: 32.h),
-
-                    // // 4. 用户注解区 mymind有，但是感觉暂且没用
-                    // _buildUserNotesSection(colorScheme, textTheme),
-                    SizedBox(height: 24.h),
-                  ],
-                ),
-              ),
+              child: showSidebar
+                  ? _buildDesktopLayout(colorScheme, textTheme)
+                  : _buildMobileLayout(colorScheme, textTheme),
             ),
-
-            // 固定操作栏
-            _buildActionBar(colorScheme),
           ],
         ),
+      ),
+    );
+  }
+
+  /// 桌面端布局 - 左右分栏
+  Widget _buildDesktopLayout(ColorScheme colorScheme, TextTheme textTheme) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // 左侧内容区 (占 2/3)
+        Expanded(
+          flex: 2,
+          child: SingleChildScrollView(
+            controller: _scrollController,
+            padding: EdgeInsets.only(bottom: 80.h),
+            child: _buildMainContent(colorScheme, textTheme),
+          ),
+        ),
+
+        // 右侧元信息区 (固定宽度约 360)
+        Container(
+          width: 360,
+          decoration: BoxDecoration(
+            border: Border(
+              left: BorderSide(
+                color: colorScheme.outlineVariant.withValues(alpha: 0.2),
+                width: 1,
+              ),
+            ),
+          ),
+          child: SingleChildScrollView(
+            padding: EdgeInsets.all(24),
+            child: _buildSidebarContent(colorScheme, textTheme),
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// 移动端布局 - 垂直滚动
+  Widget _buildMobileLayout(ColorScheme colorScheme, TextTheme textTheme) {
+    return SingleChildScrollView(
+      controller: _scrollController,
+      padding: EdgeInsets.only(bottom: 80.h),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // 1. 原始数据区
+          _buildOriginalDataSection(colorScheme, textTheme),
+
+          SizedBox(height: 24.h),
+
+          // 2. AI 洞察区
+          _buildAIInsightSection(colorScheme, textTheme),
+
+          SizedBox(height: 32.h),
+
+          // 3. 元数据/标签区
+          _buildTagsSection(colorScheme, textTheme),
+
+          SizedBox(height: 32.h),
+        ],
+      ),
+    );
+  }
+
+  /// 桌面端左侧主内容
+  Widget _buildMainContent(ColorScheme colorScheme, TextTheme textTheme) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // 原始数据区
+        _buildOriginalDataSection(colorScheme, textTheme),
+
+        SizedBox(height: 32.h),
+      ],
+    );
+  }
+
+  /// 桌面端右侧边栏内容
+  Widget _buildSidebarContent(ColorScheme colorScheme, TextTheme textTheme) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // AI 洞察区
+        _buildAIInsightSection(colorScheme, textTheme),
+
+        SizedBox(height: 32.h),
+
+        // 来源信息
+        _buildSourceSection(colorScheme, textTheme),
+
+        SizedBox(height: 24.h),
+
+        // 标签区
+        _buildTagsSection(colorScheme, textTheme),
+
+        SizedBox(height: 24.h),
+
+        // 最后编辑时间
+        _buildLastEditedInfo(colorScheme),
+      ],
+    );
+  }
+
+  /// 来源信息区
+  Widget _buildSourceSection(ColorScheme colorScheme, TextTheme textTheme) {
+    final isHttpsUrl = UrlHelper.containsHttpsUrl(widget.note.url);
+    if (!isHttpsUrl) return const SizedBox.shrink();
+
+    final domain = UrlHelper.extractDomain(widget.note.url ?? '');
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'SOURCE',
+          style: TextStyle(
+            fontSize: 11,
+            fontWeight: FontWeight.w700,
+            letterSpacing: 1.5,
+            color: colorScheme.secondary,
+          ),
+        ),
+        const SizedBox(height: 12),
+        InkWell(
+          onTap: () {
+            final url = widget.note.url;
+            if (url != null && url.isNotEmpty) {
+              _launchUrl(url);
+            }
+          },
+          borderRadius: BorderRadius.circular(8),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.language_rounded,
+                  size: 20,
+                  color: colorScheme.secondary,
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    domain,
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: colorScheme.onSurface,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                Icon(
+                  Icons.open_in_new_rounded,
+                  size: 16,
+                  color: colorScheme.tertiary,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// 最后编辑时间信息
+  Widget _buildLastEditedInfo(ColorScheme colorScheme) {
+    final formattedDate = _formatDateChinese(widget.note.time);
+
+    return Text(
+      'Last edited on $formattedDate',
+      style: TextStyle(
+        fontSize: 12,
+        fontStyle: FontStyle.italic,
+        color: colorScheme.secondary.withValues(alpha: 0.7),
       ),
     );
   }
@@ -178,154 +417,491 @@ class _NoteDetailPageState extends ConsumerState<NoteDetailPage>
   /// 顶部导航栏
   Widget _buildTopBar(ColorScheme colorScheme) {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 8.h),
+      height: 56.h,
+      padding: EdgeInsets.symmetric(horizontal: 4.w),
       decoration: BoxDecoration(
-        color: colorScheme.surface,
+        color: colorScheme.surface.withOpacity(0.9),
         border: Border(
           bottom: BorderSide(
-            color: colorScheme.outlineVariant.withValues(alpha: 0.3),
-            width: 1.w,
+            color: colorScheme.outlineVariant.withOpacity(0.2),
+            width: 1,
           ),
         ),
       ),
       child: Row(
         children: [
-          // 返回按钮
-          IconButton(
-            icon: const Icon(Icons.arrow_back),
+          // 返回按钮 - 带文字提示
+          _buildNavButton(
+            icon: Icons.arrow_back_rounded,
+            label: '返回',
             onPressed: () {
-              Navigator.of(context).pop();
+              // 如果有 onBack 回调（桌面端），调用它；否则使用 Navigator.pop
+              if (widget.onBack != null) {
+                widget.onBack!();
+              } else {
+                Navigator.of(context).pop();
+              }
             },
-            color: colorScheme.primary,
+            colorScheme: colorScheme,
           ),
 
-          // 标题（如果启用且有标题）
-          if (_titleEnabled &&
-              widget.note.title != null &&
-              widget.note.title!.isNotEmpty)
-            Expanded(
-              child: Center(
-                child: TextField(
-                  controller: _titleController,
-                  maxLines: null,
-                  style: TextStyle(
-                    fontSize: 18.sp,
-                    fontWeight: FontWeight.w600,
-                    color: colorScheme.primary,
-                  ),
-                  onChanged: (_) => _saveNote(), // 自动保存
-                ),
-                // child: Text(
-                //   widget.note.title!,
-                //   style: TextStyle(
-                //     fontSize: 18.sp,
-                //     fontWeight: FontWeight.w600,
-                //     color: colorScheme.primary,
-                //   ),
-                //   maxLines: 1,
-                //   overflow: TextOverflow.ellipsis,
-                // ),
-              ),
-            )
-          else
-            const Spacer(),
+          const Spacer(),
 
-          // 占位（保持对称）
-          SizedBox(width: 48.w),
+          // 右侧操作按钮组
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _buildNavButton(
+                icon: Icons.share_outlined,
+                label: '分享',
+                onPressed: _onSharePressed,
+                colorScheme: colorScheme,
+              ),
+              _buildNavButton(
+                icon: Icons.edit_outlined,
+                label: '编辑',
+                onPressed: () {}, // TODO: 编辑模式切换
+                colorScheme: colorScheme,
+              ),
+              Container(
+                width: 1,
+                height: 20.h,
+                margin: EdgeInsets.symmetric(horizontal: 8.w),
+                color: colorScheme.outlineVariant.withOpacity(0.3),
+              ),
+              _buildNavButton(
+                icon: Icons.delete_outline,
+                label: '删除',
+                onPressed: _onDeletePressed,
+                colorScheme: colorScheme,
+                isDestructive: true,
+              ),
+            ],
+          ),
         ],
       ),
     );
   }
 
-  /// 1. 原始数据区（可编辑）
+  /// 导航栏按钮
+  Widget _buildNavButton({
+    required IconData icon,
+    required String label,
+    required VoidCallback onPressed,
+    required ColorScheme colorScheme,
+    bool isDestructive = false,
+  }) {
+    final color = isDestructive
+        ? colorScheme.error.withOpacity(0.8)
+        : colorScheme.secondary;
+    final hoverColor = isDestructive
+        ? colorScheme.error.withOpacity(0.1)
+        : colorScheme.surfaceContainerHighest.withOpacity(0.1);
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onPressed,
+        borderRadius: BorderRadius.circular(8.r),
+        hoverColor: hoverColor,
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, size: 18.sp, color: color),
+              SizedBox(width: 4.w),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 13.sp,
+                  fontWeight: FontWeight.w500,
+                  color: color,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// 1. 主内容区域 - 杂志式排版
   Widget _buildOriginalDataSection(
     ColorScheme colorScheme,
     TextTheme textTheme,
   ) {
     final isLocalImage = UrlHelper.isLocalImagePath(widget.note.url);
     final isHttpsUrl = UrlHelper.containsHttpsUrl(widget.note.url);
+    final hasTitle =
+        _titleEnabled &&
+        widget.note.title != null &&
+        widget.note.title!.isNotEmpty;
+    final formattedDate = _formatDateChinese(widget.note.time);
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isDesktop = ResponsiveBreakpoints.shouldShowNoteDetailSidebar(
+      screenWidth,
+    );
 
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 24.h),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // 本地图片显示（如果是本地图片）
-          if (isLocalImage) ...[
-            ClipRRect(
-              borderRadius: BorderRadius.circular(12.r),
-              child: LocalImageWidget(relativePath: widget.note.url!),
-            ),
-            SizedBox(height: 16.h),
-          ],
+    // 收集可显示的图片
+    List<String> displayImages = [];
+    bool isNetworkImage = false;
 
-          // 内容编辑框
-          TextField(
-            controller: _contentController,
-            maxLines: null,
-            decoration: InputDecoration(
-              hintText: '记录你的想法...',
-              hintStyle: textTheme.bodyLarge?.copyWith(
-                color: colorScheme.secondary,
-                fontStyle: FontStyle.italic,
-              ),
-              border: InputBorder.none,
-            ),
-            style: textTheme.bodyLarge?.copyWith(
-              fontSize: 17.sp,
-              height: 1.6,
-              color: colorScheme.onSurface,
-            ),
-            onChanged: (_) => _saveNote(), // 自动保存
+    if (isLocalImage && widget.note.url != null) {
+      final fullPath = ImageStorageHelper()
+          .getFileByRelativePath(widget.note.url!)
+          .path;
+      displayImages.add(fullPath);
+    }
+
+    // 如果是网络链接且预览图已加载，使用预览图
+    if (isHttpsUrl && !isLocalImage) {
+      isNetworkImage = true;
+      if (_previewImageUrl != null && _previewImageUrl!.isNotEmpty) {
+        displayImages.add(_previewImageUrl!);
+      }
+    }
+
+    final hasImages = displayImages.isNotEmpty;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // 图片/画廊区域
+        if (hasImages) ...[
+          HeroGallery(
+            images: displayImages,
+            title: hasTitle ? widget.note.title! : "",
+            isDesktop: isDesktop,
+            showGradientFade: true,
+            categoryLabel: _getCategoryName(),
+            dateLabel: formattedDate,
+            overlayTitle: _previewTitle ?? "",
           ),
+        ] else if (isNetworkImage && _isLoadingPreview) ...[
+          // 加载中显示占位
+          Container(
+            height: isDesktop ? 0.35.sh : 0.25.sh,
+            color: colorScheme.surfaceContainerHighest,
+            child: Center(
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                color: colorScheme.primary,
+              ),
+            ),
+          ),
+        ],
 
-          // URL链接（如果有且不是本地图片）
-          if (widget.note.url != null &&
-              widget.note.url!.isNotEmpty &&
-              !isLocalImage) ...[
-            SizedBox(height: 16.h),
-            Container(
-              padding: EdgeInsets.all(12.r),
-              decoration: BoxDecoration(
-                color: colorScheme.surfaceContainerHighest.withValues(
-                  alpha: 0.1,
+        // 内容容器
+        Container(
+          padding: EdgeInsets.symmetric(horizontal: 24.w),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // 无图时显示分类和日期
+              if (!hasImages && !_isLoadingPreview) ...[
+                SizedBox(height: 24.h),
+                // 分类标签和日期
+                Row(
+                  children: [
+                    // 分类胶囊 - 可点击切换分类
+                    GestureDetector(
+                      onTap: _onCategoryPressed,
+                      child: Container(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 12.w,
+                          vertical: 6.h,
+                        ),
+                        decoration: BoxDecoration(
+                          color: colorScheme.tertiary.withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(20.r),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              _getCategoryName(),
+                              style: TextStyle(
+                                fontSize: 11.sp,
+                                fontWeight: FontWeight.w600,
+                                letterSpacing: 0.5,
+                                color: colorScheme.tertiary,
+                              ),
+                            ),
+                            SizedBox(width: 4.w),
+                            Icon(
+                              Icons.expand_more_rounded,
+                              size: 14.sp,
+                              color: colorScheme.tertiary,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    SizedBox(width: 12.w),
+                    // 日期
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.access_time_rounded,
+                          size: 12.sp,
+                          color: colorScheme.secondary,
+                        ),
+                        SizedBox(width: 4.w),
+                        Text(
+                          formattedDate,
+                          style: TextStyle(
+                            fontSize: 11.sp,
+                            fontWeight: FontWeight.w500,
+                            letterSpacing: 0.3,
+                            color: colorScheme.secondary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
-                borderRadius: BorderRadius.circular(8.r),
-                border: Border.all(
+
+                SizedBox(height: 20.h),
+
+                // 标题
+                if (hasTitle) ...[
+                  TextField(
+                    controller: _titleController,
+                    maxLines: null,
+                    decoration: const InputDecoration(
+                      border: InputBorder.none,
+                      contentPadding: EdgeInsets.zero,
+                    ),
+                    style: TextStyle(
+                      fontSize: 28.sp,
+                      fontWeight: FontWeight.bold,
+                      height: 1.2,
+                      letterSpacing: -0.5,
+                      color: colorScheme.onSurface,
+                    ),
+                    onChanged: (_) => _saveNote(),
+                  ),
+                  SizedBox(height: 16.h),
+                  // 装饰线
+                  Container(
+                    width: 60.w,
+                    height: 4.h,
+                    decoration: BoxDecoration(
+                      color: colorScheme.tertiary,
+                      borderRadius: BorderRadius.circular(2.r),
+                    ),
+                  ),
+                  SizedBox(height: 24.h),
+                ],
+              ],
+
+              // 网络链接时显示链接标题和正文
+              if (isHttpsUrl) ...[
+                _buildLinkContentSection(colorScheme, textTheme),
+              ],
+
+              // 用户笔记区（个人笔记）
+              if (!isHttpsUrl) ...[
+                // 非链接类型时，content 就是用户内容
+                TextField(
+                  controller: _contentController,
+                  maxLines: null,
+                  decoration: InputDecoration(
+                    hintText: '记录你的想法...',
+                    hintStyle: textTheme.bodyLarge?.copyWith(
+                      color: colorScheme.secondary.withValues(alpha: 0.5),
+                      fontStyle: FontStyle.italic,
+                    ),
+                    border: InputBorder.none,
+                    contentPadding: EdgeInsets.zero,
+                  ),
+                  style: textTheme.bodyLarge?.copyWith(
+                    fontSize: 16.sp,
+                    height: 1.8,
+                    letterSpacing: 0.2,
+                    color: colorScheme.onSurface,
+                  ),
+                  onChanged: (_) => _saveNote(),
+                ),
+              ],
+
+              SizedBox(height: 24.h),
+
+              // 来源链接卡片
+              if (isHttpsUrl && !isDesktop && widget.note.url != null) ...[
+                _buildSourceLinkCard(colorScheme, isHttpsUrl),
+                SizedBox(height: 16.h),
+              ],
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// 链接内容区域
+  Widget _buildLinkContentSection(
+    ColorScheme colorScheme,
+    TextTheme textTheme,
+  ) {
+    final linkDescription = _previewDescription;
+    final hasDescription =
+        linkDescription != null && linkDescription.isNotEmpty;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // 链接正文/描述
+        if (hasDescription) ...[
+          Text(
+            linkDescription,
+            style: textTheme.bodyMedium,
+          ),
+          SizedBox(height: 24.h),
+          // 分隔线
+          Row(
+            children: [
+              Icon(
+                Icons.edit_note_rounded,
+                size: 16.sp,
+                color: colorScheme.tertiary,
+              ),
+              SizedBox(width: 8.w),
+              Text(
+                '个人笔记',
+                style: textTheme.bodyMedium?.copyWith(
+                  letterSpacing: 0.5,
+                  color: colorScheme.tertiary,
+                ),
+              ),
+              SizedBox(width: 12.w),
+              Expanded(
+                child: Container(
+                  height: 1,
                   color: colorScheme.outlineVariant.withValues(alpha: 0.3),
                 ),
               ),
-              child: Row(
+            ],
+          ),
+          SizedBox(height: 16.h),
+        ],
+
+        // 用户笔记编辑框
+        TextField(
+          controller: _contentController,
+          maxLines: null,
+          decoration: InputDecoration(
+            hintText: '添加你的想法和注释...',
+            hintStyle: textTheme.bodyLarge?.copyWith(
+              color: colorScheme.secondary.withValues(alpha: 0.5),
+              fontStyle: FontStyle.italic,
+            ),
+            border: InputBorder.none,
+            contentPadding: EdgeInsets.zero,
+          ),
+          style: textTheme.bodyLarge?.copyWith(
+            fontSize: 16.sp,
+            height: 1.8,
+            letterSpacing: 0.2,
+          ),
+          onChanged: (_) => _saveNote(),
+        ),
+      ],
+    );
+  }
+
+  /// 获取分类名称
+  String _getCategoryName() {
+    final categories = ref.read(allCategoriesProvider).valueOrNull;
+    if (categories != null) {
+      final category = categories.firstWhere(
+        (c) => c.id == _selectedCategoryId,
+        orElse: () => categories.first,
+      );
+      return category.name.toUpperCase();
+    }
+    return 'HOME';
+  }
+
+  /// URL 来源卡片
+  Widget _buildSourceLinkCard(ColorScheme colorScheme, bool isHttpsUrl) {
+    final url = widget.note.url!;
+    final domain = Uri.tryParse(url)?.host ?? url;
+
+    return GestureDetector(
+      onTap: isHttpsUrl ? () => _launchUrl(url) : null,
+      child: Container(
+        padding: EdgeInsets.all(16.r),
+        decoration: BoxDecoration(
+          color: colorScheme.surfaceContainerHighest.withOpacity(0.08),
+          borderRadius: BorderRadius.circular(12.r),
+          border: Border.all(
+            color: colorScheme.outlineVariant.withOpacity(0.2),
+          ),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: EdgeInsets.all(10.r),
+              decoration: BoxDecoration(
+                color: colorScheme.surface,
+                borderRadius: BorderRadius.circular(8.r),
+                border: Border.all(
+                  color: colorScheme.outlineVariant.withOpacity(0.2),
+                ),
+              ),
+              child: Icon(
+                Icons.language_rounded,
+                size: 20.sp,
+                color: colorScheme.secondary,
+              ),
+            ),
+            SizedBox(width: 12.w),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Icon(
-                    Icons.link,
-                    size: 16.sp,
-                    color: colorScheme.surfaceContainerHighest,
-                  ),
-                  SizedBox(width: 8.w),
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: isHttpsUrl
-                          ? () => _launchUrl(widget.note.url!)
-                          : null,
-                      child: Text(
-                        widget.note.url!,
-                        style: textTheme.bodySmall?.copyWith(
-                          color: colorScheme.surfaceContainerHighest,
-                          decoration: isHttpsUrl
-                              ? TextDecoration.underline
-                              : null,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
+                  Text(
+                    '来源',
+                    style: TextStyle(
+                      fontSize: 10.sp,
+                      fontWeight: FontWeight.w500,
+                      letterSpacing: 0.5,
+                      color: colorScheme.secondary.withOpacity(0.7),
                     ),
+                  ),
+                  SizedBox(height: 2.h),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          domain,
+                          style: TextStyle(
+                            fontSize: 14.sp,
+                            fontWeight: FontWeight.w500,
+                            color: colorScheme.onSurface,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      if (isHttpsUrl) ...[
+                        SizedBox(width: 4.w),
+                        Icon(
+                          Icons.open_in_new_rounded,
+                          size: 14.sp,
+                          color: colorScheme.secondary.withOpacity(0.5),
+                        ),
+                      ],
+                    ],
                   ),
                 ],
               ),
             ),
           ],
-        ],
+        ),
       ),
     );
   }
@@ -333,80 +909,110 @@ class _NoteDetailPageState extends ConsumerState<NoteDetailPage>
   /// 2. AI 洞察区
   Widget _buildAIInsightSection(ColorScheme colorScheme, TextTheme textTheme) {
     return Container(
-      margin: EdgeInsets.symmetric(horizontal: 20.w),
-      padding: EdgeInsets.all(20.r),
-      decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(
-          color: colorScheme.outlineVariant.withValues(alpha: 0.2),
-          width: 1.w,
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      margin: EdgeInsets.symmetric(horizontal: 24.w),
+      child: Stack(
         children: [
-          // 标题
-          Row(
-            children: [
-              Icon(
-                Icons.auto_awesome,
-                size: 20.sp,
-                color: colorScheme.surfaceContainerHighest,
-              ),
-              SizedBox(width: 8.w),
-              Text(
-                'AI 洞察',
-                style: textTheme.titleSmall?.copyWith(
-                  fontSize: 13.sp,
-                  fontWeight: FontWeight.w600,
-                  letterSpacing: 1.2.sp,
-                  color: colorScheme.surfaceContainerHighest,
+          // 渐变背景光晕
+          Positioned.fill(
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(16.r),
+                gradient: LinearGradient(
+                  colors: [
+                    colorScheme.tertiary.withOpacity(0.15),
+                    Colors.orange.withOpacity(0.1),
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
                 ),
               ),
-            ],
+            ),
           ),
-
-          SizedBox(height: 12.h),
-
-          // TODO: AI 内容占位符
+          // 主卡片
           Container(
-            padding: EdgeInsets.all(16.r),
+            margin: EdgeInsets.all(1),
+            padding: EdgeInsets.all(20.r),
             decoration: BoxDecoration(
               color: colorScheme.surface,
-              borderRadius: BorderRadius.circular(12.r),
+              borderRadius: BorderRadius.circular(15.r),
+              border: Border.all(
+                color: colorScheme.outlineVariant.withOpacity(0.2),
+              ),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  '正在开发中',
-                  style: textTheme.bodyMedium?.copyWith(
-                    color: colorScheme.secondary,
-                    fontStyle: FontStyle.italic,
-                    height: 1.5,
+                // 标题行
+                Row(
+                  children: [
+                    Icon(
+                      Icons.auto_awesome_rounded,
+                      size: 16.sp,
+                      color: colorScheme.tertiary,
+                    ),
+                    SizedBox(width: 8.w),
+                    Text(
+                      'AI 洞察',
+                      style: TextStyle(
+                        fontSize: 12.sp,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 1,
+                        color: colorScheme.tertiary,
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 16.h),
+                // 占位内容
+                Container(
+                  width: double.infinity,
+                  padding: EdgeInsets.symmetric(vertical: 24.h),
+                  child: Column(
+                    children: [
+                      Text(
+                        '让 AI 为你提炼核心洞察',
+                        style: TextStyle(
+                          fontSize: 13.sp,
+                          color: colorScheme.secondary,
+                          height: 1.5,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      SizedBox(height: 16.h),
+                      // 生成按钮
+                      ElevatedButton(
+                        onPressed: () {
+                          CreativeToast.info(
+                            context,
+                            title: '即将上线',
+                            message: 'AI 洞察功能正在开发中',
+                            direction: ToastDirection.top,
+                          );
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: colorScheme.onSurface,
+                          foregroundColor: colorScheme.surface,
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 24.w,
+                            vertical: 12.h,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8.r),
+                          ),
+                          elevation: 0,
+                        ),
+                        child: Text(
+                          '生成洞察',
+                          style: TextStyle(
+                            fontSize: 12.sp,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 1,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                SizedBox(height: 12.h),
-                // Row(
-                //   children: [
-                //     Icon(
-                //       Icons.info_outline,
-                //       size: 14.sp,
-                //       color: colorScheme.secondary,
-                //     ),
-                //     SizedBox(width: 6.w),
-                //     Expanded(
-                //       child: Text(
-                //         'TODO: 接入后端 AI 服务',
-                //         style: textTheme.bodySmall?.copyWith(
-                //           color: colorScheme.secondary,
-                //           fontSize: 11.sp,
-                //         ),
-                //       ),
-                //     ),
-                //   ],
-                // ),
               ],
             ),
           ),
@@ -418,7 +1024,7 @@ class _NoteDetailPageState extends ConsumerState<NoteDetailPage>
   /// 3. 元数据/标签区
   Widget _buildTagsSection(ColorScheme colorScheme, TextTheme textTheme) {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 20.w),
+      padding: EdgeInsets.symmetric(horizontal: 24.w),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -426,12 +1032,12 @@ class _NoteDetailPageState extends ConsumerState<NoteDetailPage>
           Row(
             children: [
               Text(
-                '思维标签',
-                style: textTheme.titleSmall?.copyWith(
-                  fontSize: 13.sp,
-                  fontWeight: FontWeight.w600,
-                  letterSpacing: 1.2.sp,
-                  color: colorScheme.primary,
+                '标签',
+                style: TextStyle(
+                  fontSize: 12.sp,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 1,
+                  color: colorScheme.secondary,
                 ),
               ),
               const Spacer(),
@@ -439,22 +1045,22 @@ class _NoteDetailPageState extends ConsumerState<NoteDetailPage>
               TextButton.icon(
                 onPressed: _showAddTagDialog,
                 icon: Icon(
-                  Icons.add_circle_outline,
-                  size: 18.sp,
-                  color: colorScheme.surfaceContainerHighest,
+                  Icons.add_rounded,
+                  size: 16.sp,
+                  color: colorScheme.tertiary,
                 ),
                 label: Text(
-                  '添加标签',
+                  '添加',
                   style: TextStyle(
-                    fontSize: 13.sp,
-                    color: colorScheme.surfaceContainerHighest,
+                    fontSize: 11.sp,
+                    fontWeight: FontWeight.w600,
+                    color: colorScheme.tertiary,
                   ),
                 ),
                 style: TextButton.styleFrom(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: 12.w,
-                    vertical: 6.h,
-                  ),
+                  padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                  minimumSize: Size.zero,
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 ),
               ),
             ],
@@ -468,10 +1074,10 @@ class _NoteDetailPageState extends ConsumerState<NoteDetailPage>
               padding: EdgeInsets.symmetric(vertical: 20.h),
               child: Center(
                 child: Text(
-                  '还没有标签。点击"添加标签"创建一个。',
-                  style: textTheme.bodySmall?.copyWith(
-                    color: colorScheme.secondary,
-                    fontStyle: FontStyle.italic,
+                  '点击添加标签',
+                  style: TextStyle(
+                    fontSize: 12.sp,
+                    color: colorScheme.secondary.withOpacity(0.6),
                   ),
                 ),
               ),
@@ -492,14 +1098,10 @@ class _NoteDetailPageState extends ConsumerState<NoteDetailPage>
   /// 标签芯片
   Widget _buildTagChip(String tag, ColorScheme colorScheme) {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 8.h),
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
       decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(20.r),
-        border: Border.all(
-          color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
-          width: 1.w,
-        ),
+        color: colorScheme.surfaceContainerHighest.withOpacity(0.08),
+        borderRadius: BorderRadius.circular(16.r),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -507,156 +1109,21 @@ class _NoteDetailPageState extends ConsumerState<NoteDetailPage>
           Text(
             tag,
             style: TextStyle(
-              fontSize: 13.sp,
-              color: colorScheme.primary,
+              fontSize: 12.sp,
+              color: colorScheme.onSurface,
               fontWeight: FontWeight.w500,
             ),
           ),
           SizedBox(width: 6.w),
           GestureDetector(
             onTap: () => _removeTag(tag),
-            child: Icon(Icons.close, size: 14.sp, color: colorScheme.secondary),
-          ),
-        ],
-      ),
-    );
-  }
-
-  /// 4. 用户注解区
-  Widget _buildUserNotesSection(ColorScheme colorScheme, TextTheme textTheme) {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 20.w),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // 标题
-          Text(
-            '思维笔记',
-            style: textTheme.titleSmall?.copyWith(
-              fontSize: 13.sp,
-              fontWeight: FontWeight.w600,
-              letterSpacing: 1.2.sp,
-              color: colorScheme.primary,
-            ),
-          ),
-
-          SizedBox(height: 12.h),
-
-          // 多行输入框
-          Container(
-            decoration: BoxDecoration(
-              color: colorScheme.surface,
-              borderRadius: BorderRadius.circular(12.r),
-              border: Border.all(
-                color: colorScheme.outlineVariant.withValues(alpha: 0.3),
-                width: 1.w,
-              ),
-            ),
-            child: TextField(
-              controller: _notesController,
-              maxLines: 8,
-              decoration: InputDecoration(
-                hintText: 'Type here to add a note...',
-                hintStyle: textTheme.bodyMedium?.copyWith(
-                  color: colorScheme.secondary,
-                  fontStyle: FontStyle.italic,
-                ),
-                border: InputBorder.none,
-                contentPadding: EdgeInsets.all(16.r),
-              ),
-              style: textTheme.bodyMedium?.copyWith(
-                color: colorScheme.onSurface,
-                height: 1.6,
-              ),
+            child: Icon(
+              Icons.close_rounded,
+              size: 12.sp,
+              color: colorScheme.secondary,
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  /// 固定操作栏
-  Widget _buildActionBar(ColorScheme colorScheme) {
-    return Container(
-      decoration: BoxDecoration(
-        color: colorScheme.surface,
-        border: Border(
-          top: BorderSide(
-            color: colorScheme.outlineVariant.withValues(alpha: 0.3),
-            width: 1.w,
-          ),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 8.r,
-            offset: Offset(0, -2.h),
-          ),
-        ],
-      ),
-      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          // Category 按钮
-          _buildActionButton(
-            icon: Icons.circle_outlined,
-            label: '分类',
-            onPressed: _onCategoryPressed,
-            colorScheme: colorScheme,
-          ),
-
-          // Share 按钮
-          _buildActionButton(
-            icon: Icons.share_outlined,
-            label: '分享',
-            onPressed: _onSharePressed,
-            colorScheme: colorScheme,
-          ),
-
-          // Delete 按钮
-          _buildActionButton(
-            icon: Icons.delete_outline,
-            label: '删除',
-            onPressed: _onDeletePressed,
-            colorScheme: colorScheme,
-            isDestructive: true,
-          ),
-        ],
-      ),
-    );
-  }
-
-  /// 操作按钮
-  Widget _buildActionButton({
-    required IconData icon,
-    required String label,
-    required VoidCallback onPressed,
-    required ColorScheme colorScheme,
-    bool isDestructive = false,
-  }) {
-    final color = isDestructive ? colorScheme.error : colorScheme.primary;
-
-    return InkWell(
-      onTap: onPressed,
-      borderRadius: BorderRadius.circular(12.r),
-      child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, color: color, size: 24.sp),
-            SizedBox(height: 4.h),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 12.sp,
-                color: color,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }
@@ -981,9 +1448,8 @@ class _NoteDetailPageState extends ConsumerState<NoteDetailPage>
       message: "确定要删除这条笔记吗？此操作无法撤销",
       cancelText: "取消",
       confirmText: "确认",
-
     );
-    if(confirm == true){
+    if (confirm == true) {
       _deleteNote();
     }
   }
@@ -993,10 +1459,6 @@ class _NoteDetailPageState extends ConsumerState<NoteDetailPage>
     final noteId = widget.note.id;
     if (noteId == null) return;
 
-    if (widget.note.url != null) {
-      // 删除对应的链接缓存
-      await LinkPreviewCache.clearCache(widget.note.url!);
-    }
     // 删除图片，如果有的话
     final imagePaths = widget.note.url;
     if (imagePaths != null && imagePaths.isNotEmpty) {
@@ -1022,7 +1484,8 @@ class _NoteDetailPageState extends ConsumerState<NoteDetailPage>
     try {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
     } catch (e) {
-      PMlog.e(tag, '❌ URL 跳转失败: $e');
+      PMlog.e(_tag, '❌ URL 跳转失败: $e');
+      CreativeToast.error(context, title: "出错咯~", message: "URL 跳转失败", direction: ToastDirection.top);
     }
   }
 }

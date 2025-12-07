@@ -7,7 +7,7 @@ import './logger_service.dart';
 /// 图片存储服务
 ///
 /// 负责管理本地图片的存储、路径解析。
-/// 实现了“相对路径”与“绝对路径”的转换。
+/// 实现了"相对路径"与"绝对路径"的转换。
 class ImageStorageHelper {
   static String tag = "ImageStorageHelper";
   // 单例模式，方便全局调用
@@ -39,25 +39,16 @@ class ImageStorageHelper {
   /// [sourceFile] : 原始文件（来自系统分享或相册）
   /// 返回 : 相对路径 (例如 "pocket_images/uuid.jpg")，用于存入数据库
   Future<String> saveImage(File sourceFile) async {
-    // 1. 生成唯一文件名，防止冲突
-    final String fileName = "${const Uuid().v4()}${p.extension(sourceFile.path)}";
-
-    // 2. 构建相对路径
+    final String fileName =
+        "${const Uuid().v4()}${p.extension(sourceFile.path)}";
     final String relativePath = p.join(_folderName, fileName);
-
-    // 3. 构建完整的目标绝对路径
     final String destinationPath = p.join(_rootDir, relativePath);
-
-    // 4. 复制文件 (Copy 优于 Move，因为源文件可能在缓存区会被系统清理)
     await sourceFile.copy(destinationPath);
-
-    // 5. 返回相对路径给数据库使用
     return relativePath;
   }
 
   /// 获取完整路径：将数据库里的相对路径转换为当前设备的绝对路径
   File getFileByRelativePath(String relativePath) {
-    // 拼接：根目录 + 相对路径
     final fullPath = p.join(_rootDir, relativePath);
     return File(fullPath);
   }
@@ -71,33 +62,24 @@ class ImageStorageHelper {
         PMlog.d(tag, "已删除本地图片: $relativePath");
       }
     } catch (e) {
-      PMlog.e(tag, "删除图片失败: $relativePath,e:$e");
+      PMlog.e(tag, "删除图片失败: $relativePath, e:$e");
     }
   }
 
-  /// 获取 pocket_images 目录下所有图片文件的相对路径
+  /// 获取所有存储的图片路径（相对路径）
   Future<List<String>> getAllImagePaths() async {
-    try {
-      final directory = Directory(p.join(_rootDir, _folderName));
-      if (!await directory.exists()) {
-        return [];
-      }
-
-      final files = await directory.list().toList();
-      final imagePaths = <String>[];
-
-      for (final entity in files) {
-        if (entity is File) {
-          // 转换为相对路径
-          final fileName = p.basename(entity.path);
-          imagePaths.add(p.join(_folderName, fileName));
-        }
-      }
-
-      return imagePaths;
-    } catch (e) {
-      PMlog.e(tag, "获取图片文件列表失败: $e");
+    final directory = Directory(p.join(_rootDir, _folderName));
+    if (!await directory.exists()) {
       return [];
     }
+
+    final List<String> paths = [];
+    await for (final entity in directory.list()) {
+      if (entity is File) {
+        final relativePath = p.join(_folderName, p.basename(entity.path));
+        paths.add(relativePath);
+      }
+    }
+    return paths;
   }
 }

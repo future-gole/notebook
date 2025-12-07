@@ -55,6 +55,10 @@ final noteByCategoryProvider =
       return NoteByCategory();
     });
 
+/// 桌面端当前选中的笔记 Provider
+/// 用于桌面端详情面板显示
+final selectedNoteProvider = StateProvider<NoteEntity?>((ref) => null);
+
 class NoteByCategory extends StreamNotifier<List<NoteEntity>> {
   // build 方法返回 Stream，自动监听数据库变化
   @override
@@ -64,7 +68,7 @@ class NoteByCategory extends StreamNotifier<List<NoteEntity>> {
 
     final targetCategoryId = await ref.watch(activeCategoryId.future);
 
-    PMlog.d("activeIndex","targetCategoryId: $targetCategoryId");
+    PMlog.d("activeIndex", "targetCategoryId: $targetCategoryId");
 
     // 直接转发 watchCategoryNotes 的 Stream
     yield* noteService.watchCategoryNotes(targetCategoryId);

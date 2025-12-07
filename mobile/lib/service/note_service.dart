@@ -5,7 +5,7 @@ import 'package:pocketmind/util/logger_service.dart';
 final String NoteServiceTag = "NoteService";
 
 /// 笔记业务服务层
-/// 
+///
 /// 现在依赖抽象的 NoteRepository 接口，而不是具体的 Isar 实现
 /// 这使得服务层与数据库实现完全解耦
 class NoteService {
@@ -20,8 +20,8 @@ class NoteService {
   Future<int> addOrUpdateNote({
     int? id,
     String? title, // 改为可空，允许不设置标题
-    String? content,// 改为可空，即用户没有设置标题
-    String? url,// 直接文本插入的话就是为空
+    String? content, // 改为可空，即用户没有设置标题
+    String? url, // 直接文本插入的话就是为空
     String? category, // 分类名称（用于UI显示和查询）
     int categoryId = 1, // 分类ID（用于categories数据库关联）
     String? tag,
@@ -75,7 +75,7 @@ class NoteService {
     await _noteRepository.delete(noteId);
   }
 
-  Future<void> deleteAllNoteByCategoryId(int categoryId) async{
+  Future<void> deleteAllNoteByCategoryId(int categoryId) async {
     await _noteRepository.deleteAllByCategoryId(categoryId);
   }
 
@@ -104,4 +104,22 @@ class NoteService {
     return _noteRepository.findByQuery(query);
   }
 
+  /// 更新笔记的预览数据（链接预览图片、标题、描述）
+  Future<void> updatePreviewData({
+    required int noteId,
+    String? previewImageUrl,
+    String? previewTitle,
+    String? previewDescription,
+  }) async {
+    final note = await _noteRepository.getById(noteId);
+    if (note == null) return;
+
+    final updated = note.copyWith(
+      previewImageUrl: previewImageUrl,
+      previewTitle: previewTitle,
+      previewDescription: previewDescription,
+    );
+    await _noteRepository.save(updated);
+    PMlog.d(NoteServiceTag, '预览数据已保存: noteId=$noteId');
+  }
 }

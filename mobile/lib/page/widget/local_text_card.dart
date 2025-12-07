@@ -5,16 +5,16 @@ import 'package:pocketmind/util/app_config.dart';
 
 /// 纯文本卡片变体类型
 enum TextCardVariant {
-  snippet, // 无标题的日志/随笔风格
-  quote, // 引用风格（带引号装饰）
-  headline, // 大标题风格（强调色背景）
-  essay, // 标准文章风格（标题+内容）
+  snippet,   // 无标题的日志/随笔风格
+  quote,     // 引用风格（带引号装饰）
+  headline,  // 大标题风格（强调色背景）
+  essay,     // 标准文章风格（标题+内容）
 }
 
 /// 中文日期格式化
 String formatDateChinese(DateTime? date) {
   if (date == null) return '';
-  return '${date.year}-${date.month}-${date.day}';
+  return '${date.year}年${date.month}月${date.day}日';
 }
 
 /// 本地纯文本笔记卡片组件
@@ -168,7 +168,9 @@ class _SnippetCard extends StatelessWidget {
   }
 }
 
+// =============================================================================
 // Variant 2: Quote Card - 引用风格
+// =============================================================================
 class _QuoteCard extends StatelessWidget {
   final NoteEntity note;
   final bool isDesktop;
@@ -228,10 +230,7 @@ class _QuoteCard extends StatelessWidget {
               if (note.tag != null && note.tag!.isNotEmpty)
                 Container(
                   margin: EdgeInsets.only(bottom: 16.w),
-                  padding: EdgeInsets.symmetric(
-                    horizontal: 10.w,
-                    vertical: 4.w,
-                  ),
+                  padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.w),
                   decoration: BoxDecoration(
                     color: colorScheme.tertiary.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(20.r),
@@ -264,7 +263,11 @@ class _QuoteCard extends StatelessWidget {
 
               // 分隔线和署名（仅当有标题时显示）
               if (note.title != null && note.title!.trim().isNotEmpty) ...[
-                Container(width: 32.w, height: 1, color: colorScheme.outline),
+                Container(
+                  width: 32.w,
+                  height: 1,
+                  color: colorScheme.outline,
+                ),
                 SizedBox(height: 12.w),
                 Text(
                   '— ${note.title}',
@@ -284,7 +287,9 @@ class _QuoteCard extends StatelessWidget {
   }
 }
 
+// =============================================================================
 // Variant 3: Headline Card - 大标题风格（强调色背景）
+// =============================================================================
 class _HeadlineCard extends StatelessWidget {
   final NoteEntity note;
   final bool isDesktop;
@@ -335,10 +340,7 @@ class _HeadlineCard extends StatelessWidget {
                   children: [
                     if (note.tag != null && note.tag!.isNotEmpty)
                       Container(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 8.w,
-                          vertical: 3.w,
-                        ),
+                        padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.w),
                         decoration: BoxDecoration(
                           border: Border.all(
                             color: Colors.white.withOpacity(0.3),
@@ -413,7 +415,9 @@ class _HeadlineCard extends StatelessWidget {
   }
 }
 
+// =============================================================================
 // Variant 4: Essay Card - 标准文章风格
+// =============================================================================
 class _EssayCard extends StatelessWidget {
   final NoteEntity note;
   final bool isDesktop;
@@ -483,7 +487,10 @@ class _EssayCard extends StatelessWidget {
   }
 }
 
+// =============================================================================
 // 共享组件
+// =============================================================================
+
 /// 日期头部（圆点 + 日期）
 class _DateHeader extends StatelessWidget {
   final String date;
@@ -541,21 +548,20 @@ class _TagDateHeader extends StatelessWidget {
             child: Wrap(
               spacing: 6.w,
               runSpacing: 4.w,
-              children: tags!
-                  .split(',')
-                  .take(2)
-                  .map(
-                    (tag) =>
-                        _TagBadge(tag: tag.trim(), colorScheme: colorScheme),
-                  )
-                  .toList(),
+              children: tags!.split(',').take(2).map((tag) => _TagBadge(
+                tag: tag.trim(),
+                colorScheme: colorScheme,
+              )).toList(),
             ),
           )
         else
           const SizedBox(),
         Text(
           date,
-          style: TextStyle(fontSize: 11.sp, color: colorScheme.secondary),
+          style: TextStyle(
+            fontSize: 11.sp,
+            color: colorScheme.secondary,
+          ),
         ),
       ],
     );
@@ -567,7 +573,10 @@ class _TagBadge extends StatelessWidget {
   final String tag;
   final ColorScheme colorScheme;
 
-  const _TagBadge({required this.tag, required this.colorScheme});
+  const _TagBadge({
+    required this.tag,
+    required this.colorScheme,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -604,20 +613,20 @@ class _TagsFooter extends StatelessWidget {
       padding: EdgeInsets.only(top: 12.w),
       decoration: BoxDecoration(
         border: Border(
-          top: BorderSide(color: colorScheme.outline.withOpacity(0.5)),
+          top: BorderSide(
+            color: colorScheme.outline.withOpacity(0.5),
+          ),
         ),
       ),
       child: Wrap(
         spacing: 8.w,
-        children: tags
-            .split(',')
-            .map(
-              (tag) => Text(
-                '#${tag.trim()}',
-                style: TextStyle(fontSize: 11.sp, color: colorScheme.secondary),
-              ),
-            )
-            .toList(),
+        children: tags.split(',').map((tag) => Text(
+          '#${tag.trim()}',
+          style: TextStyle(
+            fontSize: 11.sp,
+            color: colorScheme.secondary,
+          ),
+        )).toList(),
       ),
     );
   }
@@ -628,7 +637,10 @@ class _ReadMoreFooter extends StatelessWidget {
   final ColorScheme colorScheme;
   final bool isHovered;
 
-  const _ReadMoreFooter({required this.colorScheme, this.isHovered = false});
+  const _ReadMoreFooter({
+    required this.colorScheme,
+    this.isHovered = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -636,7 +648,9 @@ class _ReadMoreFooter extends StatelessWidget {
       padding: EdgeInsets.only(top: 12.w),
       decoration: BoxDecoration(
         border: Border(
-          top: BorderSide(color: colorScheme.outline.withOpacity(0.3)),
+          top: BorderSide(
+            color: colorScheme.outline.withOpacity(0.3),
+          ),
         ),
       ),
       child: Row(

@@ -2,7 +2,7 @@ import '../../domain/entities/note_entity.dart';
 import '../../model/note.dart';
 
 /// Note 与 NoteEntity 之间的映射器
-/// 
+///
 /// 负责在数据库特定模型（Isar）和纯净领域实体之间转换
 class NoteMapper {
   /// 将 Isar Note 模型转换为领域实体
@@ -15,6 +15,9 @@ class NoteMapper {
       time: note.time,
       categoryId: note.categoryId ?? 1,
       tag: note.tag,
+      previewImageUrl: note.previewImageUrl,
+      previewTitle: note.previewTitle,
+      previewDescription: note.previewDescription,
     );
   }
 
@@ -26,7 +29,10 @@ class NoteMapper {
       ..url = entity.url
       ..time = entity.time
       ..categoryId = entity.categoryId
-      ..tag = entity.tag;
+      ..tag = entity.tag
+      ..previewImageUrl = entity.previewImageUrl
+      ..previewTitle = entity.previewTitle
+      ..previewDescription = entity.previewDescription;
 
     // 如果实体有ID，说明是更新操作，设置ID
     if (entity.id != null) {

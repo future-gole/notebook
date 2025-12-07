@@ -28,16 +28,31 @@ const NoteSchema = CollectionSchema(
       name: r'isDeleted',
       type: IsarType.bool,
     ),
-    r'tag': PropertySchema(id: 3, name: r'tag', type: IsarType.string),
-    r'time': PropertySchema(id: 4, name: r'time', type: IsarType.dateTime),
-    r'title': PropertySchema(id: 5, name: r'title', type: IsarType.string),
+    r'previewDescription': PropertySchema(
+      id: 3,
+      name: r'previewDescription',
+      type: IsarType.string,
+    ),
+    r'previewImageUrl': PropertySchema(
+      id: 4,
+      name: r'previewImageUrl',
+      type: IsarType.string,
+    ),
+    r'previewTitle': PropertySchema(
+      id: 5,
+      name: r'previewTitle',
+      type: IsarType.string,
+    ),
+    r'tag': PropertySchema(id: 6, name: r'tag', type: IsarType.string),
+    r'time': PropertySchema(id: 7, name: r'time', type: IsarType.dateTime),
+    r'title': PropertySchema(id: 8, name: r'title', type: IsarType.string),
     r'updatedAt': PropertySchema(
-      id: 6,
+      id: 9,
       name: r'updatedAt',
       type: IsarType.long,
     ),
-    r'url': PropertySchema(id: 7, name: r'url', type: IsarType.string),
-    r'uuid': PropertySchema(id: 8, name: r'uuid', type: IsarType.string),
+    r'url': PropertySchema(id: 10, name: r'url', type: IsarType.string),
+    r'uuid': PropertySchema(id: 11, name: r'uuid', type: IsarType.string),
   },
 
   estimateSize: _noteEstimateSize,
@@ -102,6 +117,24 @@ int _noteEstimateSize(
     }
   }
   {
+    final value = object.previewDescription;
+    if (value != null) {
+      bytesCount += 3 + value.length * 3;
+    }
+  }
+  {
+    final value = object.previewImageUrl;
+    if (value != null) {
+      bytesCount += 3 + value.length * 3;
+    }
+  }
+  {
+    final value = object.previewTitle;
+    if (value != null) {
+      bytesCount += 3 + value.length * 3;
+    }
+  }
+  {
     final value = object.tag;
     if (value != null) {
       bytesCount += 3 + value.length * 3;
@@ -137,12 +170,15 @@ void _noteSerialize(
   writer.writeLong(offsets[0], object.categoryId);
   writer.writeString(offsets[1], object.content);
   writer.writeBool(offsets[2], object.isDeleted);
-  writer.writeString(offsets[3], object.tag);
-  writer.writeDateTime(offsets[4], object.time);
-  writer.writeString(offsets[5], object.title);
-  writer.writeLong(offsets[6], object.updatedAt);
-  writer.writeString(offsets[7], object.url);
-  writer.writeString(offsets[8], object.uuid);
+  writer.writeString(offsets[3], object.previewDescription);
+  writer.writeString(offsets[4], object.previewImageUrl);
+  writer.writeString(offsets[5], object.previewTitle);
+  writer.writeString(offsets[6], object.tag);
+  writer.writeDateTime(offsets[7], object.time);
+  writer.writeString(offsets[8], object.title);
+  writer.writeLong(offsets[9], object.updatedAt);
+  writer.writeString(offsets[10], object.url);
+  writer.writeString(offsets[11], object.uuid);
 }
 
 Note _noteDeserialize(
@@ -156,12 +192,15 @@ Note _noteDeserialize(
   object.content = reader.readStringOrNull(offsets[1]);
   object.id = id;
   object.isDeleted = reader.readBool(offsets[2]);
-  object.tag = reader.readStringOrNull(offsets[3]);
-  object.time = reader.readDateTimeOrNull(offsets[4]);
-  object.title = reader.readStringOrNull(offsets[5]);
-  object.updatedAt = reader.readLong(offsets[6]);
-  object.url = reader.readStringOrNull(offsets[7]);
-  object.uuid = reader.readStringOrNull(offsets[8]);
+  object.previewDescription = reader.readStringOrNull(offsets[3]);
+  object.previewImageUrl = reader.readStringOrNull(offsets[4]);
+  object.previewTitle = reader.readStringOrNull(offsets[5]);
+  object.tag = reader.readStringOrNull(offsets[6]);
+  object.time = reader.readDateTimeOrNull(offsets[7]);
+  object.title = reader.readStringOrNull(offsets[8]);
+  object.updatedAt = reader.readLong(offsets[9]);
+  object.url = reader.readStringOrNull(offsets[10]);
+  object.uuid = reader.readStringOrNull(offsets[11]);
   return object;
 }
 
@@ -181,14 +220,20 @@ P _noteDeserializeProp<P>(
     case 3:
       return (reader.readStringOrNull(offset)) as P;
     case 4:
-      return (reader.readDateTimeOrNull(offset)) as P;
+      return (reader.readStringOrNull(offset)) as P;
     case 5:
       return (reader.readStringOrNull(offset)) as P;
     case 6:
-      return (reader.readLong(offset)) as P;
-    case 7:
       return (reader.readStringOrNull(offset)) as P;
+    case 7:
+      return (reader.readDateTimeOrNull(offset)) as P;
     case 8:
+      return (reader.readStringOrNull(offset)) as P;
+    case 9:
+      return (reader.readLong(offset)) as P;
+    case 10:
+      return (reader.readStringOrNull(offset)) as P;
+    case 11:
       return (reader.readStringOrNull(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -803,6 +848,494 @@ extension NoteQueryFilter on QueryBuilder<Note, Note, QFilterCondition> {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         FilterCondition.equalTo(property: r'isDeleted', value: value),
+      );
+    });
+  }
+
+  QueryBuilder<Note, Note, QAfterFilterCondition> previewDescriptionIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'previewDescription'),
+      );
+    });
+  }
+
+  QueryBuilder<Note, Note, QAfterFilterCondition>
+  previewDescriptionIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'previewDescription'),
+      );
+    });
+  }
+
+  QueryBuilder<Note, Note, QAfterFilterCondition> previewDescriptionEqualTo(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'previewDescription',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Note, Note, QAfterFilterCondition> previewDescriptionGreaterThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'previewDescription',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Note, Note, QAfterFilterCondition> previewDescriptionLessThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'previewDescription',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Note, Note, QAfterFilterCondition> previewDescriptionBetween(
+    String? lower,
+    String? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'previewDescription',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Note, Note, QAfterFilterCondition> previewDescriptionStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'previewDescription',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Note, Note, QAfterFilterCondition> previewDescriptionEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'previewDescription',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Note, Note, QAfterFilterCondition> previewDescriptionContains(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'previewDescription',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Note, Note, QAfterFilterCondition> previewDescriptionMatches(
+    String pattern, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'previewDescription',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Note, Note, QAfterFilterCondition> previewDescriptionIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'previewDescription', value: ''),
+      );
+    });
+  }
+
+  QueryBuilder<Note, Note, QAfterFilterCondition>
+  previewDescriptionIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'previewDescription', value: ''),
+      );
+    });
+  }
+
+  QueryBuilder<Note, Note, QAfterFilterCondition> previewImageUrlIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'previewImageUrl'),
+      );
+    });
+  }
+
+  QueryBuilder<Note, Note, QAfterFilterCondition> previewImageUrlIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'previewImageUrl'),
+      );
+    });
+  }
+
+  QueryBuilder<Note, Note, QAfterFilterCondition> previewImageUrlEqualTo(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'previewImageUrl',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Note, Note, QAfterFilterCondition> previewImageUrlGreaterThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'previewImageUrl',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Note, Note, QAfterFilterCondition> previewImageUrlLessThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'previewImageUrl',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Note, Note, QAfterFilterCondition> previewImageUrlBetween(
+    String? lower,
+    String? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'previewImageUrl',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Note, Note, QAfterFilterCondition> previewImageUrlStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'previewImageUrl',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Note, Note, QAfterFilterCondition> previewImageUrlEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'previewImageUrl',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Note, Note, QAfterFilterCondition> previewImageUrlContains(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'previewImageUrl',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Note, Note, QAfterFilterCondition> previewImageUrlMatches(
+    String pattern, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'previewImageUrl',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Note, Note, QAfterFilterCondition> previewImageUrlIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'previewImageUrl', value: ''),
+      );
+    });
+  }
+
+  QueryBuilder<Note, Note, QAfterFilterCondition> previewImageUrlIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'previewImageUrl', value: ''),
+      );
+    });
+  }
+
+  QueryBuilder<Note, Note, QAfterFilterCondition> previewTitleIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'previewTitle'),
+      );
+    });
+  }
+
+  QueryBuilder<Note, Note, QAfterFilterCondition> previewTitleIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'previewTitle'),
+      );
+    });
+  }
+
+  QueryBuilder<Note, Note, QAfterFilterCondition> previewTitleEqualTo(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'previewTitle',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Note, Note, QAfterFilterCondition> previewTitleGreaterThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'previewTitle',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Note, Note, QAfterFilterCondition> previewTitleLessThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'previewTitle',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Note, Note, QAfterFilterCondition> previewTitleBetween(
+    String? lower,
+    String? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'previewTitle',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Note, Note, QAfterFilterCondition> previewTitleStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'previewTitle',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Note, Note, QAfterFilterCondition> previewTitleEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'previewTitle',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Note, Note, QAfterFilterCondition> previewTitleContains(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'previewTitle',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Note, Note, QAfterFilterCondition> previewTitleMatches(
+    String pattern, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'previewTitle',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Note, Note, QAfterFilterCondition> previewTitleIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'previewTitle', value: ''),
+      );
+    });
+  }
+
+  QueryBuilder<Note, Note, QAfterFilterCondition> previewTitleIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'previewTitle', value: ''),
       );
     });
   }
@@ -1641,6 +2174,42 @@ extension NoteQuerySortBy on QueryBuilder<Note, Note, QSortBy> {
     });
   }
 
+  QueryBuilder<Note, Note, QAfterSortBy> sortByPreviewDescription() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'previewDescription', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Note, Note, QAfterSortBy> sortByPreviewDescriptionDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'previewDescription', Sort.desc);
+    });
+  }
+
+  QueryBuilder<Note, Note, QAfterSortBy> sortByPreviewImageUrl() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'previewImageUrl', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Note, Note, QAfterSortBy> sortByPreviewImageUrlDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'previewImageUrl', Sort.desc);
+    });
+  }
+
+  QueryBuilder<Note, Note, QAfterSortBy> sortByPreviewTitle() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'previewTitle', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Note, Note, QAfterSortBy> sortByPreviewTitleDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'previewTitle', Sort.desc);
+    });
+  }
+
   QueryBuilder<Note, Note, QAfterSortBy> sortByTag() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'tag', Sort.asc);
@@ -1763,6 +2332,42 @@ extension NoteQuerySortThenBy on QueryBuilder<Note, Note, QSortThenBy> {
     });
   }
 
+  QueryBuilder<Note, Note, QAfterSortBy> thenByPreviewDescription() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'previewDescription', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Note, Note, QAfterSortBy> thenByPreviewDescriptionDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'previewDescription', Sort.desc);
+    });
+  }
+
+  QueryBuilder<Note, Note, QAfterSortBy> thenByPreviewImageUrl() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'previewImageUrl', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Note, Note, QAfterSortBy> thenByPreviewImageUrlDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'previewImageUrl', Sort.desc);
+    });
+  }
+
+  QueryBuilder<Note, Note, QAfterSortBy> thenByPreviewTitle() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'previewTitle', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Note, Note, QAfterSortBy> thenByPreviewTitleDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'previewTitle', Sort.desc);
+    });
+  }
+
   QueryBuilder<Note, Note, QAfterSortBy> thenByTag() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'tag', Sort.asc);
@@ -1857,6 +2462,36 @@ extension NoteQueryWhereDistinct on QueryBuilder<Note, Note, QDistinct> {
     });
   }
 
+  QueryBuilder<Note, Note, QDistinct> distinctByPreviewDescription({
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(
+        r'previewDescription',
+        caseSensitive: caseSensitive,
+      );
+    });
+  }
+
+  QueryBuilder<Note, Note, QDistinct> distinctByPreviewImageUrl({
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(
+        r'previewImageUrl',
+        caseSensitive: caseSensitive,
+      );
+    });
+  }
+
+  QueryBuilder<Note, Note, QDistinct> distinctByPreviewTitle({
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'previewTitle', caseSensitive: caseSensitive);
+    });
+  }
+
   QueryBuilder<Note, Note, QDistinct> distinctByTag({
     bool caseSensitive = true,
   }) {
@@ -1924,6 +2559,24 @@ extension NoteQueryProperty on QueryBuilder<Note, Note, QQueryProperty> {
   QueryBuilder<Note, bool, QQueryOperations> isDeletedProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'isDeleted');
+    });
+  }
+
+  QueryBuilder<Note, String?, QQueryOperations> previewDescriptionProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'previewDescription');
+    });
+  }
+
+  QueryBuilder<Note, String?, QQueryOperations> previewImageUrlProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'previewImageUrl');
+    });
+  }
+
+  QueryBuilder<Note, String?, QQueryOperations> previewTitleProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'previewTitle');
     });
   }
 

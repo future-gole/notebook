@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pocketmind/domain/entities/note_entity.dart';
 import 'package:pocketmind/service/note_service.dart';
+import 'package:pocketmind/providers/note_providers.dart';
 import 'package:pocketmind/util/url_helper.dart';
 import 'link_preview_card.dart';
 import '../home/note_detail_page.dart';
@@ -41,11 +42,17 @@ class _NoteItemState extends ConsumerState<NoteItem>
 
   // 显示笔记详情页
   void _showNoteDetail(BuildContext context) {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => NoteDetailPage(note: widget.note),
-      ),
-    );
+    // 桌面端：设置 selectedNoteProvider 以在侧边栏旁边显示详情
+    if (widget.isDesktop) {
+      ref.read(selectedNoteProvider.notifier).state = widget.note;
+    } else {
+      // 移动端：使用常规导航
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => NoteDetailPage(note: widget.note),
+        ),
+      );
+    }
   }
 
   String _formatDate(DateTime? date) {
@@ -164,7 +171,7 @@ class _NoteItemState extends ConsumerState<NoteItem>
                   children: [
                     // 链接卡片部分
                     LinkPreviewCard(
-                      url: widget.note.url!,
+                      note: widget.note,
                       isVertical: widget.isGridMode,
                       hasContent: content != null && content.isNotEmpty,
                       onTap: () => _showNoteDetail(context),

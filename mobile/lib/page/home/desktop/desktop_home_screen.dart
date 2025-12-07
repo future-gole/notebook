@@ -8,6 +8,7 @@ import 'package:pocketmind/page/widget/note_Item.dart';
 import 'package:pocketmind/page/widget/desktop/desktop_sidebar.dart';
 import 'package:pocketmind/page/widget/desktop/desktop_header.dart';
 import 'package:pocketmind/page/home/note_add_sheet.dart';
+import 'package:pocketmind/page/home/note_detail_page.dart';
 import 'package:pocketmind/providers/infrastructure_providers.dart';
 import 'package:pocketmind/providers/nav_providers.dart';
 import 'package:pocketmind/providers/note_providers.dart';
@@ -59,6 +60,9 @@ class _DesktopHomeScreenState extends ConsumerState<DesktopHomeScreen> {
     final searchQuery = ref.watch(searchQueryProvider);
     final searchResults = ref.watch(searchResultsProvider);
 
+    // 监听选中的笔记
+    final selectedNote = ref.watch(selectedNoteProvider);
+
     return Scaffold(
       backgroundColor: colorScheme.surface,
       body: Row(
@@ -66,81 +70,94 @@ class _DesktopHomeScreenState extends ConsumerState<DesktopHomeScreen> {
           // 左侧固定宽度的侧边栏
           const DesktopSidebar(),
 
-          // 右侧内容区
+          // 中间内容区（笔记列表或详情页）
           Expanded(
-            child: Column(
-              children: [
-                // macOS 顶部预留空间 (窗口控制按钮)
-                if (Platform.isMacOS) SizedBox(height: 28.h),
+            child: selectedNote != null
+                // 如果有选中笔记，显示详情页
+                ? NoteDetailPage(
+                    note: selectedNote,
+                    onBack: () {
+                      ref.read(selectedNoteProvider.notifier).state = null;
+                    },
+                  )
+                // 否则显示笔记列表
+                : Column(
+                    children: [
+                      // macOS 顶部预留空间 (窗口控制按钮)
+                      if (Platform.isMacOS) SizedBox(height: 28.h),
 
-                // 顶部导航栏
-                DesktopHeader(
-                  searchController: _searchController,
-                  searchFocusNode: _searchFocusNode,
-                  onSearchSubmit: () {
-                    final query = _searchController.text.trim();
-                    if (query.isNotEmpty) {
-                      ref.read(searchQueryProvider.notifier).state = query;
-                    }
-                  },
-                ),
+                      // 顶部导航栏
+                      DesktopHeader(
+                        searchController: _searchController,
+                        searchFocusNode: _searchFocusNode,
+                        onSearchSubmit: () {
+                          final query = _searchController.text.trim();
+                          if (query.isNotEmpty) {
+                            ref.read(searchQueryProvider.notifier).state =
+                                query;
+                          }
+                        },
+                      ),
 
-                // 内容区域
-                Expanded(
-                  child: searchQuery != null
-                      ? _buildSearchResults(
-                          searchResults,
-                          currentLayout,
-                          noteService,
-                        )
-                      : noteByCategory.when(
-                          skipLoadingOnRefresh: true,
-                          data: (notes) => _buildNotesContent(
-                            notes,
-                            currentLayout,
-                            noteService,
-                          ),
-                          error: (error, stack) {
-                            PMlog.e(tag, "stack: $error,stack:$stack");
-                            return const Center(child: Text('加载笔记失败'));
-                          },
-                          loading: () =>
-                              const Center(child: CircularProgressIndicator()),
-                        ),
-                ),
-              ],
-            ),
+                      // 内容区域
+                      Expanded(
+                        child: searchQuery != null
+                            ? _buildSearchResults(
+                                searchResults,
+                                currentLayout,
+                                noteService,
+                              )
+                            : noteByCategory.when(
+                                skipLoadingOnRefresh: true,
+                                data: (notes) => _buildNotesContent(
+                                  notes,
+                                  currentLayout,
+                                  noteService,
+                                ),
+                                error: (error, stack) {
+                                  PMlog.e(tag, "stack: $error,stack:$stack");
+                                  return const Center(child: Text('加载笔记失败'));
+                                },
+                                loading: () => const Center(
+                                  child: CircularProgressIndicator(),
+                                ),
+                              ),
+                      ),
+                    ],
+                  ),
           ),
         ],
       ),
-      // FAB - 桌面端放在右下角
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _showAddNotePage(context),
-        elevation: 8,
-        child: Container(
-          width: 56.w,
-          height: 56.w,
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                colorScheme.tertiary,
-                colorScheme.tertiary.withOpacity(0.85),
-              ],
-            ),
-            shape: BoxShape.circle,
-            boxShadow: [
-              BoxShadow(
-                color: colorScheme.tertiary.withOpacity(0.4),
-                blurRadius: 16.r,
-                offset: Offset(0, 6.h),
+      // FAB - 桌面端放在右下角（只在列表页显示）
+      floatingActionButton: selectedNote == null
+          ? FloatingActionButton(
+              onPressed: () => _showAddNotePage(context),
+              elevation: 8,
+              child: Container(
+                width: 56.w,
+                height: 56.w,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      colorScheme.tertiary,
+                      colorScheme.tertiary.withOpacity(0.85),
+                    ],
+                  ),
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: colorScheme.tertiary.withOpacity(0.4),
+                      blurRadius: 16.r,
+                      offset: Offset(0, 6.h),
+                    ),
+                  ],
+                ),
+                child: Icon(Icons.add, size: 28.sp),
               ),
-            ],
-          ),
-          child: Icon(Icons.add, size: 28.sp),
-        ),
-      ),
+            )
+          : null,
     );
   }
 

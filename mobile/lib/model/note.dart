@@ -34,4 +34,13 @@ class Note {
   final category = IsarLink<Category>();
 
   String? tag;
+
+  /// 链接预览图片URL（网络链接笔记用）
+  String? previewImageUrl;
+
+  /// 链接预览标题
+  String? previewTitle;
+
+  /// 链接预览描述
+  String? previewDescription;
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:any_link_preview/any_link_preview.dart';
+import 'package:pocketmind/util/logger_service.dart';
 
 /// 源信息组件，用于显示域名和发布日期
 /// 支持本地内容显示 "本地" 而不是域名
@@ -34,7 +35,7 @@ class SourceInfo extends StatelessWidget {
         case "zhihu.com":
           temp = "知乎";
           break;
-        case "bilibili.com":
+        case "bilibili.com" || "b23.tv":
           temp = "bilibili";
           break;
       }

@@ -4,19 +4,20 @@ import 'package:any_link_preview/any_link_preview.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pocketmind/util/link_preview_config.dart';
 import 'package:pocketmind/api/link_preview_api_service.dart';
-import 'package:pocketmind/util/link_preview_cache.dart';
+import 'package:pocketmind/domain/entities/note_entity.dart';
+import 'package:pocketmind/providers/note_providers.dart';
+import 'package:pocketmind/util/theme_data.dart';
 
 import '../../util/logger_service.dart';
 import 'source_info.dart';
 
 /// 智能链接预览卡片组件
-/// - 国内网站：使用 any_link_preview + 本地缓存
-/// - 国外网站（X/Twitter/YouTube）：使用 LinkPreview.net API + 本地缓存
-/// - 本地缓存：不开代理也能查看文本内容
+/// - 优先使用 Note 中的预览数据
+/// - 如果没有，请求网络并保存到 Note
 final String tag = "LinkPreviewCard";
 
 class LinkPreviewCard extends StatefulWidget {
-  final String url;
+  final NoteEntity note;
   final bool isVertical;
   final bool hasContent;
   final VoidCallback onTap;
@@ -26,7 +27,7 @@ class LinkPreviewCard extends StatefulWidget {
 
   const LinkPreviewCard({
     Key? key,
-    required this.url,
+    required this.note,
     this.isVertical = false,
     required this.hasContent,
     required this.onTap,
@@ -34,6 +35,8 @@ class LinkPreviewCard extends StatefulWidget {
     this.publishDate,
     this.isHovered = false,
   }) : super(key: key);
+
+  String get url => note.url ?? '';
 
   @override
   State<LinkPreviewCard> createState() => _LinkPreviewCardState();
@@ -45,10 +48,25 @@ class _LinkPreviewCardState extends State<LinkPreviewCard> {
     // 智能选择：国外网站用API，国内网站用any_link_preview
     final useApi = LinkPreviewConfig.shouldUseApiService(widget.url);
 
-    if (useApi) {
-      // 国外网站：使用 API 方案（带本地缓存）
+    // 优先使用 Note 中已缓存的预览数据
+    final hasCache =
+        widget.note.previewImageUrl != null || widget.note.previewTitle != null;
+
+    if (hasCache) {
+      // 已有缓存，直接显示
+      return _CachedLinkPreview(
+        note: widget.note,
+        isVertical: widget.isVertical,
+        hasContent: widget.hasContent,
+        onTap: widget.onTap,
+        isDesktop: widget.isDesktop,
+        publishDate: widget.publishDate,
+        isHovered: widget.isHovered,
+      );
+    } else if (useApi) {
+      // 国外网站：使用 API 方案
       return _ApiLinkPreview(
-        url: widget.url,
+        note: widget.note,
         isVertical: widget.isVertical,
         hasContent: widget.hasContent,
         onTap: widget.onTap,
@@ -58,53 +76,183 @@ class _LinkPreviewCardState extends State<LinkPreviewCard> {
       );
     } else {
       // 国内网站：直接使用 any_link_preview
-      return AnyLinkPreview.builder(
-        link: widget.url,
-        itemBuilder: (context, metadata, imageProvider, svgPicture) {
-          return widget.isVertical
-              ? _VerticalPreviewCard(
-                  url: widget.url,
-                  metadata: metadata,
-                  imageProvider: imageProvider,
-                  hasContent: widget.hasContent,
-                  onTap: widget.onTap,
-                  isDesktop: widget.isDesktop,
-                  publishDate: widget.publishDate,
-                  isHovered: widget.isHovered,
-                )
-              : _HorizontalPreviewCard(
-                  url: widget.url,
-                  metadata: metadata,
-                  imageProvider: imageProvider,
-                  onTap: widget.onTap,
-                  publishDate: widget.publishDate,
-                );
-        },
-        placeholderWidget: widget.isVertical
-            ? _VerticalSkeletonCard(hasContent: widget.hasContent)
-            : const _HorizontalSkeletonCard(),
-        errorWidget: widget.isVertical
-            ? _VerticalErrorCard(url: widget.url, hasContent: widget.hasContent)
-            : _HorizontalErrorCard(url: widget.url),
-        cache: const Duration(hours: 24),
-        headers: {
-          'User-Agent':
-              'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-          'Accept':
-              'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-          'Accept-Language': 'en-US,en;q=0.9',
-        },
+      return _NativeLinkPreview(
+        note: widget.note,
+        isVertical: widget.isVertical,
+        hasContent: widget.hasContent,
+        onTap: widget.onTap,
+        isDesktop: widget.isDesktop,
+        publishDate: widget.publishDate,
+        isHovered: widget.isHovered,
       );
     }
   }
 }
 
+// 已缓存的预览组件（从 Note 读取）
+class _CachedLinkPreview extends StatelessWidget {
+  final NoteEntity note;
+  final bool isVertical;
+  final bool hasContent;
+  final VoidCallback onTap;
+  final bool isDesktop;
+  final String? publishDate;
+  final bool isHovered;
+
+  const _CachedLinkPreview({
+    Key? key,
+    required this.note,
+    required this.isVertical,
+    required this.hasContent,
+    required this.onTap,
+    this.isDesktop = false,
+    this.publishDate,
+    this.isHovered = false,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final metadata = Metadata();
+    metadata.title = note.previewTitle ?? 'No Title';
+    metadata.desc = note.previewDescription ?? '';
+    metadata.image = note.previewImageUrl;
+    metadata.url = note.url;
+
+    final imageUrl = note.previewImageUrl;
+
+    return isVertical
+        ? _VerticalPreviewCard(
+            url: note.url ?? '',
+            metadata: metadata,
+            imageProvider: imageUrl != null && imageUrl.isNotEmpty
+                ? NetworkImage(imageUrl)
+                : null,
+            hasContent: hasContent,
+            onTap: onTap,
+            isDesktop: isDesktop,
+            publishDate: publishDate,
+            isHovered: isHovered,
+          )
+        : _HorizontalPreviewCard(
+            url: note.url ?? '',
+            metadata: metadata,
+            imageProvider: imageUrl != null && imageUrl.isNotEmpty
+                ? NetworkImage(imageUrl)
+                : null,
+            onTap: onTap,
+            publishDate: publishDate,
+          );
+  }
+}
+
+// 国内网站预览组件（使用 any_link_preview）
+class _NativeLinkPreview extends ConsumerStatefulWidget {
+  final NoteEntity note;
+  final bool isVertical;
+  final bool hasContent;
+  final VoidCallback onTap;
+  final bool isDesktop;
+  final String? publishDate;
+  final bool isHovered;
+
+  const _NativeLinkPreview({
+    Key? key,
+    required this.note,
+    required this.isVertical,
+    required this.hasContent,
+    required this.onTap,
+    this.isDesktop = false,
+    this.publishDate,
+    this.isHovered = false,
+  }) : super(key: key);
+
+  @override
+  ConsumerState<_NativeLinkPreview> createState() => _NativeLinkPreviewState();
+}
+
+class _NativeLinkPreviewState extends ConsumerState<_NativeLinkPreview> {
+  @override
+  Widget build(BuildContext context) {
+    return AnyLinkPreview.builder(
+      link: widget.note.url ?? '',
+      itemBuilder: (context, metadata, imageProvider, svgPicture) {
+        // 获取到预览数据后保存到 Note
+        _savePreviewToNote(metadata);
+
+        return widget.isVertical
+            ? _VerticalPreviewCard(
+                url: widget.note.url ?? '',
+                metadata: metadata,
+                imageProvider: imageProvider,
+                hasContent: widget.hasContent,
+                onTap: widget.onTap,
+                isDesktop: widget.isDesktop,
+                publishDate: widget.publishDate,
+                isHovered: widget.isHovered,
+              )
+            : _HorizontalPreviewCard(
+                url: widget.note.url ?? '',
+                metadata: metadata,
+                imageProvider: imageProvider,
+                onTap: widget.onTap,
+                publishDate: widget.publishDate,
+              );
+      },
+      placeholderWidget: widget.isVertical
+          ? _VerticalSkeletonCard(hasContent: widget.hasContent)
+          : const _HorizontalSkeletonCard(),
+      errorWidget: widget.isVertical
+          ? _VerticalErrorCard(
+              url: widget.note.url ?? '',
+              hasContent: widget.hasContent,
+            )
+          : _HorizontalErrorCard(url: widget.note.url ?? ''),
+      cache: const Duration(hours: 24),
+      headers: {
+        'User-Agent':
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+        'Accept':
+            'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+        'Accept-Language': 'en-US,en;q=0.9',
+      },
+    );
+  }
+
+  /// 保存预览数据到 Note（Isar 数据库）
+  void _savePreviewToNote(Metadata metadata) {
+    final noteId = widget.note.id;
+    if (noteId == null) return;
+
+    // 只保存一次
+    if (widget.note.previewImageUrl != null ||
+        widget.note.previewTitle != null) {
+      return;
+    }
+
+    // 异步保存，不阻塞 UI
+    Future.microtask(() async {
+      try {
+        final noteService = ref.read(noteServiceProvider);
+        await noteService.updatePreviewData(
+          noteId: noteId,
+          previewImageUrl: metadata.image,
+          previewTitle: metadata.title,
+          previewDescription: metadata.desc,
+        );
+        PMlog.d(tag, '预览数据已保存到 Note: ${metadata.title}');
+      } catch (e) {
+        PMlog.e(tag, '保存预览数据失败: $e');
+      }
+    });
+  }
+}
+
 // =============================================================================
-// API 预览组件（用于国外网站，带本地缓存）
+// API 预览组件（用于国外网站）
 // =============================================================================
 
 class _ApiLinkPreview extends ConsumerStatefulWidget {
-  final String url;
+  final NoteEntity note;
   final bool isVertical;
   final bool hasContent;
   final VoidCallback onTap;
@@ -114,7 +262,7 @@ class _ApiLinkPreview extends ConsumerStatefulWidget {
 
   const _ApiLinkPreview({
     Key? key,
-    required this.url,
+    required this.note,
     required this.isVertical,
     required this.hasContent,
     required this.onTap,
@@ -139,44 +287,38 @@ class _ApiLinkPreviewState extends ConsumerState<_ApiLinkPreview> {
   }
 
   Future<void> _fetchMetadata() async {
-    try {
-      // 1. 先检查本地缓存
-      final cached = await LinkPreviewCache.getCache(widget.url);
-      if (cached != null) {
-        if (mounted) {
-          setState(() {
-            _metadata = cached;
-            _isLoading = false;
-          });
-        }
-        return;
-      }
+    final url = widget.note.url;
+    if (url == null || url.isEmpty) {
+      setState(() {
+        _hasError = true;
+        _isLoading = false;
+      });
+      return;
+    }
 
-      // 2. 从 API 获取
+    try {
+      // 从 API 获取
       final apiMetadata = await ref
           .read(linkPreviewServiceProvider)
-          .fetchMetadata(widget.url);
-      final metadata;
-      // 3.1 存在数据才进行保存
-      // 3.1.1 成功
+          .fetchMetadata(url);
+
+      Map<String, dynamic> metadata;
       if (apiMetadata.success) {
-        // 3.2 转换并保存到本地缓存
-        // 3.1 如果没有拉取到正确的值，就不需要保存到本地缓存，否则会导致下次不会发起拉取请求
-        // log.d(tag, "title: ${apiMetadata.title}，description：${apiMetadata.description},imageUrl:${apiMetadata.imageUrl}");
         metadata = {
           'title': apiMetadata.title ?? 'No title',
           'description': apiMetadata.description ?? 'No description available',
           'imageUrl': apiMetadata.imageUrl,
           'url': apiMetadata.url,
         };
-        await LinkPreviewCache.saveCache(widget.url, metadata);
+
+        // 保存到 Note（Isar 数据库）
+        _savePreviewToNote(metadata);
       } else {
-        // 3.1.1 没成功
         metadata = {
           'title': "预览错误",
           'description': "请检查网络或者api是否正确",
           'imageUrl': "",
-          'url': apiMetadata.url,
+          'url': url,
         };
       }
 
@@ -197,8 +339,31 @@ class _ApiLinkPreviewState extends ConsumerState<_ApiLinkPreview> {
     }
   }
 
+  /// 保存预览数据到 Note
+  void _savePreviewToNote(Map<String, dynamic> metadata) {
+    final noteId = widget.note.id;
+    if (noteId == null) return;
+
+    Future.microtask(() async {
+      try {
+        final noteService = ref.read(noteServiceProvider);
+        await noteService.updatePreviewData(
+          noteId: noteId,
+          previewImageUrl: metadata['imageUrl'],
+          previewTitle: metadata['title'],
+          previewDescription: metadata['description'],
+        );
+        PMlog.d(tag, '预览数据已保存到 Note: ${metadata['title']}');
+      } catch (e) {
+        PMlog.e(tag, '保存预览数据失败: $e');
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
+    final url = widget.note.url ?? '';
+
     if (_isLoading) {
       return widget.isVertical
           ? _VerticalSkeletonCard(hasContent: widget.hasContent)
@@ -207,16 +372,12 @@ class _ApiLinkPreviewState extends ConsumerState<_ApiLinkPreview> {
 
     if (_hasError || _metadata == null) {
       return widget.isVertical
-          ? _VerticalErrorCard(url: widget.url, hasContent: widget.hasContent)
-          : _HorizontalErrorCard(url: widget.url);
+          ? _VerticalErrorCard(url: url, hasContent: widget.hasContent)
+          : _HorizontalErrorCard(url: url);
     }
 
     // 创建 Metadata 对象用于显示
     final metadata = Metadata();
-    PMlog.d(
-      tag,
-      "title: ${_metadata!['title']}，description：${_metadata!['description']},imageUrl:${_metadata!['imageUrl']}",
-    );
     metadata.title = _metadata!['title'];
     metadata.desc = _metadata!['description'];
     metadata.image = _metadata!['imageUrl'];
@@ -226,7 +387,7 @@ class _ApiLinkPreviewState extends ConsumerState<_ApiLinkPreview> {
 
     return widget.isVertical
         ? _VerticalPreviewCard(
-            url: widget.url,
+            url: url,
             metadata: metadata,
             imageProvider: imageUrl != null && imageUrl.isNotEmpty
                 ? NetworkImage(imageUrl)
@@ -238,7 +399,7 @@ class _ApiLinkPreviewState extends ConsumerState<_ApiLinkPreview> {
             isHovered: widget.isHovered,
           )
         : _HorizontalPreviewCard(
-            url: widget.url,
+            url: url,
             metadata: metadata,
             imageProvider: imageUrl != null && imageUrl.isNotEmpty
                 ? NetworkImage(imageUrl)
@@ -412,6 +573,7 @@ class _VerticalSkeletonCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final appColors = AppColors.of(context);
     return _BaseCardContainer(
       isVertical: true,
       hasContent: hasContent,
@@ -424,7 +586,7 @@ class _VerticalSkeletonCard extends StatelessWidget {
           Container(
             height: _kVerticalImageHeight,
             width: double.infinity,
-            color: Colors.grey[200],
+            color: appColors.skeletonBase,
           ),
           // 内容区域 - 强制高度
           Container(
@@ -437,20 +599,28 @@ class _VerticalSkeletonCard extends StatelessWidget {
                 Container(
                   height: 15.w,
                   width: double.infinity,
-                  color: Colors.grey[200],
+                  color: appColors.skeletonBase,
                 ),
                 const SizedBox(height: 6),
-                Container(height: 15.w, width: 150.w, color: Colors.grey[200]),
+                Container(
+                  height: 15.w,
+                  width: 150.w,
+                  color: appColors.skeletonBase,
+                ),
                 // 使用 Spacer 或者 Expanded 来自动填充剩余空间,或者保持固定间距
                 // 这里为了精确控制骨架形状,保持原样即可,因为外层 Container 已经固定了总高度
                 const SizedBox(height: 14),
                 Container(
                   height: 13.w,
                   width: double.infinity,
-                  color: Colors.grey[100],
+                  color: appColors.skeletonHighlight,
                 ),
                 const SizedBox(height: 4),
-                Container(height: 13.w, width: 100.w, color: Colors.grey[100]),
+                Container(
+                  height: 13.w,
+                  width: 100.w,
+                  color: appColors.skeletonHighlight,
+                ),
               ],
             ),
           ),
@@ -465,6 +635,7 @@ class _HorizontalSkeletonCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final appColors = AppColors.of(context);
     return _BaseCardContainer(
       isVertical: false,
       height: 120,
@@ -473,7 +644,7 @@ class _HorizontalSkeletonCard extends StatelessWidget {
           Container(
             width: 120.w,
             height: double.infinity,
-            color: Colors.grey[200],
+            color: appColors.skeletonBase,
           ),
           Expanded(
             child: Padding(
@@ -484,19 +655,19 @@ class _HorizontalSkeletonCard extends StatelessWidget {
                   Container(
                     height: 16.w,
                     width: 180.w,
-                    color: Colors.grey[200],
+                    color: appColors.skeletonBase,
                   ),
                   const SizedBox(height: 10),
                   Container(
                     height: 13.w,
                     width: double.infinity,
-                    color: Colors.grey[100],
+                    color: appColors.skeletonHighlight,
                   ),
                   const SizedBox(height: 4),
                   Container(
                     height: 13.w,
                     width: 120.w,
-                    color: Colors.grey[100],
+                    color: appColors.skeletonHighlight,
                   ),
                 ],
               ),
@@ -521,6 +692,7 @@ class _VerticalErrorCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final appColors = AppColors.of(context);
     return _BaseCardContainer(
       isVertical: true,
       hasContent: hasContent,
@@ -532,10 +704,10 @@ class _VerticalErrorCard extends StatelessWidget {
           Container(
             height: _kVerticalImageHeight,
             width: double.infinity,
-            color: Colors.grey[100],
+            color: appColors.errorBackground,
             child: Icon(
               Icons.broken_image_outlined,
-              color: Colors.grey[300],
+              color: appColors.errorIcon,
               size: 40.w,
             ),
           ),
@@ -552,7 +724,7 @@ class _VerticalErrorCard extends StatelessWidget {
                 Text(
                   '加载失败',
                   style: TextStyle(
-                    color: Colors.grey[500],
+                    color: appColors.errorText,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -561,7 +733,7 @@ class _VerticalErrorCard extends StatelessWidget {
                   url,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: TextStyle(color: Colors.grey[300], fontSize: 12),
+                  style: TextStyle(color: appColors.errorIcon, fontSize: 12),
                 ),
               ],
             ),
@@ -579,6 +751,7 @@ class _HorizontalErrorCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final appColors = AppColors.of(context);
     return _BaseCardContainer(
       isVertical: false,
       height: 120,
@@ -587,10 +760,10 @@ class _HorizontalErrorCard extends StatelessWidget {
           Container(
             width: 120.w,
             height: double.infinity,
-            color: Colors.grey[100],
+            color: appColors.errorBackground,
             child: Icon(
               Icons.broken_image_outlined,
-              color: Colors.grey[300],
+              color: appColors.errorIcon,
               size: 30.w,
             ),
           ),
@@ -604,7 +777,7 @@ class _HorizontalErrorCard extends StatelessWidget {
                   Text(
                     '加载失败',
                     style: TextStyle(
-                      color: Colors.grey[500],
+                      color: appColors.errorText,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -613,7 +786,10 @@ class _HorizontalErrorCard extends StatelessWidget {
                     url,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: TextStyle(color: Colors.grey[300], fontSize: 12.sp),
+                    style: TextStyle(
+                      color: appColors.errorIcon,
+                      fontSize: 12.sp,
+                    ),
                   ),
                 ],
               ),
@@ -642,7 +818,7 @@ class _CardImageSection extends StatelessWidget {
   Widget build(BuildContext context) {
     // 桌面端图片高度增加
     final height = isDesktop ? 180.w : _kVerticalImageHeight;
-
+    final color = Theme.of(context).colorScheme;
     return Container(
       width: isVertical ? double.infinity : 120.w,
       height: isVertical ? height : double.infinity,
@@ -650,15 +826,13 @@ class _CardImageSection extends StatelessWidget {
           ? BoxDecoration(
               image: DecorationImage(image: imageProvider!, fit: BoxFit.cover),
             )
-          : BoxDecoration(
-              color: Theme.of(context).colorScheme.surfaceContainerHighest,
-            ),
+          : BoxDecoration(color: color.surfaceContainerLow),
       child: imageProvider == null
           ? Center(
               child: Icon(
                 Icons.image_not_supported_outlined,
                 size: isVertical ? 50.w : 40.w,
-                color: Theme.of(context).colorScheme.secondary.withOpacity(0.5),
+                color: color.primary,
               ),
             )
           : null,

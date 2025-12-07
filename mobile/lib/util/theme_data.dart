@@ -18,6 +18,96 @@ class DarkFlowingBackgroundColors {
   static const Color blob4 = Color(0xFFF59E0B); // 金色
 }
 
+// 扩展颜色 - 用于骨架屏、占位图等
+class AppColors extends ThemeExtension<AppColors> {
+  const AppColors({
+    required this.skeletonBase,
+    required this.skeletonHighlight,
+    required this.errorBackground,
+    required this.errorIcon,
+    required this.errorText,
+    required this.cardBorder,
+  });
+
+  /// 骨架屏底色
+  final Color skeletonBase;
+
+  /// 骨架屏高亮色
+  final Color skeletonHighlight;
+
+  /// 错误卡片背景
+  final Color errorBackground;
+
+  /// 错误图标颜色
+  final Color errorIcon;
+
+  /// 错误文字颜色
+  final Color errorText;
+
+  /// 卡片边框颜色
+  final Color cardBorder;
+
+  @override
+  AppColors copyWith({
+    Color? skeletonBase,
+    Color? skeletonHighlight,
+    Color? errorBackground,
+    Color? errorIcon,
+    Color? errorText,
+    Color? cardBorder,
+  }) {
+    return AppColors(
+      skeletonBase: skeletonBase ?? this.skeletonBase,
+      skeletonHighlight: skeletonHighlight ?? this.skeletonHighlight,
+      errorBackground: errorBackground ?? this.errorBackground,
+      errorIcon: errorIcon ?? this.errorIcon,
+      errorText: errorText ?? this.errorText,
+      cardBorder: cardBorder ?? this.cardBorder,
+    );
+  }
+
+  @override
+  AppColors lerp(ThemeExtension<AppColors>? other, double t) {
+    if (other is! AppColors) return this;
+    return AppColors(
+      skeletonBase: Color.lerp(skeletonBase, other.skeletonBase, t)!,
+      skeletonHighlight: Color.lerp(
+        skeletonHighlight,
+        other.skeletonHighlight,
+        t,
+      )!,
+      errorBackground: Color.lerp(errorBackground, other.errorBackground, t)!,
+      errorIcon: Color.lerp(errorIcon, other.errorIcon, t)!,
+      errorText: Color.lerp(errorText, other.errorText, t)!,
+      cardBorder: Color.lerp(cardBorder, other.cardBorder, t)!,
+    );
+  }
+
+  static AppColors of(BuildContext context) {
+    return Theme.of(context).extension<AppColors>()!;
+  }
+}
+
+/// 亮色模式扩展颜色
+const lightAppColors = AppColors(
+  skeletonBase: Color(0xFFE8E8E8),
+  skeletonHighlight: Color(0xFFF5F5F5),
+  errorBackground: Color(0xFFF5F5F5),
+  errorIcon: Color(0xFFD0D0D0),
+  errorText: Color(0xFF9E9E9E),
+  cardBorder: Color(0x1A000000), // black 10%
+);
+
+/// 暗色模式扩展颜色
+const darkAppColors = AppColors(
+  skeletonBase: Color(0xFF2A2A2A),
+  skeletonHighlight: Color(0xFF3A3A3A),
+  errorBackground: Color(0xFF252525),
+  errorIcon: Color(0xFF4A4A4A),
+  errorText: Color(0xFF6A6A6A),
+  cardBorder: Color(0x33FFFFFF), // white 20%
+);
+
 class SharePageThemeColors extends ThemeExtension<SharePageThemeColors> {
   const SharePageThemeColors({required this.primary, required this.secondary});
 
@@ -61,7 +151,7 @@ const darkShareColors = SharePageThemeColors(
   secondary: Color(0xFFEAE5E0),
 );
 
-// 暗色模式
+// 亮色模式
 final ThemeData calmBeigeTheme = ThemeData(
   useMaterial3: true,
   brightness: Brightness.light,
@@ -80,7 +170,6 @@ final ThemeData calmBeigeTheme = ThemeData(
     onTertiary: Color(0xFFFFFFFF),
     // 侧边栏/次级背景色
     surfaceContainerLow: Color(0xFFF2F0ED),
-    // 点睛色
     surfaceContainerHighest: Color(0xFFD97757),
     outline: Color(0xFFE0DDD9), // 分割线颜色
     onSurfaceVariant: Color(0xFF9B9691),
@@ -184,7 +273,7 @@ final ThemeData calmBeigeTheme = ThemeData(
     shape: StadiumBorder(),
     elevation: 4,
   ),
-  extensions: const <ThemeExtension<dynamic>>[lightShareColors],
+  extensions: const <ThemeExtension<dynamic>>[lightShareColors, lightAppColors],
 );
 
 // 暗色模式
@@ -239,7 +328,7 @@ final ThemeData quietNightTheme = ThemeData(
       return const Color(0xFF79747E); // 关闭时显示深灰边框
     }),
   ),
-  scaffoldBackgroundColor: const Color(0xFF09090B), // Scaffold 背景
+  scaffoldBackgroundColor: const Color(0xFF202022), // Scaffold 背景
   canvasColor: const Color(0xFF09090B),
   cardColor: const Color(0xFF18181B), // 卡片背景 - 提亮
   shadowColor: Colors.black.withOpacity(0.3),
@@ -309,5 +398,5 @@ final ThemeData quietNightTheme = ThemeData(
     shape: StadiumBorder(),
     elevation: 4,
   ),
-  extensions: const <ThemeExtension<dynamic>>[darkShareColors],
+  extensions: const <ThemeExtension<dynamic>>[darkShareColors, darkAppColors],
 );

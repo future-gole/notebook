@@ -73,4 +73,19 @@ class UrlHelper {
   static bool hasImageOrUrl(String? text) {
     return isLocalImagePath(text) || containsHttpsUrl(text);
   }
+
+  /// 从 URL 中提取域名
+  static String extractDomain(String? url) {
+    if (url == null || url.isEmpty) return '';
+    try {
+      // 先提取 URL
+      final extractedUrl = extractHttpsUrl(url);
+      if (extractedUrl == null) return '';
+
+      final uri = Uri.parse(extractedUrl);
+      return uri.host;
+    } catch (e) {
+      return '';
+    }
+  }
 }

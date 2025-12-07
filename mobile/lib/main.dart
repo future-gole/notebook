@@ -95,11 +95,12 @@ Future<void> main() async {
 
   // 获取一个可写目录
   final dir = await getApplicationDocumentsDirectory();
-  // 打开 Isar 实例，包含 SyncLog Schema 用于同步功能
-  isar = await Isar.open(
-    [NoteSchema, CategorySchema, SyncLogSchema], // 传入您所有模型的 Schema
-    directory: dir.path,
-  );
+  // 打开 Isar 实例
+  isar = await Isar.open([
+    NoteSchema,
+    CategorySchema,
+    SyncLogSchema,
+  ], directory: dir.path);
 
   // 确保初始化默认分类数据
   final categoryRepository = IsarCategoryRepository(isar);
