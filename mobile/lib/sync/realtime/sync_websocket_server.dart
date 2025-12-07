@@ -120,7 +120,7 @@ class SyncWebSocketServer {
   /// 启动 WebSocket 服务器
   Future<void> start() async {
     if (_isRunning) {
-      PMlog.w(_tag, 'WebSocket server already running');
+      PMlog.w(_tag, 'WebSocket 服务器已在运行');
       return;
     }
 
@@ -128,8 +128,8 @@ class SyncWebSocketServer {
       _server = await HttpServer.bind(InternetAddress.anyIPv4, _port);
       _isRunning = true;
 
-      PMlog.i(_tag, '=== WebSocket Server Started ===');
-      PMlog.i(_tag, 'Listening on port: $_port');
+      PMlog.i(_tag, '=== WebSocket 服务器已启动 ===');
+      PMlog.i(_tag, '监听端口: $_port');
 
       // 监听连接
       _server!.listen(_handleConnection);
@@ -139,7 +139,7 @@ class SyncWebSocketServer {
 
       PMlog.i(_tag, '================================');
     } catch (e) {
-      PMlog.e(_tag, 'Failed to start WebSocket server: $e');
+      PMlog.e(_tag, '启动 WebSocket 服务器失败: $e');
       rethrow;
     }
   }
@@ -166,7 +166,7 @@ class SyncWebSocketServer {
       try {
         _sendMessage(client.socket, shutdownMessage);
       } catch (e) {
-        PMlog.w(_tag, 'Failed to send shutdown notification: $e');
+        PMlog.w(_tag, '发送关闭通知失败: $e');
       }
     }
 
@@ -184,7 +184,7 @@ class SyncWebSocketServer {
     _server = null;
     _isRunning = false;
 
-    PMlog.i(_tag, 'WebSocket server stopped');
+    PMlog.i(_tag, 'WebSocket 服务器已停止');
   }
 
   /// 处理新连接
@@ -200,7 +200,7 @@ class SyncWebSocketServer {
       final clientIp =
           request.connectionInfo?.remoteAddress.address ?? 'unknown';
 
-      PMlog.i(_tag, 'New WebSocket connection from: $clientIp');
+      PMlog.i(_tag, '来自 $clientIp 的新 WebSocket 连接');
 
       // 发送欢迎消息（包含本机设备信息）
       _sendMessage(
@@ -213,12 +213,12 @@ class SyncWebSocketServer {
         (data) => _handleMessage(socket, clientIp, data),
         onDone: () => _handleDisconnect(clientIp),
         onError: (e) {
-          PMlog.e(_tag, 'WebSocket error from $clientIp: $e');
+          PMlog.e(_tag, '来自 $clientIp 的 WebSocket 错误: $e');
           _handleDisconnect(clientIp);
         },
       );
     } catch (e) {
-      PMlog.e(_tag, 'Failed to upgrade WebSocket: $e');
+      PMlog.e(_tag, '升级 WebSocket 失败: $e');
     }
   }
 
@@ -228,7 +228,7 @@ class SyncWebSocketServer {
       final json = jsonDecode(data as String) as Map<String, dynamic>;
       final message = SyncMessage.fromJson(json);
 
-      PMlog.d(_tag, 'Received message from $clientIp: ${message.type}');
+      PMlog.d(_tag, '从 $clientIp 收到消息: ${message.type}');
 
       switch (message.type) {
         case SyncMessageType.deviceInfo:
@@ -257,13 +257,13 @@ class SyncWebSocketServer {
           break;
       }
     } catch (e) {
-      PMlog.e(_tag, 'Failed to handle message: $e');
+      PMlog.e(_tag, '处理消息失败: $e');
     }
   }
 
   /// 处理设备发现请求（不注册设备，仅返回本机信息）
   void _handleDiscover(WebSocket socket, String clientIp, SyncMessage message) {
-    PMlog.d(_tag, '🔍 Discover request from $clientIp');
+    PMlog.d(_tag, '🔍 来自 $clientIp 的发现请求');
 
     // 记录请求数据
     if (message.data != null) {
@@ -271,18 +271,15 @@ class SyncWebSocketServer {
         final deviceInfo = DeviceInfo.fromJson(message.data!);
         PMlog.d(
           _tag,
-          'Discover from: ${deviceInfo.deviceName} (${deviceInfo.deviceId})',
+          '发现来自: ${deviceInfo.deviceName} (${deviceInfo.deviceId})',
         );
       } catch (e) {
-        PMlog.w(_tag, 'Failed to parse device info in discover: $e');
+        PMlog.w(_tag, '解析发现中的设备信息失败: $e');
       }
     }
 
     // 直接返回本机设备信息，不注册客户端
-    PMlog.d(
-      _tag,
-      'Sending discover response to $clientIp: ${_localDevice.deviceName}',
-    );
+    PMlog.d(_tag, '向 $clientIp 发送发现响应: ${_localDevice.deviceName}');
     _sendMessage(
       socket,
       SyncMessage(
@@ -308,7 +305,7 @@ class SyncWebSocketServer {
       deviceInfo: deviceInfo,
     );
 
-    PMlog.i(_tag, '✅ Device registered: ${deviceInfo.deviceName} ($clientIp)');
+    PMlog.i(_tag, '✅ 设备已注册: ${deviceInfo.deviceName} ($clientIp)');
 
     // 延迟通知回调，确保客户端已完全准备好
     Future.delayed(const Duration(milliseconds: 100), () {
@@ -321,7 +318,7 @@ class SyncWebSocketServer {
 
   /// 处理数据变化通知
   void _handleDataChanged(String clientIp, SyncMessage message) {
-    PMlog.i(_tag, '📥 Data changed notification from $clientIp');
+    PMlog.i(_tag, '📥 来自 $clientIp 的数据更改通知');
 
     // 通知上层进行同步
     onRemoteDataChanged?.call();
@@ -331,7 +328,7 @@ class SyncWebSocketServer {
   Future<void> _handleSyncRequest(WebSocket socket, SyncMessage message) async {
     final since = message.data?['since'] as int? ?? 0;
 
-    PMlog.d(_tag, 'Handling sync request since: $since');
+    PMlog.d(_tag, '处理自 $since 以来的同步请求');
 
     try {
       // 获取变更数据
@@ -361,7 +358,7 @@ class SyncWebSocketServer {
         ),
       );
     } catch (e) {
-      PMlog.e(_tag, 'Failed to handle sync request: $e');
+      PMlog.e(_tag, '处理同步请求失败: $e');
     }
   }
 
@@ -369,7 +366,7 @@ class SyncWebSocketServer {
   void _handleDisconnect(String clientIp) {
     final client = _clients.remove(clientIp);
     if (client != null) {
-      PMlog.i(_tag, '❌ Device disconnected: ${client.deviceInfo.deviceName}');
+      PMlog.i(_tag, '❌ 设备断开连接: ${client.deviceInfo.deviceName}');
       onDeviceDisconnected?.call(client.deviceInfo);
     }
   }
@@ -401,7 +398,7 @@ class SyncWebSocketServer {
     try {
       // 读取图片并转换为 Base64
       final base64Data = await SyncDataMapper.imageToBase64(relativePath);
-      
+
       if (base64Data == null) {
         PMlog.w(_tag, 'Image not found: $relativePath');
         return;
@@ -419,9 +416,9 @@ class SyncWebSocketServer {
         ),
       );
 
-      PMlog.d(_tag, '✅ Sent image: $relativePath');
+      PMlog.d(_tag, '✅ 已发送图片: $relativePath');
     } catch (e) {
-      PMlog.e(_tag, 'Failed to send image $relativePath: $e');
+      PMlog.e(_tag, '发送图片 $relativePath 失败: $e');
     }
   }
 
@@ -444,13 +441,13 @@ class SyncWebSocketServer {
         relativePath: relativePath,
       );
       if (savedPath != null) {
-        PMlog.d(_tag, '✅ Saved image: $relativePath (returned: $savedPath)');
+        PMlog.d(_tag, '✅ 已保存图片: $relativePath (返回: $savedPath)');
       } else {
-        PMlog.e(_tag, '❌ Failed to save image: $relativePath (returned null)');
+        PMlog.e(_tag, '❌ 保存图片失败: $relativePath (返回 null)');
       }
     } catch (e, stackTrace) {
-      PMlog.e(_tag, 'Failed to save image $relativePath: $e');
-      PMlog.e(_tag, 'Stack trace: $stackTrace');
+      PMlog.e(_tag, '保存图片 $relativePath 失败: $e');
+      PMlog.e(_tag, '堆栈跟踪: $stackTrace');
     }
   }
 
@@ -533,7 +530,7 @@ class SyncWebSocketServer {
     try {
       socket.add(message.toJsonString());
     } catch (e) {
-      PMlog.e(_tag, 'Failed to send message: $e');
+      PMlog.e(_tag, '发送消息失败: $e');
     }
   }
 }

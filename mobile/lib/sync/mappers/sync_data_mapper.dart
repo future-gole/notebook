@@ -163,30 +163,30 @@ class SyncDataMapper {
   }) async {
     const tag = 'ImageSync';
     try {
-      PMlog.d(tag, 'Saving image: $relativePath');
+      PMlog.d(tag, '保存图片: $relativePath');
       final bytes = base64Decode(base64Data);
-      
+
       // 直接使用原始相对路径保存，而不是生成新的 UUID
       // 这样可以保证路径一致性
       final file = ImageStorageHelper().getFileByRelativePath(relativePath);
-      
+
       // 确保目录存在
       final dir = file.parent;
       if (!await dir.exists()) {
         await dir.create(recursive: true);
       }
-      
+
       // 写入文件
       await file.writeAsBytes(bytes);
-      
+
       // 验证文件是否成功保存
       final exists = await file.exists();
       final size = exists ? await file.length() : 0;
-      PMlog.d(tag, '✅ Image saved: $relativePath ($size bytes)');
-      
+      PMlog.d(tag, '✅ 图片已保存: $relativePath ($size 字节)');
+
       return relativePath;
     } catch (e) {
-      PMlog.e(tag, 'Failed to save image $relativePath: $e');
+      PMlog.e(tag, '保存图片 $relativePath 失败: $e');
       return null;
     }
   }
@@ -196,9 +196,6 @@ class SyncDataMapper {
     required String relativePath,
     required String base64Data,
   }) {
-    return {
-      'path': relativePath,
-      'data': base64Data,
-    };
+    return {'path': relativePath, 'data': base64Data};
   }
 }

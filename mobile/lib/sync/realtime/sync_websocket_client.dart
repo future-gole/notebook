@@ -67,12 +67,12 @@ class SyncWebSocketClient {
   }) async {
     // 如果已被销毁，不允许连接
     if (_isDisposed) {
-      PMlog.w(_tag, 'Client is disposed, cannot connect');
+      PMlog.w(_tag, '客户端已销毁，无法连接');
       return false;
     }
 
     if (_isConnected && _remoteIp == ip) {
-      PMlog.d(_tag, 'Already connected to $ip');
+      PMlog.d(_tag, '已连接到 $ip');
       return true;
     }
 
@@ -83,7 +83,7 @@ class SyncWebSocketClient {
     _remotePort = port;
 
     try {
-      PMlog.i(_tag, 'Connecting to ws://$ip:$port');
+      PMlog.i(_tag, '连接到 ws://$ip:$port');
 
       _socket = await WebSocket.connect(
         'ws://$ip:$port',
@@ -105,7 +105,7 @@ class SyncWebSocketClient {
         _handleMessage,
         onDone: _handleDisconnect,
         onError: (e) {
-          PMlog.e(_tag, 'WebSocket error: $e');
+          PMlog.e(_tag, 'WebSocket 错误: $e');
           _handleDisconnect();
         },
       );
@@ -113,18 +113,18 @@ class SyncWebSocketClient {
       // 启动心跳（60秒一次，避免UI频繁跳动）
       _startPingTimer();
 
-      PMlog.i(_tag, '✅ Connected to $ip:$port');
+      PMlog.i(_tag, '✅ 已连接到 $ip:$port');
 
       // 检测是否是重连
       if (_wasConnected) {
-        PMlog.i(_tag, '🔄 Reconnected! Triggering full sync...');
+        PMlog.i(_tag, '🔄 已重新连接！触发全量同步...');
         onReconnected?.call();
       }
       _wasConnected = true;
 
       return true;
     } catch (e) {
-      PMlog.e(_tag, '❌ Failed to connect to $ip:$port: $e');
+      PMlog.e(_tag, '❌ 连接到 $ip:$port 失败: $e');
       _isConnected = false;
       // 只有在允许重连的情况下才尝试重连
       if (_shouldReconnect && !_isDisposed) {
@@ -164,7 +164,7 @@ class SyncWebSocketClient {
     _shouldReconnect = false;
     _reconnectTimer?.cancel();
     _reconnectTimer = null;
-    PMlog.d(_tag, 'Stopped auto-reconnecting');
+    PMlog.d(_tag, '已停止自动重连');
   }
 
   /// 通知远程设备数据已变化
@@ -178,7 +178,7 @@ class SyncWebSocketClient {
       ),
     );
 
-    PMlog.d(_tag, '📤 Sent data_changed notification');
+    PMlog.d(_tag, '📤 已发送数据更改通知');
   }
 
   /// 请求同步数据（异步等待响应）
@@ -201,7 +201,7 @@ class SyncWebSocketClient {
       return await _syncCompleter!.future.timeout(
         timeout,
         onTimeout: () {
-          PMlog.w(_tag, 'Sync request timed out');
+          PMlog.w(_tag, '同步请求超时');
           return null;
         },
       );
@@ -225,14 +225,14 @@ class SyncWebSocketClient {
       final json = jsonDecode(data as String) as Map<String, dynamic>;
       final message = SyncMessage.fromJson(json);
 
-      PMlog.d(_tag, 'Received: ${message.type}');
+      PMlog.d(_tag, '收到: ${message.type}');
 
       switch (message.type) {
         case SyncMessageType.hello:
           _handleHello(message);
           break;
         case SyncMessageType.dataChanged:
-          PMlog.i(_tag, '📥 Remote data changed!');
+          PMlog.i(_tag, '📥 远程数据已更改！');
           onRemoteDataChanged?.call();
           break;
         case SyncMessageType.pong:
@@ -255,7 +255,7 @@ class SyncWebSocketClient {
           break;
       }
     } catch (e) {
-      PMlog.e(_tag, 'Failed to handle message: $e');
+      PMlog.e(_tag, '处理消息失败: $e');
     }
   }
 
@@ -263,7 +263,7 @@ class SyncWebSocketClient {
   void _handleHello(SyncMessage message) {
     if (message.data != null) {
       _remoteDevice = DeviceInfo.fromJson(message.data!);
-      PMlog.i(_tag, '🤝 Connected to: ${_remoteDevice!.deviceName}');
+      PMlog.i(_tag, '🤝 已连接到: ${_remoteDevice!.deviceName}');
       onConnectionChanged?.call(true, _remoteDevice);
     }
   }
@@ -271,7 +271,7 @@ class SyncWebSocketClient {
   /// 处理同步请求（服务端向客户端请求数据）
   Future<void> _handleSyncRequest(SyncMessage message) async {
     final since = message.data?['since'] as int? ?? 0;
-    PMlog.i(_tag, '📥 Received sync request since: $since');
+    PMlog.i(_tag, '📥 收到自 $since 以来的同步请求');
 
     if (onSyncRequestReceived != null) {
       try {
@@ -288,12 +288,12 @@ class SyncWebSocketClient {
             },
           ),
         );
-        PMlog.i(_tag, '📤 Sent sync response with ${changes.length} changes');
+        PMlog.i(_tag, '📤 已发送包含 ${changes.length} 个更改的同步响应');
       } catch (e) {
-        PMlog.e(_tag, 'Failed to handle sync request: $e');
+        PMlog.e(_tag, '处理同步请求失败: $e');
       }
     } else {
-      PMlog.w(_tag, 'No sync request handler registered, sending empty response');
+      PMlog.w(_tag, '未注册同步请求处理器，发送空响应');
       _sendMessage(
         SyncMessage(
           type: SyncMessageType.syncResponse,
@@ -308,7 +308,7 @@ class SyncWebSocketClient {
 
   /// 处理同步响应
   void _handleSyncResponse(SyncMessage message) {
-    PMlog.d(_tag, 'Received sync response');
+    PMlog.d(_tag, '收到同步响应');
 
     // 如果有等待中的 Completer（来自 requestSyncAndWait），优先完成它
     if (_syncCompleter != null && !_syncCompleter!.isCompleted) {
@@ -316,7 +316,7 @@ class SyncWebSocketClient {
         final response = SyncResponse.fromJson(message.data ?? {});
         _syncCompleter!.complete(response);
       } catch (e) {
-        PMlog.e(_tag, 'Failed to parse sync response: $e');
+        PMlog.e(_tag, '解析同步响应失败: $e');
         _syncCompleter!.complete(null);
       }
     } else {
@@ -331,7 +331,7 @@ class SyncWebSocketClient {
   void _handleImageRequest(SyncMessage message) async {
     final relativePath = message.data?['path'] as String?;
     if (relativePath == null) {
-      PMlog.w(_tag, 'Image request without path');
+      PMlog.w(_tag, '图片请求没有路径');
       return;
     }
 
@@ -340,9 +340,9 @@ class SyncWebSocketClient {
     try {
       // 读取图片并转换为 Base64
       final base64Data = await SyncDataMapper.imageToBase64(relativePath);
-      
+
       if (base64Data == null) {
-        PMlog.w(_tag, 'Image not found: $relativePath');
+        PMlog.w(_tag, '未找到图片: $relativePath');
         return;
       }
 
@@ -357,9 +357,9 @@ class SyncWebSocketClient {
         ),
       );
 
-      PMlog.d(_tag, '✅ Sent image: $relativePath');
+      PMlog.d(_tag, '✅ 已发送图片: $relativePath');
     } catch (e) {
-      PMlog.e(_tag, 'Failed to send image $relativePath: $e');
+      PMlog.e(_tag, '发送图片 $relativePath 失败: $e');
     }
   }
 
@@ -373,8 +373,8 @@ class SyncWebSocketClient {
       return;
     }
 
-    PMlog.d(_tag, '📷 Received image: $relativePath');
-    PMlog.d(_tag, 'Base64 data length: ${base64Data.length} chars');
+    PMlog.d(_tag, '📷 收到图片: $relativePath');
+    PMlog.d(_tag, 'Base64 数据长度: ${base64Data.length} 字符');
 
     try {
       final savedPath = await SyncDataMapper.saveImageFromBase64(
@@ -382,13 +382,13 @@ class SyncWebSocketClient {
         relativePath: relativePath,
       );
       if (savedPath != null) {
-        PMlog.d(_tag, '✅ Saved image: $relativePath (returned: $savedPath)');
+        PMlog.d(_tag, '✅ 已保存图片: $relativePath (返回: $savedPath)');
       } else {
-        PMlog.e(_tag, '❌ Failed to save image: $relativePath (returned null)');
+        PMlog.e(_tag, '❌ 保存图片失败: $relativePath (返回 null)');
       }
     } catch (e, stackTrace) {
-      PMlog.e(_tag, 'Failed to save image $relativePath: $e');
-      PMlog.e(_tag, 'Stack trace: $stackTrace');
+      PMlog.e(_tag, '保存图片 $relativePath 失败: $e');
+      PMlog.e(_tag, '堆栈跟踪: $stackTrace');
     }
   }
 
@@ -399,7 +399,7 @@ class SyncWebSocketClient {
       return;
     }
 
-    PMlog.i(_tag, '📤 Requesting image: $relativePath');
+    PMlog.i(_tag, '📤 请求图片: $relativePath');
     _sendMessage(
       SyncMessage(
         type: SyncMessageType.imageRequest,
@@ -485,7 +485,7 @@ class SyncWebSocketClient {
     try {
       _socket?.add(message.toJsonString());
     } catch (e) {
-      PMlog.e(_tag, 'Failed to send message: $e');
+      PMlog.e(_tag, '发送消息失败: $e');
     }
   }
 

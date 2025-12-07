@@ -12,13 +12,13 @@ import 'package:image_picker/image_picker.dart';
 
 class NoteEditorRoute extends PageRouteBuilder {
   NoteEditorRoute()
-      : super(
-    opaque: false, // 允许看到下面的 route
-    barrierColor: Colors.transparent, // 不要额外蒙一层黑
-    transitionDuration: Duration.zero, // 不用默认的 page 动画
-    reverseTransitionDuration: Duration.zero,
-    pageBuilder: (_, __, ___) => const NoteEditorSheet(),
-  );
+    : super(
+        opaque: false, // 允许看到下面的 route
+        barrierColor: Colors.transparent, // 不要额外蒙一层黑
+        transitionDuration: Duration.zero, // 不用默认的 page 动画
+        reverseTransitionDuration: Duration.zero,
+        pageBuilder: (_, __, ___) => const NoteEditorSheet(),
+      );
 }
 
 /// 笔记编辑器
@@ -76,7 +76,7 @@ class _NoteEditorSheetState extends ConsumerState<NoteEditorSheet>
         parent: _animationController,
         curve: const Interval(
           0.0,
-          0.7,             // 🔥 0~40% 动画时间内完成淡入
+          0.7, // 🔥 0~40% 动画时间内完成淡入
           curve: Curves.easeOut,
         ),
       ),
@@ -286,19 +286,17 @@ class _NoteEditorSheetState extends ConsumerState<NoteEditorSheet>
       ),
     );
   }
+
   // 1. 顶部工具栏
   Widget _buildHeader(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    
+
     return Container(
       height: 60.h,
       padding: EdgeInsets.symmetric(horizontal: 16.w),
       decoration: BoxDecoration(
         border: Border(
-          bottom: BorderSide(
-            color: colorScheme.outlineVariant,
-            width: 1,
-          ),
+          bottom: BorderSide(color: colorScheme.outlineVariant, width: 1),
         ),
         color: colorScheme.surface,
       ),
@@ -575,9 +573,7 @@ class _NoteEditorSheetState extends ConsumerState<NoteEditorSheet>
             width: double.infinity,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(12.r),
-              border: Border.all(
-                color: colorScheme.outlineVariant,
-              ),
+              border: Border.all(color: colorScheme.outlineVariant),
               image: DecorationImage(
                 image: FileImage(File(_localImagePath!)),
                 fit: BoxFit.cover,

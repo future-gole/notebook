@@ -10,6 +10,7 @@ import 'repository/sync_log_repository.dart';
 import 'mappers/sync_data_mapper.dart';
 import 'realtime/sync_websocket_client.dart';
 import 'realtime/sync_websocket_server.dart';
+import 'network_utils.dart';
 import '../model/note.dart';
 import '../model/category.dart';
 import '../util/logger_service.dart';
@@ -72,11 +73,11 @@ class SyncManager {
     String? targetIp,
   }) async {
     final ip = targetIp ?? client.remoteDevice?.ipAddress ?? 'unknown';
-    PMlog.i(_tag, 'Starting sync with $ip via WebSocket');
+    PMlog.i(_tag, '通过 WebSocket 与 $ip 开始同步');
 
     if (!client.isConnected) {
-      PMlog.w(_tag, 'WebSocket client not connected');
-      return const SyncResult(success: false, error: 'Not connected');
+      PMlog.w(_tag, 'WebSocket 客户端未连接');
+      return const SyncResult(success: false, error: '未连接');
     }
 
     try {
@@ -84,7 +85,7 @@ class SyncManager {
       final lastSyncTimestamp = await _syncLogRepository.getLastSyncTimestamp(
         ip,
       );
-      PMlog.d(_tag, 'Last sync timestamp: $lastSyncTimestamp');
+      PMlog.d(_tag, '上次同步时间戳: $lastSyncTimestamp');
 
       // 标记同步开始
       await _syncLogRepository.markSyncing(ip);
@@ -95,11 +96,8 @@ class SyncManager {
       );
 
       if (response == null) {
-        await _syncLogRepository.markFailed(ip, 'Failed to fetch changes');
-        return const SyncResult(
-          success: false,
-          error: 'Failed to fetch changes',
-        );
+        await _syncLogRepository.markFailed(ip, '获取更改失败');
+        return const SyncResult(success: false, error: '获取更改失败');
       }
 
       // 3. 应用变更（传递 WebSocket 客户端以便请求图片）
@@ -115,10 +113,10 @@ class SyncManager {
         status: SyncStatus.success,
       );
 
-      PMlog.i(_tag, 'Sync completed: $result');
+      PMlog.i(_tag, '同步完成: $result');
       return result;
     } catch (e) {
-      PMlog.e(_tag, 'Sync failed: $e');
+      PMlog.e(_tag, '同步失败: $e');
       await _syncLogRepository.markFailed(ip, e.toString());
       return SyncResult(success: false, error: e.toString());
     }
@@ -137,14 +135,14 @@ class SyncManager {
     String targetIp, {
     int port = SyncWebSocketServer.defaultPort,
   }) async {
-    PMlog.i(_tag, 'Starting sync with $targetIp:$port');
+    PMlog.i(_tag, '与 $targetIp:$port 开始同步');
 
     // 创建临时客户端
     final client = SyncWebSocketClient(localDevice: _localDevice);
 
     // 设置同步请求处理器（当服务端向我们请求数据时）
     client.onSyncRequestReceived = (since) async {
-      PMlog.i(_tag, '📤 Server requested sync data since $since');
+      PMlog.i(_tag, '📤 服务器请求自 $since 以来的同步数据');
       return await getLocalChangesSince(since);
     };
 
@@ -152,9 +150,9 @@ class SyncManager {
       // 1. 建立连接
       final connected = await client.connect(targetIp, port: port);
       if (!connected) {
-        PMlog.w(_tag, 'Failed to connect to $targetIp');
-        await _syncLogRepository.markFailed(targetIp, 'Connection failed');
-        return const SyncResult(success: false, error: 'Connection failed');
+        PMlog.w(_tag, '连接到 $targetIp 失败');
+        await _syncLogRepository.markFailed(targetIp, '连接失败');
+        return const SyncResult(success: false, error: '连接失败');
       }
 
       // 等待握手完成
@@ -204,7 +202,7 @@ class SyncManager {
     try {
       // 首先收集所有需要同步的图片路径
       final imagePaths = <String>[];
-      
+
       await _isar.writeTxn(() async {
         for (final change in changes) {
           final entityType = change['_entityType'] as String?;
@@ -239,7 +237,7 @@ class SyncManager {
 
       // 如果有需要同步的图片，请求从远程设备获取
       if (imagePaths.isNotEmpty) {
-        PMlog.i(_tag, '📷 Requesting ${imagePaths.length} images from remote');
+        PMlog.i(_tag, '📷 从远程请求 ${imagePaths.length} 张图片');
         for (final path in imagePaths) {
           if (wsClient != null) {
             // 作为客户端请求
@@ -259,7 +257,7 @@ class SyncManager {
         categoriesUpdated: categoriesUpdated,
       );
     } catch (e) {
-      PMlog.e(_tag, 'Failed to apply changes: $e');
+      PMlog.e(_tag, '应用更改失败: $e');
       return SyncResult(success: false, error: e.toString());
     }
   }
@@ -274,7 +272,7 @@ class SyncManager {
   Future<_ChangeResult> _applyNoteChange(Map<String, dynamic> change) async {
     final remoteUuid = change['uuid'] as String?;
     if (remoteUuid == null || remoteUuid.isEmpty) {
-      PMlog.w(_tag, 'Skipping note without UUID');
+      PMlog.w(_tag, '跳过没有 UUID 的笔记');
       return _ChangeResult.ignored;
     }
 
@@ -290,17 +288,14 @@ class SyncManager {
     if (localNote == null) {
       // 本地不存在，插入新记录（如果远程未删除）
       if (remoteIsDeleted) {
-        PMlog.d(
-          _tag,
-          'Skipping deleted note that does not exist locally: $remoteUuid',
-        );
+        PMlog.d(_tag, '跳过本地不存在的已删除笔记: $remoteUuid');
         return _ChangeResult.ignored;
       }
 
       final note = SyncDataMapper.noteFromJson(change);
       note.uuid = remoteUuid;
       await _isar.notes.put(note);
-      PMlog.d(_tag, 'Added new note: $remoteUuid');
+      PMlog.d(_tag, '添加新笔记: $remoteUuid');
       return _ChangeResult.added;
     }
 
@@ -313,13 +308,13 @@ class SyncManager {
       await _isar.notes.put(note);
       PMlog.d(
         _tag,
-        'Updated note: $remoteUuid (remote: $remoteUpdatedAt > local: ${localNote.updatedAt})',
+        '更新笔记: $remoteUuid (远程: $remoteUpdatedAt > 本地: ${localNote.updatedAt})',
       );
       return _ChangeResult.updated;
     }
 
     // 本地版本更新或相同，忽略
-    PMlog.d(_tag, 'Ignored note: $remoteUuid (local version is newer or equal)');
+    PMlog.d(_tag, '忽略笔记: $remoteUuid (本地版本更新或相同)');
     return _ChangeResult.ignored;
   }
 
@@ -329,7 +324,7 @@ class SyncManager {
   ) async {
     final remoteUuid = change['uuid'] as String?;
     if (remoteUuid == null || remoteUuid.isEmpty) {
-      PMlog.w(_tag, 'Skipping category without UUID');
+      PMlog.w(_tag, '跳过没有 UUID 的分类');
       return _ChangeResult.ignored;
     }
 
@@ -354,17 +349,14 @@ class SyncManager {
     if (localCategory == null) {
       // 本地不存在，插入新记录（如果远程未删除）
       if (remoteIsDeleted) {
-        PMlog.d(
-          _tag,
-          'Skipping deleted category that does not exist locally: $remoteUuid',
-        );
+        PMlog.d(_tag, '跳过本地不存在的已删除分类: $remoteUuid');
         return _ChangeResult.ignored;
       }
 
       final category = SyncDataMapper.categoryFromJson(change);
       category.uuid = remoteUuid;
       await _isar.categorys.put(category);
-      PMlog.d(_tag, 'Added new category: $remoteName ($remoteUuid)');
+      PMlog.d(_tag, '添加新分类: $remoteName ($remoteUuid)');
       return _ChangeResult.added;
     }
 
@@ -377,16 +369,13 @@ class SyncManager {
       await _isar.categorys.put(category);
       PMlog.d(
         _tag,
-        'Updated category: $remoteName (remote: $remoteUpdatedAt > local: ${localCategory.updatedAt})',
+        '更新分类: $remoteName (远程: $remoteUpdatedAt > 本地: ${localCategory.updatedAt})',
       );
       return _ChangeResult.updated;
     }
 
     // 本地版本更新或相同，忽略
-    PMlog.d(
-      _tag,
-      'Ignored category: $remoteName (local version is newer or equal)',
-    );
+    PMlog.d(_tag, '忽略分类: $remoteName (本地版本更新或相同)');
     return _ChangeResult.ignored;
   }
 
@@ -395,26 +384,32 @@ class SyncManager {
   /// 通过尝试 WebSocket 连接来发现设备
   /// [subnet] 子网前三段，如 "192.168.1"
   Future<List<DeviceInfo>> scanNetwork(
-    String subnet, {
+    String localIp, {
+    String subnetMask = LanNetworkHelper.defaultSubnetMask,
     Duration timeout = const Duration(seconds: 3),
     int port = SyncWebSocketServer.defaultPort,
   }) async {
-    PMlog.i(_tag, '=== Network Scan Started ===');
-    PMlog.i(_tag, 'Subnet: $subnet.*');
-    PMlog.i(_tag, 'Port: $port');
-    PMlog.i(_tag, 'Timeout: ${timeout.inMilliseconds}ms');
+    PMlog.i(_tag, '=== 网络扫描开始 ===');
+    PMlog.i(_tag, '本地 IP: $localIp');
+    PMlog.i(_tag, '掩码: $subnetMask');
+    PMlog.i(_tag, '端口: $port');
+    PMlog.i(_tag, '超时: ${timeout.inMilliseconds}ms');
 
     final devices = <DeviceInfo>[];
     final futures = <Future<DeviceInfo?>>[];
 
-    // 扫描 1-254
-    for (int i = 1; i <= 254; i++) {
-      final ip = '$subnet.$i';
+    final hosts = LanNetworkHelper.hostsInSubnet(
+      localIp,
+      subnetMask: subnetMask,
+    );
+    PMlog.i(_tag, '扫描子网中的 ${hosts.length} 个主机...');
+
+    for (final ip in hosts) {
+      if (ip == localIp) continue; // skip self
       futures.add(_scanHost(ip, port, timeout));
     }
 
     // 并发执行扫描
-    PMlog.i(_tag, 'Scanning 254 hosts concurrently...');
     final results = await Future.wait(futures);
 
     for (final device in results) {
@@ -427,8 +422,8 @@ class SyncManager {
       }
     }
 
-    PMlog.i(_tag, '=== Network Scan Completed ===');
-    PMlog.i(_tag, 'Found: ${devices.length} devices');
+    PMlog.i(_tag, '=== 网络扫描完成 ===');
+    PMlog.i(_tag, '发现: ${devices.length} 个设备');
     PMlog.i(_tag, '==============================');
 
     return devices;
@@ -437,7 +432,7 @@ class SyncManager {
   /// 扫描单个主机
   Future<DeviceInfo?> _scanHost(String ip, int port, Duration timeout) async {
     try {
-      PMlog.d(_tag, 'Scanning $ip:$port...');
+      // PMlog.d(_tag, 'Scanning $ip:$port...');
       final socket = await WebSocket.connect(
         'ws://$ip:$port',
         headers: {'X-Device-Id': _localDevice.deviceId},
@@ -466,7 +461,7 @@ class SyncManager {
             final json = jsonDecode(data as String) as Map<String, dynamic>;
             final type = json['type'] as String?;
             PMlog.d(_tag, 'Received message from $ip: type=$type');
-            
+
             if ((type == SyncMessageType.hello ||
                     type == SyncMessageType.discoverResponse) &&
                 json['data'] != null) {
@@ -481,7 +476,10 @@ class SyncManager {
                 platform: info.platform,
                 lastSeen: DateTime.now(),
               );
-              PMlog.d(_tag, 'Got device info from $ip: ${deviceInfo!.deviceName}');
+              PMlog.d(
+                _tag,
+                'Got device info from $ip: ${deviceInfo!.deviceName}',
+              );
             }
           } catch (e) {
             PMlog.w(_tag, 'Error parsing message from $ip: $e');
@@ -495,9 +493,9 @@ class SyncManager {
     } catch (e) {
       // 连接失败或超时，该 IP 没有运行同步服务
       if (e is TimeoutException) {
-        PMlog.d(_tag, 'Timeout connecting to $ip:$port');
+        // PMlog.d(_tag, '连接到 $ip:$port 超时');
       } else {
-        PMlog.d(_tag, 'Failed to connect to $ip:$port: ${e.runtimeType}');
+        PMlog.d(_tag, '连接到 $ip:$port 失败: ${e.toString()}');
       }
       return null;
     }

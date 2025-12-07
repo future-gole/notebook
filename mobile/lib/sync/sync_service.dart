@@ -4,7 +4,6 @@ import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:isar_community/isar.dart';
 import 'package:uuid/uuid.dart';
-import 'package:network_info_plus/network_info_plus.dart';
 
 import 'models/device_info.dart';
 import 'models/sync_log.dart';
@@ -12,6 +11,7 @@ import 'sync_manager.dart';
 import 'repository/sync_log_repository.dart';
 import 'realtime/sync_websocket_server.dart';
 import 'realtime/sync_websocket_client.dart';
+import 'network_utils.dart';
 import '../model/note.dart';
 import '../model/category.dart';
 import '../providers/infrastructure_providers.dart';
@@ -86,15 +86,15 @@ class SyncServiceNotifier extends StateNotifier<SyncServiceState> {
   Future<void> _checkAndAutoStartServer() async {
     final config = AppConfig();
     if (config.syncAutoStart) {
-      PMlog.i(_tag, '🚀 Auto-starting sync server (enabled in settings)...');
+      PMlog.i(_tag, '🚀 自动启动同步服务器（设置中启用）...');
       try {
         await startServer();
-        PMlog.i(_tag, '✅ Sync server auto-started successfully');
+        PMlog.i(_tag, '✅ 同步服务器自动启动成功');
       } catch (e) {
-        PMlog.w(_tag, '⚠️ Failed to auto-start sync server: $e');
+        PMlog.w(_tag, '⚠️ 自动启动同步服务器失败: $e');
       }
     } else {
-      PMlog.d(_tag, 'Sync auto-start is disabled in settings');
+      PMlog.d(_tag, '同步自动启动在设置中被禁用');
     }
   }
 
@@ -106,6 +106,12 @@ class SyncServiceNotifier extends StateNotifier<SyncServiceState> {
       final deviceName = await _getDeviceName();
       final ipAddress = await _getLocalIpAddress();
 
+      if (ipAddress == null) {
+        state = state.copyWith(lastError: '未找到 LAN IP。请连接 Wi-Fi 或启用热点。');
+        PMlog.w(_tag, '本地设备初始化中止：缺少 LAN IP（需要 Wi-Fi/热点）');
+        return;
+      }
+
       _localDevice = DeviceInfo(
         deviceId: deviceId,
         deviceName: deviceName,
@@ -116,9 +122,9 @@ class SyncServiceNotifier extends StateNotifier<SyncServiceState> {
       );
 
       state = state.copyWith(localDevice: _localDevice);
-      PMlog.d(_tag, 'Local device initialized: $_localDevice');
+      PMlog.d(_tag, '本地设备已初始化: $_localDevice');
     } catch (e) {
-      PMlog.e(_tag, 'Failed to initialize local device: $e');
+      PMlog.e(_tag, '初始化本地设备失败: $e');
     }
   }
 
@@ -134,20 +140,11 @@ class SyncServiceNotifier extends StateNotifier<SyncServiceState> {
   /// 获取本地 IP 地址
   Future<String?> _getLocalIpAddress() async {
     try {
-      final info = NetworkInfo();
-      final wifiIP = await info.getWifiIP();
-      if (wifiIP != null) return wifiIP;
-
-      // 备用方案：遍历网络接口
-      for (var interface in await NetworkInterface.list()) {
-        for (var addr in interface.addresses) {
-          if (addr.type == InternetAddressType.IPv4 && !addr.isLoopback) {
-            return addr.address;
-          }
-        }
-      }
+      // Prefer LAN-only addresses; avoid CGNAT/public addresses (e.g., 100.x).
+      final selection = await LanNetworkHelper.pickLanIPv4(logTag: _tag);
+      return selection?.ip;
     } catch (e) {
-      PMlog.e(_tag, 'Failed to get local IP: $e');
+      PMlog.e(_tag, '获取本地 IP 失败: $e');
     }
     return null;
   }
@@ -158,8 +155,17 @@ class SyncServiceNotifier extends StateNotifier<SyncServiceState> {
       await _initLocalDevice();
     }
 
+    if (_localDevice?.ipAddress == null) {
+      state = state.copyWith(
+        lastError:
+            'No LAN IP found. Connect to the same Wi-Fi or enable hotspot.',
+      );
+      PMlog.w(_tag, '服务器启动中止：没有 LAN IP（缺少 Wi-Fi/热点）');
+      return false;
+    }
+
     if (_wsServer != null && _wsServer!.isRunning) {
-      PMlog.w(_tag, 'Server is already running');
+      PMlog.w(_tag, '服务器已在运行');
       return true;
     }
 
@@ -169,32 +175,29 @@ class SyncServiceNotifier extends StateNotifier<SyncServiceState> {
 
       // 设置回调
       _wsServer!.onDeviceConnected = (device) {
-        PMlog.i(_tag, '🔗 Device connected via WebSocket: ${device.deviceName}');
+        PMlog.i(_tag, '🔗 设备通过 WebSocket 连接: ${device.deviceName}');
         _addDiscoveredDevice(device);
 
         // 当有新设备连接时，通过已有连接请求同步数据（不创建新连接）
         if (device.ipAddress != null) {
-          PMlog.i(
-            _tag,
-            '🔄 New device connected, requesting sync via existing connection...',
-          );
+          PMlog.i(_tag, '🔄 新设备连接，通过现有连接请求同步...');
           _requestSyncViaServer(device.ipAddress!);
         }
       };
 
       _wsServer!.onDeviceDisconnected = (device) {
-        PMlog.i(_tag, '🔌 Device disconnected: ${device.deviceName}');
+        PMlog.i(_tag, '🔌 设备断开连接: ${device.deviceName}');
         _removeDiscoveredDevice(device);
       };
 
       _wsServer!.onRemoteDataChanged = () {
-        PMlog.i(_tag, '📥 Remote data changed, triggering sync...');
+        PMlog.i(_tag, '📥 远程数据已更改，触发同步...');
         _onRemoteDataChanged();
       };
 
       // 当收到同步响应时，应用变更
       _wsServer!.onSyncResponseReceived = (clientIp, changes) {
-        PMlog.i(_tag, '📥 Received ${changes.length} changes from $clientIp');
+        PMlog.i(_tag, '📥 从 $clientIp 收到 ${changes.length} 个更改');
         _applyChangesFromServer(clientIp, changes);
       };
 
@@ -204,10 +207,10 @@ class SyncServiceNotifier extends StateNotifier<SyncServiceState> {
       _startLocalDataWatchers();
 
       state = state.copyWith(isServerRunning: true);
-      PMlog.i(_tag, 'Sync server started (WebSocket only, port: $defaultPort)');
+      PMlog.i(_tag, '同步服务器已启动（仅 WebSocket，端口: $defaultPort）');
       return true;
     } catch (e) {
-      PMlog.e(_tag, 'Failed to start server: $e');
+      PMlog.e(_tag, '启动服务器失败: $e');
       state = state.copyWith(lastError: e.toString());
       return false;
     }
@@ -238,9 +241,9 @@ class SyncServiceNotifier extends StateNotifier<SyncServiceState> {
       await _wsServer!.stop();
       _wsServer = null;
       state = state.copyWith(isServerRunning: false, discoveredDevices: []);
-      PMlog.i(_tag, 'Sync server stopped');
+      PMlog.i(_tag, '同步服务器已停止');
     } catch (e) {
-      PMlog.e(_tag, 'Failed to stop server: $e');
+      PMlog.e(_tag, '停止服务器失败: $e');
     }
   }
 
@@ -248,13 +251,13 @@ class SyncServiceNotifier extends StateNotifier<SyncServiceState> {
   void _startLocalDataWatchers() {
     // 监听 Notes 变化
     _notesWatcher = _isar.notes.watchLazy().listen((_) {
-      PMlog.d(_tag, '📤 Local notes changed');
+      PMlog.d(_tag, '📤 本地笔记已更改');
       _onLocalDataChanged();
     });
 
     // 监听 Categories 变化
     _categoriesWatcher = _isar.categorys.watchLazy().listen((_) {
-      PMlog.d(_tag, '📤 Local categories changed');
+      PMlog.d(_tag, '📤 本地分类已更改');
       _onLocalDataChanged();
     });
   }
@@ -283,7 +286,7 @@ class SyncServiceNotifier extends StateNotifier<SyncServiceState> {
     final devices = state.discoveredDevices;
     if (devices.isEmpty) return;
 
-    PMlog.i(_tag, '🔄 Auto-syncing with ${devices.length} devices...');
+    PMlog.i(_tag, '🔄 正在自动同步 ${devices.length} 个设备...');
 
     for (final device in devices) {
       if (device.ipAddress != null) {
@@ -322,21 +325,25 @@ class SyncServiceNotifier extends StateNotifier<SyncServiceState> {
   /// 测试本机服务器是否正常运行
   Future<bool> testLocalServer() async {
     if (_wsServer == null || !_wsServer!.isRunning) {
-      PMlog.w(_tag, 'Server is not running');
+      PMlog.w(_tag, '服务器未运行');
       return false;
     }
 
     // WebSocket 服务器运行中即为正常
-    PMlog.i(_tag, '✅ WebSocket server is running on port $defaultPort');
+    PMlog.i(_tag, '✅ WebSocket 服务器正在端口 $defaultPort 上运行');
     return true;
   }
 
   /// 发现局域网设备
   Future<List<DeviceInfo>> discoverDevices() async {
-    PMlog.i(_tag, '=== Starting Device Discovery ===');
+    PMlog.i(_tag, '=== 开始设备发现 ===');
+
+    if (_localDevice == null) {
+      await _initLocalDevice();
+    }
 
     // 检查本机服务状态
-    PMlog.i(_tag, 'Local server running: ${_wsServer?.isRunning ?? false}');
+    PMlog.i(_tag, '本地服务器运行中：${_wsServer?.isRunning ?? false}');
     if (_wsServer?.isRunning != true) {
       PMlog.w(_tag, '⚠️ WARNING: Local server is NOT running!');
       PMlog.w(_tag, 'Other devices cannot discover this device.');
@@ -350,20 +357,25 @@ class SyncServiceNotifier extends StateNotifier<SyncServiceState> {
       return [];
     }
 
-    PMlog.i(_tag, 'Local IP: $ipAddress');
-
-    // 获取子网
-    final parts = ipAddress.split('.');
-    if (parts.length != 4) {
-      PMlog.e(_tag, '❌ Invalid IP format: $ipAddress');
+    if (_localDevice == null) {
+      PMlog.e(_tag, '❌ Local device is not initialized');
       return [];
     }
-    final subnet = '${parts[0]}.${parts[1]}.${parts[2]}';
 
-    PMlog.i(_tag, 'Discovering devices on subnet: $subnet.*');
+    PMlog.i(_tag, 'Local IP: $ipAddress');
+    final subnetMask = LanNetworkHelper.defaultSubnetMask;
+    final candidates = LanNetworkHelper.hostsInSubnet(
+      ipAddress,
+      subnetMask: subnetMask,
+    );
+
+    PMlog.i(_tag, '在子网中发现设备（$subnetMask），主机数量：${candidates.length}');
 
     _manager ??= SyncManager(isar: _isar, localDevice: _localDevice!);
-    final devices = await _manager!.scanNetwork(subnet);
+    final devices = await _manager!.scanNetwork(
+      ipAddress,
+      subnetMask: subnetMask,
+    );
 
     // 过滤掉自己
     final filteredDevices = devices
@@ -399,7 +411,10 @@ class SyncServiceNotifier extends StateNotifier<SyncServiceState> {
       return;
     }
 
-    PMlog.i(_tag, '🔗 Establishing WebSocket connection to ${device.deviceName}');
+    PMlog.i(
+      _tag,
+      '🔗 Establishing WebSocket connection to ${device.deviceName}',
+    );
 
     final client = SyncWebSocketClient(localDevice: _localDevice!);
 
@@ -434,24 +449,21 @@ class SyncServiceNotifier extends StateNotifier<SyncServiceState> {
 
     // 当重连成功时，请求同步（通过客户端连接）
     client.onReconnected = () {
-      PMlog.i(_tag, '🔄 Reconnected to ${device.deviceName}, requesting sync');
+      PMlog.i(_tag, '🔄 已重新连接到 ${device.deviceName}，请求同步');
       // 使用客户端请求同步
       _syncViaClient(client, ip);
     };
 
     // 当服务端请求同步时，返回本地变更数据
     client.onSyncRequestReceived = (since) async {
-      PMlog.i(
-        _tag,
-        '📤 Server requested sync since $since, providing local changes',
-      );
+      PMlog.i(_tag, '📤 服务器请求自 $since 以来的同步，提供本地更改');
       _manager ??= SyncManager(isar: _isar, localDevice: _localDevice!);
       return await _manager!.getLocalChangesSince(since);
     };
 
     // 当收到同步响应时（客户端请求同步的结果）
     client.onSyncResponse = (changes) {
-      PMlog.i(_tag, '📥 Received ${changes.length} changes via client');
+      PMlog.i(_tag, '📥 通过客户端收到 ${changes.length} 个更改');
       _applyChangesFromClient(ip, changes);
     };
 
@@ -467,10 +479,7 @@ class SyncServiceNotifier extends StateNotifier<SyncServiceState> {
     final syncLogRepo = SyncLogRepository(_isar);
     final lastSyncTimestamp = await syncLogRepo.getLastSyncTimestamp(clientIp);
 
-    PMlog.i(
-      _tag,
-      '📤 Requesting sync from $clientIp via server (since: $lastSyncTimestamp)',
-    );
+    PMlog.i(_tag, '📤 通过服务器从 $clientIp 请求同步（自: $lastSyncTimestamp）');
     _wsServer!.requestSyncFromClient(clientIp, since: lastSyncTimestamp);
   }
 
@@ -528,10 +537,10 @@ class SyncServiceNotifier extends StateNotifier<SyncServiceState> {
         status: SyncStatus.success,
       );
 
-      PMlog.i(_tag, '✅ Applied changes from $remoteIp ($source): $result');
+      PMlog.i(_tag, '✅ 已应用来自 $remoteIp ($source) 的更改: $result');
       state = state.copyWith(lastSyncTime: DateTime.now());
     } catch (e) {
-      PMlog.e(_tag, 'Failed to apply changes from $remoteIp ($source): $e');
+      PMlog.e(_tag, '应用来自 $remoteIp ($source) 的更改失败: $e');
     }
   }
 
@@ -543,10 +552,7 @@ class SyncServiceNotifier extends StateNotifier<SyncServiceState> {
     final syncLogRepo = SyncLogRepository(_isar);
     final lastSyncTimestamp = await syncLogRepo.getLastSyncTimestamp(serverIp);
 
-    PMlog.i(
-      _tag,
-      '📤 Requesting sync from $serverIp via client (since: $lastSyncTimestamp)',
-    );
+    PMlog.i(_tag, '📤 通过客户端从 $serverIp 请求同步（自: $lastSyncTimestamp）');
     client.requestSync(since: lastSyncTimestamp);
   }
 
@@ -564,35 +570,35 @@ class SyncServiceNotifier extends StateNotifier<SyncServiceState> {
     final devices = await discoverDevices();
 
     if (devices.isEmpty) {
-      PMlog.i(_tag, 'No devices found, skipping sync');
+      PMlog.i(_tag, '未发现设备，跳过同步');
       return results;
     }
 
-    PMlog.i(_tag, 'Found ${devices.length} devices, starting sync...');
+    PMlog.i(_tag, '发现 ${devices.length} 个设备，开始同步...');
 
     // 2. 逐一同步
     for (final device in devices) {
       if (device.ipAddress == null) continue;
 
-      PMlog.i(_tag, 'Syncing with: ${device.deviceName} (${device.ipAddress})');
+      PMlog.i(_tag, '正在与 ${device.deviceName} (${device.ipAddress}) 同步');
       final result = await syncWithDevice(device.ipAddress!, port: device.port);
       results[device.ipAddress!] = result;
 
       if (result.success) {
-        PMlog.i(_tag, '✅ Sync success: ${result.totalChanges} changes');
+        PMlog.i(_tag, '✅ 同步成功：${result.totalChanges} 个更改');
       } else {
-        PMlog.w(_tag, '❌ Sync failed: ${result.error}');
+        PMlog.w(_tag, '❌ 同步失败：${result.error}');
       }
     }
 
-    PMlog.i(_tag, '=== Auto Sync Completed ===');
+    PMlog.i(_tag, '=== 自动同步完成 ===');
     return results;
   }
 
   /// 与指定设备同步
   Future<SyncResult> syncWithDevice(String ip, {int? port}) async {
     if (state.isSyncing) {
-      return const SyncResult(success: false, error: 'Already syncing');
+      return const SyncResult(success: false, error: '已在同步中');
     }
 
     state = state.copyWith(isSyncing: true, lastError: null);
@@ -600,11 +606,34 @@ class SyncServiceNotifier extends StateNotifier<SyncServiceState> {
     try {
       _manager ??= SyncManager(isar: _isar, localDevice: _localDevice!);
 
+      // 子网检查：必须基于掩码判断，避免 100.x CGNAT 误判
+      final localIp = _localDevice?.ipAddress;
+      if (localIp != null) {
+        final sameSubnet = LanNetworkHelper.isSameSubnet(
+          localIp,
+          ip,
+          subnetMask: LanNetworkHelper.defaultSubnetMask,
+        );
+        PMlog.i(
+          _tag,
+          '子网检查 本地=$localIp, 远程=$ip, 掩码=${LanNetworkHelper.defaultSubnetMask}, 相同=$sameSubnet',
+        );
+        if (!sameSubnet) {
+          PMlog.w(
+            _tag,
+            '目标 $ip 与 $localIp 不在同一子网（掩码 ${LanNetworkHelper.defaultSubnetMask}）',
+          );
+        }
+      }
+
       // 检查是否已有活跃的 WebSocket 客户端连接
       final existingClient = _wsClients[ip];
       if (existingClient != null && existingClient.isConnected) {
         // 使用现有连接进行同步
-        PMlog.i(_tag, '🔄 Using existing WebSocket connection for sync with $ip');
+        PMlog.i(
+          _tag,
+          '🔄 Using existing WebSocket connection for sync with $ip',
+        );
         final result = await _manager!.synchronizeViaClient(
           existingClient,
           targetIp: ip,
@@ -648,7 +677,7 @@ class SyncServiceNotifier extends StateNotifier<SyncServiceState> {
 
       return result;
     } catch (e) {
-      PMlog.e(_tag, 'Sync failed: $e');
+      PMlog.e(_tag, '同步失败: $e');
       // 同步异常，从设备列表中移除该设备
       _removeDeviceByIp(ip);
       state = state.copyWith(isSyncing: false, lastError: e.toString());

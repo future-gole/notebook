@@ -199,7 +199,7 @@ class _HeroGalleryState extends State<HeroGallery> {
       padding: EdgeInsets.symmetric(horizontal: 24.w),
       child: Column(
         // 让文字垂直方向分布：一部分在渐变里，一部分在实色区
-        mainAxisAlignment: MainAxisAlignment.end, // 靠下对齐，还是靠上？
+        mainAxisAlignment: MainAxisAlignment.end,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // 撑开顶部的空间，让文字落在渐变变深的地方

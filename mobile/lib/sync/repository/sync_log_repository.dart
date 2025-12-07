@@ -18,7 +18,7 @@ class SyncLogRepository {
     try {
       return await _isar.syncLogs.filter().remoteIpEqualTo(ip).findFirst();
     } catch (e) {
-      PMlog.e(_tag, 'Failed to get sync log for $ip: $e');
+      PMlog.e(_tag, '获取 $ip 的同步日志失败: $e');
       return null;
     }
   }
@@ -62,12 +62,9 @@ class SyncLogRepository {
         await _isar.syncLogs.put(syncLog);
       });
 
-      PMlog.d(
-        _tag,
-        'Updated sync log for $ip: timestamp=$timestamp, status=$status',
-      );
+      PMlog.d(_tag, '更新 $ip 的同步日志: 时间戳=$timestamp, 状态=$status');
     } catch (e) {
-      PMlog.e(_tag, 'Failed to update sync log for $ip: $e');
+      PMlog.e(_tag, '更新 $ip 的同步日志失败: $e');
       rethrow;
     }
   }
@@ -91,7 +88,7 @@ class SyncLogRepository {
         await _isar.syncLogs.put(syncLog);
       });
     } catch (e) {
-      PMlog.e(_tag, 'Failed to mark syncing for $ip: $e');
+      PMlog.e(_tag, '标记 $ip 同步中失败: $e');
     }
   }
 
@@ -120,7 +117,7 @@ class SyncLogRepository {
     try {
       return await _isar.syncLogs.where().findAll();
     } catch (e) {
-      PMlog.e(_tag, 'Failed to get all sync logs: $e');
+      PMlog.e(_tag, '获取所有同步日志失败: $e');
       return [];
     }
   }
@@ -132,7 +129,7 @@ class SyncLogRepository {
         await _isar.syncLogs.filter().remoteIpEqualTo(ip).deleteAll();
       });
     } catch (e) {
-      PMlog.e(_tag, 'Failed to delete sync log for $ip: $e');
+      PMlog.e(_tag, '删除 $ip 的同步日志失败: $e');
     }
   }
 
@@ -143,7 +140,7 @@ class SyncLogRepository {
         await _isar.syncLogs.clear();
       });
     } catch (e) {
-      PMlog.e(_tag, 'Failed to clear sync logs: $e');
+      PMlog.e(_tag, '清除同步日志失败: $e');
     }
   }
 }
