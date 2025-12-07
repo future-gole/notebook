@@ -25,6 +25,7 @@ class NoteService {
     String? category, // 分类名称（用于UI显示和查询）
     int categoryId = 1, // 分类ID（用于categories数据库关联）
     String? tag,
+    String? previewImageUrl,
   }) async {
     PMlog.d(
       NoteServiceTag,
@@ -40,6 +41,7 @@ class NoteService {
       categoryId: categoryId,
       time: DateTime.now(),
       tag: tag,
+      previewImageUrl: previewImageUrl,
     );
 
     if (id != null && id != -1) {

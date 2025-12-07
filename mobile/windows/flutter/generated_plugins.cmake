@@ -3,6 +3,7 @@
 #
 
 list(APPEND FLUTTER_PLUGIN_LIST
+  file_selector_windows
   flutter_timezone
   isar_community_flutter_libs
   permission_handler_windows

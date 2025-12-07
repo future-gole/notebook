@@ -12,6 +12,7 @@ import 'package:pocketmind/page/home/note_detail_page.dart';
 import 'package:pocketmind/providers/infrastructure_providers.dart';
 import 'package:pocketmind/providers/nav_providers.dart';
 import 'package:pocketmind/providers/note_providers.dart';
+import 'package:pocketmind/providers/ui_providers.dart';
 import 'package:pocketmind/util/logger_service.dart';
 
 final String tag = "DesktopHomeScreen";
@@ -59,6 +60,7 @@ class _DesktopHomeScreenState extends ConsumerState<DesktopHomeScreen> {
         : NoteLayout.list;
     final searchQuery = ref.watch(searchQueryProvider);
     final searchResults = ref.watch(searchResultsProvider);
+    final isAddingNote = ref.watch(isAddingNoteProvider);
 
     // 监听选中的笔记
     final selectedNote = ref.watch(selectedNoteProvider);
@@ -72,7 +74,13 @@ class _DesktopHomeScreenState extends ConsumerState<DesktopHomeScreen> {
 
           // 中间内容区（笔记列表或详情页）
           Expanded(
-            child: selectedNote != null
+            child: isAddingNote
+                ? NoteEditorSheet(
+                    onClose: () {
+                      ref.read(isAddingNoteProvider.notifier).state = false;
+                    },
+                  )
+                : selectedNote != null
                 // 如果有选中笔记，显示详情页
                 ? NoteDetailPage(
                     note: selectedNote,
@@ -129,7 +137,7 @@ class _DesktopHomeScreenState extends ConsumerState<DesktopHomeScreen> {
         ],
       ),
       // FAB - 桌面端放在右下角（只在列表页显示）
-      floatingActionButton: selectedNote == null
+      floatingActionButton: (selectedNote == null && !isAddingNote)
           ? FloatingActionButton(
               onPressed: () => _showAddNotePage(context),
               elevation: 8,
@@ -161,37 +169,9 @@ class _DesktopHomeScreenState extends ConsumerState<DesktopHomeScreen> {
     );
   }
 
-  /// 显示添加笔记对话框
+  /// 显示添加笔记页面（嵌入式）
   void _showAddNotePage(BuildContext context) {
-    showDialog(
-      context: context,
-      barrierDismissible: true,
-      builder: (context) {
-        return Dialog(
-          insetPadding: EdgeInsets.symmetric(horizontal: 80.w, vertical: 40.h),
-          backgroundColor: Colors.transparent,
-          child: Container(
-            width: 600.w,
-            constraints: BoxConstraints(maxHeight: 0.85.sh),
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surface,
-              borderRadius: BorderRadius.circular(16.r),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.2),
-                  blurRadius: 20.r,
-                  offset: Offset(0, 10.h),
-                ),
-              ],
-            ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(16.r),
-              child: NoteEditorSheet(),
-            ),
-          ),
-        );
-      },
-    );
+    ref.read(isAddingNoteProvider.notifier).state = true;
   }
 
   /// 构建笔记内容区域

@@ -313,27 +313,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     );
   }
 
-  // 显示添加笔记模态框（底部弹窗）
+  // 显示添加笔记页面（全屏）
   void _showAddNotePage(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-
-      // 允许模态框占据全屏高度，并且能响应键盘
-      isScrollControlled: true,
-
-      // 将 BottomSheet 的背景设为透明
-      // 这样 NoteEditorSheet 内部 Container 的圆角和颜色才能正常显示
-      backgroundColor: Colors.transparent,
-
-      useSafeArea: true,
-
-      builder: (context) {
-        return Padding(
-          padding: EdgeInsets.only(top: 0.1.sh),
-          child: NoteEditorSheet(),
-        );
-      },
-    );
+    Navigator.of(context).push(NoteEditorRoute());
   }
 
   // 构建搜索栏
