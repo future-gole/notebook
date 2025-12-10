@@ -45,11 +45,9 @@ class SyncLogRepository {
             .remoteIpEqualTo(ip)
             .findFirst();
 
-        if (syncLog == null) {
-          syncLog = SyncLog()
+        syncLog ??= SyncLog()
             ..remoteIp = ip
             ..createdTime = DateTime.now();
-        }
 
         syncLog
           ..remoteDeviceId = deviceId ?? syncLog.remoteDeviceId
@@ -78,11 +76,9 @@ class SyncLogRepository {
             .remoteIpEqualTo(ip)
             .findFirst();
 
-        if (syncLog == null) {
-          syncLog = SyncLog()
+        syncLog ??= SyncLog()
             ..remoteIp = ip
             ..createdTime = DateTime.now();
-        }
 
         syncLog.syncStatus = SyncStatus.syncing.value;
         await _isar.syncLogs.put(syncLog);

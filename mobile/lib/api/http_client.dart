@@ -16,7 +16,7 @@ class HttpClient {
   factory HttpClient() => _instance;
 
   late Dio _dio;
-  final String tag = "HttpClient";
+  final String tag = 'HttpClient';
 
   // 基础配置
   static const Duration connectTimeout = Duration(seconds: 30);
@@ -48,13 +48,13 @@ class HttpClient {
   /// 设置 Token
   void setToken(String token) {
     _dio.options.headers[HttpHeaders.authorizationHeader] = 'Bearer $token';
-    PMlog.d(tag, "Token 已设置");
+    PMlog.d(tag, 'Token 已设置');
   }
 
   /// 清除 Token
   void clearToken() {
     _dio.options.headers.remove(HttpHeaders.authorizationHeader);
-    PMlog.d(tag, "Token 已清除");
+    PMlog.d(tag, 'Token 已清除');
   }
 
   /// 内部辅助函数，将 DioException 转换为自定义的 HttpException
@@ -277,7 +277,7 @@ class HttpClient {
   /// 取消所有请求
   void cancelAll() {
     // 注意：这会取消所有正在进行的请求
-    PMlog.w(tag, "取消所有请求");
+    PMlog.w(tag, '取消所有请求');
   }
 }
 
@@ -326,7 +326,7 @@ class _ApiTransformInterceptor extends Interceptor {
 
 /// 日志拦截器
 class _LogInterceptor extends Interceptor {
-  final String tag = "HttpClient";
+  final String tag = 'HttpClient';
 
   @override
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
@@ -374,13 +374,13 @@ class _LogInterceptor extends Interceptor {
 
 /// 错误处理拦截器
 class _ErrorInterceptor extends Interceptor {
-  final String tag = "HttpClient";
+  final String tag = 'HttpClient';
 
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) {
     // 统一错误处理
     String errorMessage = _handleError(err);
-    PMlog.e(tag, "请求错误: $errorMessage");
+    PMlog.e(tag, '请求错误: $errorMessage');
     
     // 可以在这里添加全局错误提示逻辑
     // 例如：显示 Toast、SnackBar 等

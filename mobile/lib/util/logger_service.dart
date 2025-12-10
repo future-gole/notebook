@@ -77,10 +77,10 @@ class DeveloperLogOutput extends LogOutput {
     // 非 Android (或 Android 通道不可用) 时退回到 debugPrint，至少保证能看到日志。
     final lines = message.toString().split('\n');
     for (final line in lines) {
-      debugPrint('[${tag}] [$levelLabel] ${line.trim()}');
+      debugPrint('[$tag] [$levelLabel] ${line.trim()}');
     }
     if (error != null) {
-      debugPrint('[${tag}] [$levelLabel] error: ${error.toString()}');
+      debugPrint('[$tag] [$levelLabel] error: ${error.toString()}');
     }
     if (stack != null) {
       debugPrint(stack.toString());
@@ -129,10 +129,10 @@ class DeveloperLogOutput extends LogOutput {
     _androidLogChannel.invokeMethod<void>('log', payload).catchError((e, _) {
       final fallbackLines = message.split('\n');
       for (final line in fallbackLines) {
-        debugPrint('[${tag}] [$level] ${line.trim()}');
+        debugPrint('[$tag] [$level] ${line.trim()}');
       }
       if (error != null) {
-        debugPrint('[${tag}] [$level] error: ${error.toString()}');
+        debugPrint('[$tag] [$level] error: ${error.toString()}');
       }
       if (stackTrace != null) {
         debugPrint(stackTrace.toString());
@@ -161,7 +161,7 @@ class LogService {
 
     // 打印一条启动日志
     i(
-      "LogService",
+      'LogService',
       "Logger Service initialized. Mode: ${kReleaseMode ? 'Release' : 'Debug'}",
     );
   }
@@ -169,7 +169,7 @@ class LogService {
   // 4. 封装的日志方法
   void v(String tag, dynamic message, {dynamic error, StackTrace? stackTrace}) {
     _logger.v(
-      {"tag": tag, "msg": message},
+      {'tag': tag, 'msg': message},
       error: error,
       stackTrace: stackTrace,
     );
@@ -177,7 +177,7 @@ class LogService {
 
   void d(String tag, dynamic message, {dynamic error, StackTrace? stackTrace}) {
     _logger.d(
-      {"tag": tag, "msg": message},
+      {'tag': tag, 'msg': message},
       error: error,
       stackTrace: stackTrace,
     );
@@ -185,7 +185,7 @@ class LogService {
 
   void i(String tag, dynamic message, {dynamic error, StackTrace? stackTrace}) {
     _logger.i(
-      {"tag": tag, "msg": message},
+      {'tag': tag, 'msg': message},
       error: error,
       stackTrace: stackTrace,
     );
@@ -193,7 +193,7 @@ class LogService {
 
   void w(String tag, dynamic message, {dynamic error, StackTrace? stackTrace}) {
     _logger.w(
-      {"tag": tag, "msg": message},
+      {'tag': tag, 'msg': message},
       error: error,
       stackTrace: stackTrace,
     );
@@ -201,7 +201,7 @@ class LogService {
 
   void e(String tag, dynamic message, {dynamic error, StackTrace? stackTrace}) {
     _logger.e(
-      {"tag": tag, "msg": message},
+      {'tag': tag, 'msg': message},
       error: error,
       stackTrace: stackTrace,
     );
@@ -214,7 +214,7 @@ class LogService {
     StackTrace? stackTrace,
   }) {
     _logger.f(
-      {"tag": tag, "msg": message},
+      {'tag': tag, 'msg': message},
       error: error,
       stackTrace: stackTrace,
     );

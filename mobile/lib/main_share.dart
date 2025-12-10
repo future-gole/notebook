@@ -1,6 +1,5 @@
 // 路径: lib/main_share.dart
 import 'dart:io';
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -23,7 +22,7 @@ import '../../util/logger_service.dart';
 import 'package:flutter_uri_to_file/flutter_uri_to_file.dart';
 
 late Isar isar; // 这个 Isar 实例专用于分享引擎
-final String tag = "main_share";
+final String tag = 'main_share';
 
 // UI 状态枚举
 enum ShareUIState { waiting, success, editing }
@@ -71,7 +70,7 @@ class _MyShareAppState extends ConsumerState<MyShareApp>
     super.initState();
     noteService = ref.read(noteServiceProvider);
     _channel.setMethodCallHandler(_handleMethodCall);
-    PMlog.d(tag, "MyShareApp 初始化完成, 等待分享...");
+    PMlog.d(tag, 'MyShareApp 初始化完成, 等待分享...');
 
     // 延迟通知原生端引擎已准备好
     // 使用 addPostFrameCallback 确保第一帧渲染完成后再通知
@@ -84,15 +83,15 @@ class _MyShareAppState extends ConsumerState<MyShareApp>
   Future<void> _notifyEngineReady() async {
     try {
       await _channel.invokeMethod('engineReady');
-      PMlog.d(tag, "已通知原生端：Flutter 引擎准备就绪");
+      PMlog.d(tag, '已通知原生端：Flutter 引擎准备就绪');
     } catch (e) {
-      PMlog.e(tag, "通知引擎准备就绪失败: $e");
+      PMlog.e(tag, '通知引擎准备就绪失败: $e');
     }
   }
 
   // 隐藏 UI 并关闭 Activity
   void _dismissUI() {
-    PMlog.d(tag, "Dismissing UI...");
+    PMlog.d(tag, 'Dismissing UI...');
 
     // 重置状态机
     setState(() {
@@ -124,7 +123,7 @@ class _MyShareAppState extends ConsumerState<MyShareApp>
         await ImageStorageHelper().init();
         return await ImageStorageHelper().saveImage(tempFile);
       } catch (e) {
-        PMlog.e(tag, "❌ URI 转换文件失败: $e");
+        PMlog.e(tag, '❌ URI 转换文件失败: $e');
       }
     }
     return null;
@@ -135,7 +134,7 @@ class _MyShareAppState extends ConsumerState<MyShareApp>
   }
 
   Future<dynamic> _handleMethodCall(MethodCall call) async {
-    PMlog.d(tag, "接收到方法: ${call.method}");
+    PMlog.d(tag, '接收到方法: ${call.method}');
 
     switch (call.method) {
       case 'showShare':
@@ -145,7 +144,7 @@ class _MyShareAppState extends ConsumerState<MyShareApp>
         final content = _contentWithoutUrl(args['content'] as String);
         final url = await _extractedUrl(args['content'] as String);
 
-        PMlog.d(tag, "showShare: title=$title, url=$url, content= $url");
+        PMlog.d(tag, 'showShare: title=$title, url=$url, content= $url');
 
         try {
           // 1. 直接保存数据到数据库
@@ -161,10 +160,10 @@ class _MyShareAppState extends ConsumerState<MyShareApp>
             _currentState = ShareUIState.success;
           });
 
-          PMlog.d(tag, "分享的UI成功展示");
-          return "Success";
+          PMlog.d(tag, '分享的UI成功展示');
+          return 'Success';
         } catch (e) {
-          PMlog.e(tag, "展示识别: $e");
+          PMlog.e(tag, '展示识别: $e');
           return e.toString();
         }
 

@@ -9,7 +9,6 @@ import 'package:pocketmind/service/category_service.dart';
 import 'package:pocketmind/service/notification_service.dart';
 import 'package:pocketmind/util/app_config.dart';
 import 'package:intl/intl.dart';
-import 'package:flutter/cupertino.dart';
 
 import 'package:pocketmind/page/widget/creative_time_picker.dart';
 
@@ -102,10 +101,10 @@ class EditNotePageState extends ConsumerState<EditNotePage> {
         id: widget.id,
         title: _titleEnabled && _titleController.text.isNotEmpty
             ? _titleController.text
-            : "笔记提醒",
+            : '笔记提醒',
         body: _contentController.text.isNotEmpty
             ? _contentController.text
-            : "您有一条笔记提醒。",
+            : '您有一条笔记提醒。',
         scheduledDate: _scheduledTime!,
       );
     }
@@ -117,7 +116,7 @@ class EditNotePageState extends ConsumerState<EditNotePage> {
           .analyzePage(
             userQuery: _aiController.text,
             webUrl: widget.webUrl,
-            userEmail: "double2z2@163.com",
+            userEmail: 'double2z2@163.com',
           );
     }
     widget.onDone();
@@ -231,7 +230,7 @@ class EditNotePageState extends ConsumerState<EditNotePage> {
             ? _titleController
             : _aiController,
         decoration: InputDecoration(
-          hintText: _currentTab == EditTab.AI ? "敬请期待" : "开始输入...",
+          hintText: _currentTab == EditTab.AI ? '敬请期待' : '开始输入...',
           hintStyle: TextStyle(color: colorScheme.secondary, fontSize: 16.sp),
           border: InputBorder.none,
           isDense: true,
@@ -264,7 +263,7 @@ class EditNotePageState extends ConsumerState<EditNotePage> {
           TextField(
             controller: _tagController,
             decoration: InputDecoration(
-              hintText: "添加标签...",
+              hintText: '添加标签...',
               hintStyle: TextStyle(
                 color: colorScheme.secondary,
                 fontSize: 16.sp,
@@ -277,7 +276,7 @@ class EditNotePageState extends ConsumerState<EditNotePage> {
           ),
           SizedBox(height: 24.h),
           Text(
-            "最近标签",
+            '最近标签',
             style: TextStyle(
               color: colorScheme.secondary.withValues(alpha: 0.6),
               fontSize: 12.sp,
@@ -287,7 +286,7 @@ class EditNotePageState extends ConsumerState<EditNotePage> {
           ),
           SizedBox(height: 12.h),
           Text(
-            "暂无最近使用的标签",
+            '暂无最近使用的标签',
             style: TextStyle(
               color: colorScheme.secondary.withValues(alpha: 0.4),
               fontSize: 14.sp,
@@ -554,7 +553,7 @@ class EditNotePageState extends ConsumerState<EditNotePage> {
                   ),
                   SizedBox(height: 16.h),
                   Text(
-                    "已设置提醒",
+                    '已设置提醒',
                     style: TextStyle(
                       color: colorScheme.secondary,
                       fontSize: 14.sp,
@@ -585,7 +584,7 @@ class EditNotePageState extends ConsumerState<EditNotePage> {
                           color: colorScheme.primary,
                         ),
                         label: Text(
-                          "修改",
+                          '修改',
                           style: TextStyle(
                             color: colorScheme.primary,
                             fontWeight: FontWeight.w600,
@@ -616,7 +615,7 @@ class EditNotePageState extends ConsumerState<EditNotePage> {
                           color: colorScheme.error,
                         ),
                         label: Text(
-                          "删除",
+                          '删除',
                           style: TextStyle(
                             color: colorScheme.error,
                             fontWeight: FontWeight.w600,
@@ -644,7 +643,7 @@ class EditNotePageState extends ConsumerState<EditNotePage> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  "设置提醒",
+                  '设置提醒',
                   style: TextStyle(
                     color: colorScheme.onSurface,
                     fontSize: 20.sp,
@@ -659,7 +658,7 @@ class EditNotePageState extends ConsumerState<EditNotePage> {
                       // 暂时不提供一键清除，避免误触
                     },
                     child: Text(
-                      "长按删除快捷方式",
+                      '长按删除快捷方式',
                       style: TextStyle(
                         color: colorScheme.secondary.withOpacity(0.5),
                         fontSize: 12.sp,
@@ -680,7 +679,7 @@ class EditNotePageState extends ConsumerState<EditNotePage> {
                     _buildQuickOption(
                       colorScheme,
                       icon: Icons.wb_twilight,
-                      label: "稍后",
+                      label: '稍后',
                       timeLabel: _formatTime(
                         DateTime.now().add(const Duration(hours: 3)),
                       ),
@@ -741,8 +740,8 @@ class EditNotePageState extends ConsumerState<EditNotePage> {
                     _buildQuickOption(
                       colorScheme,
                       icon: Icons.calendar_month_outlined,
-                      label: "自定义时间",
-                      timeLabel: "选择...",
+                      label: '自定义时间',
+                      timeLabel: '选择...',
                       onTap: _pickCustomTime,
                       width: (constraints.maxWidth - 12.w) / 2,
                       isPrimary: true,
@@ -937,7 +936,7 @@ class EditNotePageState extends ConsumerState<EditNotePage> {
                       elevation: 0,
                     ),
                     child: Text(
-                      "Done",
+                      'Done',
                       style: TextStyle(
                         fontWeight: FontWeight.w600,
                         fontSize: 17.sp,

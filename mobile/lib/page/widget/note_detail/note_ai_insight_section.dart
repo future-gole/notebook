@@ -4,7 +4,7 @@ import 'package:pocketmind/page/widget/creative_toast.dart';
 
 
 class NoteAIInsightSection extends StatelessWidget {
-  const NoteAIInsightSection({Key? key}) : super(key: key);
+  const NoteAIInsightSection({super.key});
 
   @override
   Widget build(BuildContext context) {

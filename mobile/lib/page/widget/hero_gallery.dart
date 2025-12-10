@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -15,7 +14,7 @@ class HeroGallery extends StatefulWidget {
   final String? overlayTitle;
 
   const HeroGallery({
-    Key? key,
+    super.key,
     required this.images,
     this.title = '',
     this.isDesktop = false,
@@ -25,7 +24,7 @@ class HeroGallery extends StatefulWidget {
     this.categoryLabel,
     this.dateLabel,
     this.overlayTitle,
-  }) : super(key: key);
+  });
 
   @override
   State<HeroGallery> createState() => _HeroGalleryState();

@@ -7,10 +7,10 @@ class NoteSourceSection extends StatelessWidget {
   final Function(String) onLaunchUrl;
 
   const NoteSourceSection({
-    Key? key,
+    super.key,
     required this.note,
     required this.onLaunchUrl,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

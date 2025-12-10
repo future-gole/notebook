@@ -1,7 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pocketmind/api/http_client.dart';
-import 'package:pocketmind/service/page_analysis_service.dart';
-import 'package:pocketmind/util/app_config.dart';
 
 import 'infrastructure_providers.dart';
 

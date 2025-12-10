@@ -7,11 +7,11 @@ class NoteTagsSection extends StatelessWidget {
   final Function(String) onRemoveTag;
 
   const NoteTagsSection({
-    Key? key,
+    super.key,
     required this.tags,
     required this.onAddTag,
     required this.onRemoveTag,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

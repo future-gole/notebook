@@ -7,11 +7,11 @@ class NoteLinkContentSection extends StatelessWidget {
   final VoidCallback onSave;
 
   const NoteLinkContentSection({
-    Key? key,
+    super.key,
     this.previewDescription,
     required this.contentController,
     required this.onSave,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

@@ -282,7 +282,7 @@ void main() {
     });
 
     test('CategoryEntity 长名称', () {
-      final longName = 'Category_' + ('A' * 100);
+      final longName = 'Category_${'A' * 100}';
       final entity = CategoryEntity(name: longName);
 
       expect(entity.name.length, greaterThan(100));

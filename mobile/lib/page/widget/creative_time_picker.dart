@@ -9,11 +9,11 @@ class CreativeTimePicker extends StatefulWidget {
   final VoidCallback? onCancelled;
 
   const CreativeTimePicker({
-    Key? key,
+    super.key,
     this.initialTime,
     required this.onTimeSelected,
     this.onCancelled,
-  }) : super(key: key);
+  });
 
   @override
   State<CreativeTimePicker> createState() => _CreativeTimePickerState();

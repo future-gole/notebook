@@ -24,11 +24,11 @@ class LocalTextCard extends StatefulWidget {
   final bool isHovered;
 
   const LocalTextCard({
-    Key? key,
+    super.key,
     required this.note,
     this.isDesktop = false,
     this.isHovered = false,
-  }) : super(key: key);
+  });
 
   @override
   State<LocalTextCard> createState() => _LocalTextCardState();

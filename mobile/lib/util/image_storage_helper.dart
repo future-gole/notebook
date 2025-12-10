@@ -9,7 +9,7 @@ import './logger_service.dart';
 /// 负责管理本地图片的存储、路径解析。
 /// 实现了"相对路径"与"绝对路径"的转换。
 class ImageStorageHelper {
-  static String tag = "ImageStorageHelper";
+  static String tag = 'ImageStorageHelper';
   // 单例模式，方便全局调用
   static final ImageStorageHelper _instance = ImageStorageHelper._internal();
   factory ImageStorageHelper() => _instance;
@@ -31,7 +31,7 @@ class ImageStorageHelper {
     if (!await directory.exists()) {
       await directory.create(recursive: true);
     }
-    PMlog.d(tag,"图片存储根目录已初始化: $_rootDir");
+    PMlog.d(tag,'图片存储根目录已初始化: $_rootDir');
   }
 
   /// 保存图片：将临时文件移动到我们的存储目录
@@ -40,7 +40,7 @@ class ImageStorageHelper {
   /// 返回 : 相对路径 (例如 "pocket_images/uuid.jpg")，用于存入数据库
   Future<String> saveImage(File sourceFile) async {
     final String fileName =
-        "${const Uuid().v4()}${p.extension(sourceFile.path)}";
+        '${const Uuid().v4()}${p.extension(sourceFile.path)}';
     final String relativePath = p.join(_folderName, fileName);
     final String destinationPath = p.join(_rootDir, relativePath);
     await sourceFile.copy(destinationPath);
@@ -59,10 +59,10 @@ class ImageStorageHelper {
       final file = getFileByRelativePath(relativePath);
       if (await file.exists()) {
         await file.delete();
-        PMlog.d(tag, "已删除本地图片: $relativePath");
+        PMlog.d(tag, '已删除本地图片: $relativePath');
       }
     } catch (e) {
-      PMlog.e(tag, "删除图片失败: $relativePath, e:$e");
+      PMlog.e(tag, '删除图片失败: $relativePath, e:$e');
     }
   }
 

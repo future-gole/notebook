@@ -21,8 +21,19 @@ linter:
   # `// ignore_for_file: name_of_lint` syntax on the line or in the file
   # producing the lint.
   rules:
-    # avoid_print: false  # Uncomment to disable the `avoid_print` rule
-    # prefer_single_quotes: true  # Uncomment to enable the `prefer_single_quotes` rule
+     prefer_single_quotes: true  # Uncomment to enable the `prefer_single_quotes` rule
+analyzer:
+  errors:
+    # 将所有 info 和 warning 都视为 error，强制修复
+    include_file_not_found: error
+    todo: ignore
+    # 针对特定规则升级为 error
+    avoid_print: error # 禁止使用 print，必须用 log
+    prefer_single_quotes: error # 强制单引号
 
+  # 或者使用 exclude 排除不想检查的文件（如生成代码）
+  exclude:
+    - "**/*.g.dart"
+    - "**/*.freezed.dart"
 # Additional information about this file can be found at
 # https://dart.dev/guides/language/analysis-options

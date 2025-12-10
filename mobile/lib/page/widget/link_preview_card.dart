@@ -14,7 +14,7 @@ import 'source_info.dart';
 /// 智能链接预览卡片组件
 /// - 优先使用 Note 中的预览数据
 /// - 如果没有，请求网络并保存到 Note
-final String tag = "LinkPreviewCard";
+final String tag = 'LinkPreviewCard';
 
 class LinkPreviewCard extends StatefulWidget {
   final NoteEntity note;
@@ -26,7 +26,7 @@ class LinkPreviewCard extends StatefulWidget {
   final bool isHovered;
 
   const LinkPreviewCard({
-    Key? key,
+    super.key,
     required this.note,
     this.isVertical = false,
     required this.hasContent,
@@ -34,7 +34,7 @@ class LinkPreviewCard extends StatefulWidget {
     this.isDesktop = false,
     this.publishDate,
     this.isHovered = false,
-  }) : super(key: key);
+  });
 
   String get url => note.url ?? '';
 
@@ -100,7 +100,6 @@ class _CachedLinkPreview extends StatelessWidget {
   final bool isHovered;
 
   const _CachedLinkPreview({
-    Key? key,
     required this.note,
     required this.isVertical,
     required this.hasContent,
@@ -108,7 +107,7 @@ class _CachedLinkPreview extends StatelessWidget {
     this.isDesktop = false,
     this.publishDate,
     this.isHovered = false,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -156,7 +155,6 @@ class _NativeLinkPreview extends ConsumerStatefulWidget {
   final bool isHovered;
 
   const _NativeLinkPreview({
-    Key? key,
     required this.note,
     required this.isVertical,
     required this.hasContent,
@@ -164,7 +162,7 @@ class _NativeLinkPreview extends ConsumerStatefulWidget {
     this.isDesktop = false,
     this.publishDate,
     this.isHovered = false,
-  }) : super(key: key);
+  });
 
   @override
   ConsumerState<_NativeLinkPreview> createState() => _NativeLinkPreviewState();
@@ -261,7 +259,6 @@ class _ApiLinkPreview extends ConsumerStatefulWidget {
   final bool isHovered;
 
   const _ApiLinkPreview({
-    Key? key,
     required this.note,
     required this.isVertical,
     required this.hasContent,
@@ -269,7 +266,7 @@ class _ApiLinkPreview extends ConsumerStatefulWidget {
     this.isDesktop = false,
     this.publishDate,
     this.isHovered = false,
-  }) : super(key: key);
+  });
 
   @override
   ConsumerState<_ApiLinkPreview> createState() => _ApiLinkPreviewState();
@@ -315,9 +312,9 @@ class _ApiLinkPreviewState extends ConsumerState<_ApiLinkPreview> {
         _savePreviewToNote(metadata);
       } else {
         metadata = {
-          'title': "预览错误",
-          'description': "请检查网络或者api是否正确",
-          'imageUrl': "",
+          'title': '预览错误',
+          'description': '请检查网络或者api是否正确',
+          'imageUrl': '',
           'url': url,
         };
       }
@@ -426,14 +423,13 @@ class _BaseCardContainer extends StatelessWidget {
   final bool isDesktop;
 
   const _BaseCardContainer({
-    Key? key,
     required this.child,
     this.onTap,
     required this.isVertical,
     this.hasContent = true,
     this.height,
     this.isDesktop = false,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -475,7 +471,6 @@ class _VerticalPreviewCard extends StatelessWidget {
   final bool isHovered;
 
   const _VerticalPreviewCard({
-    Key? key,
     required this.url,
     required this.metadata,
     this.imageProvider,
@@ -484,7 +479,7 @@ class _VerticalPreviewCard extends StatelessWidget {
     this.isDesktop = false,
     this.publishDate,
     this.isHovered = false,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -537,13 +532,12 @@ class _HorizontalPreviewCard extends StatelessWidget {
   final String? publishDate;
 
   const _HorizontalPreviewCard({
-    Key? key,
     required this.url,
     required this.metadata,
     this.imageProvider,
     required this.onTap,
     this.publishDate,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -568,8 +562,7 @@ class _HorizontalPreviewCard extends StatelessWidget {
 class _VerticalSkeletonCard extends StatelessWidget {
   final bool hasContent;
 
-  const _VerticalSkeletonCard({Key? key, required this.hasContent})
-    : super(key: key);
+  const _VerticalSkeletonCard({required this.hasContent});
 
   @override
   Widget build(BuildContext context) {
@@ -631,7 +624,7 @@ class _VerticalSkeletonCard extends StatelessWidget {
 }
 
 class _HorizontalSkeletonCard extends StatelessWidget {
-  const _HorizontalSkeletonCard({Key? key}) : super(key: key);
+  const _HorizontalSkeletonCard();
 
   @override
   Widget build(BuildContext context) {
@@ -685,10 +678,9 @@ class _VerticalErrorCard extends StatelessWidget {
   final bool hasContent;
 
   const _VerticalErrorCard({
-    Key? key,
     required this.url,
     required this.hasContent,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -747,7 +739,7 @@ class _VerticalErrorCard extends StatelessWidget {
 class _HorizontalErrorCard extends StatelessWidget {
   final String url;
 
-  const _HorizontalErrorCard({Key? key, required this.url}) : super(key: key);
+  const _HorizontalErrorCard({required this.url});
 
   @override
   Widget build(BuildContext context) {
@@ -808,11 +800,10 @@ class _CardImageSection extends StatelessWidget {
   final bool isDesktop;
 
   const _CardImageSection({
-    Key? key,
     required this.imageProvider,
     required this.isVertical,
     this.isDesktop = false,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -848,13 +839,12 @@ class _VerticalContentSection extends StatelessWidget {
   final bool isHovered;
 
   const _VerticalContentSection({
-    Key? key,
     required this.metadata,
     this.fixedHeight = false,
     this.isDesktop = false,
     this.publishDate,
     this.isHovered = false,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -933,10 +923,9 @@ class _HorizontalContentSection extends StatelessWidget {
   final String? publishData;
 
   const _HorizontalContentSection({
-    Key? key,
     required this.metadata,
     this.publishData,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

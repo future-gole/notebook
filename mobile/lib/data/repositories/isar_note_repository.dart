@@ -13,7 +13,7 @@ import '../../util/image_storage_helper.dart';
 /// 封装所有与 Isar 相关的数据访问逻辑，对外只暴露领域实体
 class IsarNoteRepository implements NoteRepository {
   final Isar _isar;
-  static const String _tag = "IsarNoteRepository";
+  static const String _tag = 'IsarNoteRepository';
   static const _uuid = Uuid();
 
   IsarNoteRepository(this._isar);
@@ -32,9 +32,7 @@ class IsarNoteRepository implements NoteRepository {
       final isarNote = NoteMapper.fromDomain(note);
 
       // 如果没有设置时间，使用当前时间
-      if (isarNote.time == null) {
-        isarNote.time = DateTime.now();
-      }
+      isarNote.time ??= DateTime.now();
 
       // 设置同步字段
       final now = DateTime.now().millisecondsSinceEpoch;
@@ -66,7 +64,7 @@ class IsarNoteRepository implements NoteRepository {
       PMlog.d(_tag, 'Note saved successfully with id: $resultId');
       return resultId;
     } catch (e) {
-      PMlog.e(_tag, "Failed to save note: $e");
+      PMlog.e(_tag, 'Failed to save note: $e');
       return -1;
     }
   }
@@ -95,7 +93,7 @@ class IsarNoteRepository implements NoteRepository {
       });
       PMlog.d(_tag, 'Note soft deleted: id=$id');
     } catch (e) {
-      PMlog.e(_tag, "Failed to delete note: $e");
+      PMlog.e(_tag, 'Failed to delete note: $e');
       rethrow;
     }
   }
@@ -126,7 +124,7 @@ class IsarNoteRepository implements NoteRepository {
         PMlog.d(_tag, '成功软删除了 ${notes.length} 条 categoryId为 $categoryId 的笔记');
       });
     } catch (e) {
-      PMlog.e(_tag, "笔记删除失败: $e");
+      PMlog.e(_tag, '笔记删除失败: $e');
       rethrow;
     }
   }
@@ -139,7 +137,7 @@ class IsarNoteRepository implements NoteRepository {
       if (note == null || note.isDeleted) return null;
       return NoteMapper.toDomain(note);
     } catch (e) {
-      PMlog.e(_tag, "Failed to get note by id: $e");
+      PMlog.e(_tag, 'Failed to get note by id: $e');
       return null;
     }
   }
@@ -154,7 +152,7 @@ class IsarNoteRepository implements NoteRepository {
           .findAll();
       return NoteMapper.toDomainList(notes);
     } catch (e) {
-      PMlog.e(_tag, "Failed to get all notes: $e");
+      PMlog.e(_tag, 'Failed to get all notes: $e');
       return [];
     }
   }
@@ -195,7 +193,7 @@ class IsarNoteRepository implements NoteRepository {
           .findAll();
       return NoteMapper.toDomainList(notes);
     } catch (e) {
-      PMlog.e(_tag, "Failed to find notes by title: $e");
+      PMlog.e(_tag, 'Failed to find notes by title: $e');
       return [];
     }
   }
@@ -211,7 +209,7 @@ class IsarNoteRepository implements NoteRepository {
           .findAll();
       return NoteMapper.toDomainList(notes);
     } catch (e) {
-      PMlog.e(_tag, "Failed to find notes by content: $e");
+      PMlog.e(_tag, 'Failed to find notes by content: $e');
       return [];
     }
   }
@@ -232,7 +230,7 @@ class IsarNoteRepository implements NoteRepository {
           .findAll();
       return NoteMapper.toDomainList(notes);
     } catch (e) {
-      PMlog.e(_tag, "Failed to find notes by category: $e");
+      PMlog.e(_tag, 'Failed to find notes by category: $e');
       return [];
     }
   }
@@ -248,7 +246,7 @@ class IsarNoteRepository implements NoteRepository {
           .findAll();
       return NoteMapper.toDomainList(notes);
     } catch (e) {
-      PMlog.e(_tag, "Failed to find notes by tag: $e");
+      PMlog.e(_tag, 'Failed to find notes by tag: $e');
       return [];
     }
   }
@@ -278,7 +276,7 @@ class IsarNoteRepository implements NoteRepository {
           .watch(fireImmediately: true)
           .map((notes) => NoteMapper.toDomainList(notes));
     } catch (e) {
-      PMlog.e(_tag, "Failed to find notes by query: $e");
+      PMlog.e(_tag, 'Failed to find notes by query: $e');
       return Stream.value([]);
     }
   }

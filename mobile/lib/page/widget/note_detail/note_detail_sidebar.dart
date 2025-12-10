@@ -15,14 +15,14 @@ class NoteDetailSidebar extends StatelessWidget {
   final String formattedDate;
 
   const NoteDetailSidebar({
-    Key? key,
+    super.key,
     required this.note,
     required this.onLaunchUrl,
     required this.tags,
     required this.onAddTag,
     required this.onRemoveTag,
     required this.formattedDate,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

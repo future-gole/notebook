@@ -2,7 +2,7 @@ import 'package:pocketmind/domain/entities/category_entity.dart';
 import 'package:pocketmind/domain/repositories/category_repository.dart';
 import 'package:pocketmind/util/logger_service.dart';
 
-final String CategoryServiceTag = "CategoryService";
+final String CategoryServiceTag = 'CategoryService';
 
 /// 分类业务服务层
 /// 

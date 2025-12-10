@@ -4,13 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:lottie/lottie.dart';
-import 'package:pocketmind/providers/http_providers.dart';
-import 'package:pocketmind/service/page_analysis_service.dart';
-import 'package:pocketmind/util/logger_service.dart';
 import 'package:pocketmind/util/theme_data.dart'
     show sharePageColors, SharePageThemeColors;
 
-final String _tag = "ShareSuccessPage";
+final String _tag = 'ShareSuccessPage';
 
 class ShareSuccessPage extends ConsumerStatefulWidget {
   final VoidCallback onDismiss;
@@ -85,7 +82,7 @@ class _ShareSuccessPageState extends ConsumerState<ShareSuccessPage>
 
         // 主标题
         Text(
-          "Good find!",
+          'Good find!',
           style: TextStyle(
             color: shareColors?.primary,
             fontSize: 32.sp,
@@ -122,11 +119,11 @@ class _ShareSuccessPageState extends ConsumerState<ShareSuccessPage>
             ),
             padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
             child: Text(
-              "Add Details",
+              'Add Details',
               style: TextStyle(
                 color: shareColors?.secondary,
                 fontSize: 16.sp,
-                fontFamily: "Poppins",
+                fontFamily: 'Poppins',
                 fontWeight: FontWeight.w600,
                 letterSpacing: 0.5,
               ),

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:pocketmind/util/image_storage_helper.dart';
 import 'package:pocketmind/util/logger_service.dart';
 
@@ -39,7 +38,7 @@ class LocalImageWidget extends StatelessWidget {
           PMlog.w(_tag, 'Image file not found: $relativePath');
           return Container(
             color: Colors.grey[200],
-            child: const Center(child: Text("图片加载中或丢失")),
+            child: const Center(child: Text('图片加载中或丢失')),
           );
         }
       },

@@ -22,7 +22,6 @@ import 'util/logger_service.dart';
 
 // 这会强制构建系统将 main_share.dart 编译到应用中
 // 防止另一个入口没有被引用
-import 'package:pocketmind/main_share.dart' as share_entrypoint;
 
 late Isar isar;
 
@@ -88,7 +87,7 @@ Future<void> main() async {
   // 根据配置设置代理
   if (config.proxyEnabled) {
     HttpOverrides.global = GlobalHttpOverrides(
-      "${config.proxyHost}:${config.proxyPort}",
+      '${config.proxyHost}:${config.proxyPort}',
       allowBadCertificates: true,
     );
   }

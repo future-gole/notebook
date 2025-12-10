@@ -2,7 +2,6 @@
 import 'dart:math' as math;
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:pocketmind/util/theme_data.dart';
 
 /// 流动背景

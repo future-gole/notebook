@@ -2,7 +2,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
 import 'package:pocketmind/api/link_preview_api_service.dart';
 import 'package:pocketmind/api/http_client.dart';
-import 'package:dio/dio.dart';
 
 // Mock HttpClient
 class MockHttpClient extends Mock implements HttpClient {}
@@ -226,9 +225,7 @@ void main() {
 
     test('图片 URL 长度', () {
       final longImageUrl =
-          'https://example.com/image/very/long/path/to/image_' +
-          ('x' * 200) +
-          '.jpg';
+          'https://example.com/image/very/long/path/to/image_${'x' * 200}.jpg';
       final metadata = ApiLinkMetadata(
         imageUrl: longImageUrl,
         url: 'https://example.com',

@@ -228,7 +228,7 @@ void main() {
         'code': 200,
         'message': '成功',
         'data': null,
-      }, (data) => data != null ? data.toString() : null);
+      }, (data) => data?.toString());
 
       expect(response.data, null);
     });

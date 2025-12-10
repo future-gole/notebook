@@ -2,7 +2,7 @@ import 'package:pocketmind/domain/entities/note_entity.dart';
 import 'package:pocketmind/domain/repositories/note_repository.dart';
 import 'package:pocketmind/util/logger_service.dart';
 
-final String NoteServiceTag = "NoteService";
+final String NoteServiceTag = 'NoteService';
 
 /// 笔记业务服务层
 ///
@@ -10,9 +10,9 @@ final String NoteServiceTag = "NoteService";
 /// 这使得服务层与数据库实现完全解耦
 class NoteService {
   final NoteRepository _noteRepository;
-  static const String defaultCategory = "home";
-  static const String defaultTitle = "默认标题";
-  static const String defaultContent = "默认内容";
+  static const String defaultCategory = 'home';
+  static const String defaultTitle = '默认标题';
+  static const String defaultContent = '默认内容';
 
   NoteService(this._noteRepository);
 
@@ -45,7 +45,7 @@ class NoteService {
     );
 
     if (id != null && id != -1) {
-      PMlog.d(NoteServiceTag, "id:$id, 进行更新操作");
+      PMlog.d(NoteServiceTag, 'id:$id, 进行更新操作');
     }
 
     // 通过仓库保存

@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pocketmind/providers/http_providers.dart';
@@ -18,7 +17,7 @@ final linkPreviewServiceProvider = Provider<LinkPreviewApiService>((ref) {
 /// 使用 LinkPreview.net API 的链接预览服务
 /// 这个服务不受代理限制，直接访问第三方 API
 /// 但是图片的预览还是需要开启代理
-final String tag = "LinkPreviewApiService";
+final String tag = 'LinkPreviewApiService';
 
 class LinkPreviewApiService {
 

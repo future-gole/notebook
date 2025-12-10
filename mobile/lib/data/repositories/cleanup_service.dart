@@ -7,7 +7,7 @@ import '../../util/image_storage_helper.dart';
 ///
 /// 负责定期清理逻辑删除的数据和孤立的图片文件
 class CleanupService {
-  static const String _tag = "CleanupService";
+  static const String _tag = 'CleanupService';
   final Isar _isar;
 
   CleanupService(this._isar);

@@ -8,12 +8,12 @@ class NoteDetailTopBar extends StatelessWidget {
   final VoidCallback onDelete;
 
   const NoteDetailTopBar({
-    Key? key,
+    super.key,
     required this.onBack,
     required this.onShare,
     required this.onEdit,
     required this.onDelete,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

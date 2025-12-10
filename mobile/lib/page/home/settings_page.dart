@@ -12,7 +12,7 @@ import '../widget/creative_toast.dart';
 
 /// 设置页面
 class SettingsPage extends ConsumerStatefulWidget {
-  const SettingsPage({Key? key}) : super(key: key);
+  const SettingsPage({super.key});
 
   @override
   ConsumerState<SettingsPage> createState() => _SettingsPageState();
@@ -112,7 +112,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
   void _applyProxySettings() {
     if (_proxyEnabled) {
       HttpOverrides.global = GlobalHttpOverrides(
-        "${_config.proxyHost}:${_config.proxyPort}",
+        '${_config.proxyHost}:${_config.proxyPort}',
         allowBadCertificates: true,
       );
     } else {
@@ -359,10 +359,10 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
   Future<void> _performCleanup() async {
     final confirmed = await showConfirmDialog(
       context,
-      title: "确认清理",
-      message: "将清理,10天前软删除的所有笔记以及图片",
-      cancelText: "取消",
-      confirmText: "确认",
+      title: '确认清理',
+      message: '将清理,10天前软删除的所有笔记以及图片',
+      cancelText: '取消',
+      confirmText: '确认',
     );
 
     if (confirmed != true) return;

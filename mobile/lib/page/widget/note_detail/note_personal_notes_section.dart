@@ -4,8 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 class NotePersonalNotesSection extends StatelessWidget {
   final TextEditingController notesController;
 
-  const NotePersonalNotesSection({Key? key, required this.notesController})
-    : super(key: key);
+  const NotePersonalNotesSection({super.key, required this.notesController});
 
   @override
   Widget build(BuildContext context) {

@@ -10,7 +10,7 @@ import '../home/note_detail_page.dart';
 import 'load_image_widget.dart';
 import 'local_text_card.dart';
 
-String tag = "noteItem";
+String tag = 'noteItem';
 
 // 改为 StatefulWidget 以支持 AutomaticKeepAliveClientMixin
 class NoteItem extends ConsumerStatefulWidget {

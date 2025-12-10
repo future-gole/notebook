@@ -3,8 +3,7 @@ import 'package:flutter/material.dart';
 class NoteLastEditedInfo extends StatelessWidget {
   final String formattedDate;
 
-  const NoteLastEditedInfo({Key? key, required this.formattedDate})
-    : super(key: key);
+  const NoteLastEditedInfo({super.key, required this.formattedDate});
 
   @override
   Widget build(BuildContext context) {

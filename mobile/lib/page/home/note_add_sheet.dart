@@ -7,7 +7,6 @@ import 'package:pocketmind/providers/category_providers.dart';
 import 'package:pocketmind/providers/note_providers.dart';
 import 'package:pocketmind/providers/nav_providers.dart';
 import 'package:pocketmind/page/widget/creative_toast.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:image_picker/image_picker.dart';
 
 class NoteEditorRoute extends PageRouteBuilder {
@@ -559,8 +558,9 @@ class _NoteEditorSheetState extends ConsumerState<NoteEditorSheet>
 
   // 3. 图片预览区域
   Widget _buildImagePreview(BuildContext context) {
-    if (!_isImageInputVisible || _localImagePath == null)
+    if (!_isImageInputVisible || _localImagePath == null) {
       return const SizedBox.shrink();
+    }
 
     final colorScheme = Theme.of(context).colorScheme;
 

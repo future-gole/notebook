@@ -14,7 +14,7 @@ class GlobalHttpOverrides extends HttpOverrides {
 
     // 设置代理
     client.findProxy = (uri) {
-      return "PROXY $proxyString;";
+      return 'PROXY $proxyString;';
     };
 
     // 处理 HTTPS 证书问题 (有些代理可能会导致证书校验失败)

@@ -11,7 +11,7 @@ import '../../util/logger_service.dart';
 /// 封装所有与 Isar 相关的数据访问逻辑，对外只暴露领域实体
 class IsarCategoryRepository implements CategoryRepository {
   final Isar _isar;
-  static const String _tag = "IsarCategoryRepository";
+  static const String _tag = 'IsarCategoryRepository';
   static const _uuid = Uuid();
 
   IsarCategoryRepository(this._isar);
@@ -57,7 +57,7 @@ class IsarCategoryRepository implements CategoryRepository {
           .findAll();
       return CategoryMapper.toDomainList(categories);
     } catch (e) {
-      PMlog.e(_tag, "Failed to get all categories: $e");
+      PMlog.e(_tag, 'Failed to get all categories: $e');
       return [];
     }
   }
@@ -69,7 +69,7 @@ class IsarCategoryRepository implements CategoryRepository {
       if (category == null || category.isDeleted) return null;
       return CategoryMapper.toDomain(category);
     } catch (e) {
-      PMlog.e(_tag, "Failed to get category by id: $e");
+      PMlog.e(_tag, 'Failed to get category by id: $e');
       return null;
     }
   }
@@ -84,7 +84,7 @@ class IsarCategoryRepository implements CategoryRepository {
           .findFirst();
       return category != null ? CategoryMapper.toDomain(category) : null;
     } catch (e) {
-      PMlog.e(_tag, "Failed to get category by name: $e");
+      PMlog.e(_tag, 'Failed to get category by name: $e');
       return null;
     }
   }

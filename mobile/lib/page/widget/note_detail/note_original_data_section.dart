@@ -24,7 +24,7 @@ class NoteOriginalDataSection extends StatelessWidget {
   final bool titleEnabled;
 
   const NoteOriginalDataSection({
-    Key? key,
+    super.key,
     required this.note,
     required this.titleController,
     required this.contentController,
@@ -39,7 +39,7 @@ class NoteOriginalDataSection extends StatelessWidget {
     required this.onLaunchUrl,
     required this.isDesktop,
     required this.titleEnabled,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -80,12 +80,12 @@ class NoteOriginalDataSection extends StatelessWidget {
         if (hasImages) ...[
           HeroGallery(
             images: displayImages,
-            title: hasTitle ? note.title! : "",
+            title: hasTitle ? note.title! : '',
             isDesktop: isDesktop,
             showGradientFade: true,
             categoryLabel: categoryName,
             dateLabel: formattedDate,
-            overlayTitle: previewTitle ?? "",
+            overlayTitle: previewTitle ?? '',
           ),
         ] else if (isNetworkImage && isLoadingPreview) ...[
           // 加载中显示占位

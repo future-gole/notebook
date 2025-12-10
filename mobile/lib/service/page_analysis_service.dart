@@ -2,7 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:pocketmind/api/http_client.dart';
 import 'package:pocketmind/util/logger_service.dart';
 
-final String tag = "PageAnalysisService";
+final String tag = 'PageAnalysisService';
 
 /// 页面分析服务
 ///
@@ -25,8 +25,8 @@ class PageAnalysisService {
     required String userEmail,
   }) async {
     try {
-      PMlog.d(tag, "开始分析页面: $url");
-      PMlog.d(tag, "用户查询: $userQuery");
+      PMlog.d(tag, '开始分析页面: $url');
+      PMlog.d(tag, '用户查询: $userQuery');
 
       final response = await _httpClient.post(
         '/api/mydemo/analyze',
@@ -34,16 +34,16 @@ class PageAnalysisService {
       );
 
       if (response.statusCode == 200) {
-        PMlog.d(tag, "页面分析成功");
+        PMlog.d(tag, '页面分析成功');
         return PageAnalysisResult.fromJson(response.data);
       }
 
       throw HttpException('页面分析失败', response.statusCode);
     } on DioException catch (e) {
-      PMlog.e(tag, "页面分析请求失败: ${e.message}");
+      PMlog.e(tag, '页面分析请求失败: ${e.message}');
       throw _handleDioError(e);
     } catch (e) {
-      PMlog.e(tag, "页面分析发生未知错误: $e");
+      PMlog.e(tag, '页面分析发生未知错误: $e');
       rethrow;
     }
   }

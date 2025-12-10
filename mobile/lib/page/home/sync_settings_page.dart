@@ -206,7 +206,7 @@ class _SyncSettingsPageState extends ConsumerState<SyncSettingsPage> {
               _buildInfoRow('设备名称', device.deviceName),
               _buildInfoRow('IP 地址', device.ipAddress ?? '未知'),
               _buildInfoRow('端口', device.port.toString()),
-              _buildInfoRow('设备 ID', device.deviceId.substring(0, 8) + '...'),
+              _buildInfoRow('设备 ID', '${device.deviceId.substring(0, 8)}...'),
               SizedBox(height: 12.h),
               // 测试服务器按钮
               if (state.isServerRunning)

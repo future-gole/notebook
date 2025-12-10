@@ -1,6 +1,5 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart'
     as fln;
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
@@ -55,7 +54,7 @@ class NotificationService {
         fln.AndroidInitializationSettings('@mipmap/launcher_icon');
 
     const fln.WindowsInitializationSettings initializationSettingsWindows =
-    fln.WindowsInitializationSettings(appName: "pocketmind", appUserModelId: 'com.doublez.pocketmind', guid: '81984258-2100-44F4-893C-311394038165');
+    fln.WindowsInitializationSettings(appName: 'pocketmind', appUserModelId: 'com.doublez.pocketmind', guid: '81984258-2100-44F4-893C-311394038165');
 
     final fln.DarwinInitializationSettings initializationSettingsDarwin =
         fln.DarwinInitializationSettings();
@@ -119,7 +118,7 @@ class NotificationService {
       // 如果请求后还是拒绝 (用户点了“不允许”或“不再询问”)
       if (!status.isGranted) {
         Fluttertoast.showToast(
-            msg: "设置闹钟需要通知权限，请在设置中开启！",
+            msg: '设置闹钟需要通知权限，请在设置中开启！',
             toastLength: Toast.LENGTH_LONG
         );
         //打开系统设置页面
@@ -242,7 +241,7 @@ class NotificationService {
     } catch (e) {
         PMlog.e('NotificationService', '闹钟保存失败');
         Fluttertoast.showToast(
-            msg: "闹钟保存失败",
+            msg: '闹钟保存失败',
             toastLength: Toast.LENGTH_LONG,
             gravity: ToastGravity.CENTER,
         );

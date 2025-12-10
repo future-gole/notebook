@@ -7,7 +7,7 @@ void main() {
 }
 
 class LinkPreviewRouteTest extends StatelessWidget {
-  const LinkPreviewRouteTest({Key? key}) : super(key: key);
+  const LinkPreviewRouteTest({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -21,7 +21,7 @@ class LinkPreviewRouteTest extends StatelessWidget {
 }
 
 class TestList extends StatelessWidget {
-  const TestList({Key? key}) : super(key: key);
+  const TestList({super.key});
 
   @override
   Widget build(BuildContext context) {

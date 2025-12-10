@@ -7,11 +7,11 @@ class NoteSourceLinkCard extends StatelessWidget {
   final VoidCallback? onTap;
 
   const NoteSourceLinkCard({
-    Key? key,
+    super.key,
     required this.url,
     required this.isHttpsUrl,
     this.onTap,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

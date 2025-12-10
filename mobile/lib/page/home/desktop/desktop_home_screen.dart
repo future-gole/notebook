@@ -15,7 +15,7 @@ import 'package:pocketmind/providers/note_providers.dart';
 import 'package:pocketmind/providers/ui_providers.dart';
 import 'package:pocketmind/util/logger_service.dart';
 
-final String tag = "DesktopHomeScreen";
+final String tag = 'DesktopHomeScreen';
 
 /// 桌面端主屏幕布局
 /// 左侧固定侧边栏 + 右侧自适应内容区
@@ -123,7 +123,7 @@ class _DesktopHomeScreenState extends ConsumerState<DesktopHomeScreen> {
                                   noteService,
                                 ),
                                 error: (error, stack) {
-                                  PMlog.e(tag, "stack: $error,stack:$stack");
+                                  PMlog.e(tag, 'stack: $error,stack:$stack');
                                   return const Center(child: Text('加载笔记失败'));
                                 },
                                 loading: () => const Center(
@@ -231,7 +231,7 @@ class _DesktopHomeScreenState extends ConsumerState<DesktopHomeScreen> {
         return _buildNotesList(notes, currentLayout, noteService);
       },
       error: (error, stack) {
-        PMlog.e(tag, "搜索错误: $error, stack:$stack");
+        PMlog.e(tag, '搜索错误: $error, stack:$stack');
         return const Center(child: Text('搜索失败'));
       },
       loading: () => const Center(child: CircularProgressIndicator()),

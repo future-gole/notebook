@@ -1,9 +1,8 @@
-import 'dart:ui'; // 用于 ImageFilter.blur
+// 用于 ImageFilter.blur
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pocketmind/page/widget/categories_bar.dart' show CategoriesBar;
-import 'package:pocketmind/providers/nav_providers.dart';
 
 ///
 /// 这是包含 ItemBar 的主导航栏。

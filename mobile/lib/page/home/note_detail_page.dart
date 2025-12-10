@@ -15,7 +15,7 @@ import 'package:any_link_preview/any_link_preview.dart';
 import '../widget/creative_toast.dart';
 import '../widget/hero_gallery.dart';
 
-const String _tag = "NoteDetailPage";
+const String _tag = 'NoteDetailPage';
 
 /// 中文日期格式化
 String _formatDateChinese(DateTime? date) {
@@ -571,12 +571,12 @@ class _NoteDetailPageState extends ConsumerState<NoteDetailPage>
         if (hasImages) ...[
           HeroGallery(
             images: displayImages,
-            title: hasTitle ? widget.note.title! : "",
+            title: hasTitle ? widget.note.title! : '',
             isDesktop: isDesktop,
             showGradientFade: true,
             categoryLabel: _getCategoryName(),
             dateLabel: formattedDate,
-            overlayTitle: _previewTitle ?? "",
+            overlayTitle: _previewTitle ?? '',
           ),
         ] else if (isNetworkImage && _isLoadingPreview) ...[
           // 加载中显示占位
@@ -1144,7 +1144,7 @@ class _NoteDetailPageState extends ConsumerState<NoteDetailPage>
       tag: tagsString,
     );
 
-    PMlog.d(_tag, "Note saved");
+    PMlog.d(_tag, 'Note saved');
   }
 
   /// 显示添加标签对话框
@@ -1431,7 +1431,7 @@ class _NoteDetailPageState extends ConsumerState<NoteDetailPage>
   /// Share 按钮
   void _onSharePressed() {
     // TODO: 实现分享功能
-    PMlog.d(_tag, "Share pressed");
+    PMlog.d(_tag, 'Share pressed');
     CreativeToast.info(
       context,
       title: '即将上线',
@@ -1444,10 +1444,10 @@ class _NoteDetailPageState extends ConsumerState<NoteDetailPage>
   void _onDeletePressed() async {
     bool? confirm = await showConfirmDialog(
       context,
-      title: "删除笔记",
-      message: "确定要删除这条笔记吗？此操作无法撤销",
-      cancelText: "取消",
-      confirmText: "确认",
+      title: '删除笔记',
+      message: '确定要删除这条笔记吗？此操作无法撤销',
+      cancelText: '取消',
+      confirmText: '确认',
     );
     if (confirm == true) {
       _deleteNote();
@@ -1485,7 +1485,7 @@ class _NoteDetailPageState extends ConsumerState<NoteDetailPage>
       await launchUrl(uri, mode: LaunchMode.externalApplication);
     } catch (e) {
       PMlog.e(_tag, '❌ URL 跳转失败: $e');
-      CreativeToast.error(context, title: "出错咯~", message: "URL 跳转失败", direction: ToastDirection.top);
+      CreativeToast.error(context, title: '出错咯~', message: 'URL 跳转失败', direction: ToastDirection.top);
     }
   }
 }
