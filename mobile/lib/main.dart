@@ -7,12 +7,13 @@ import 'package:pocketmind/page/home/home_screen.dart';
 import 'package:pocketmind/service/notification_service.dart';
 import 'package:pocketmind/page/home/settings_page.dart';
 import 'package:pocketmind/providers/infrastructure_providers.dart';
+import 'package:pocketmind/providers/shared_preferences_provider.dart';
 import 'package:pocketmind/util/image_storage_helper.dart';
 import 'package:pocketmind/util/proxy_config.dart';
-import 'package:pocketmind/util/app_config.dart';
 import 'package:pocketmind/util/theme_data.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
 import 'model/category.dart';
 import 'model/note.dart';
@@ -80,14 +81,16 @@ Future<void> main() async {
   // 确保 flutter 绑定初始化了
   WidgetsFlutterBinding.ensureInitialized();
 
-  // 初始化应用配置
-  final config = AppConfig();
-  await config.init();
+  // 获取 SharedPreferences 实例用于 Provider
+  final prefs = await SharedPreferences.getInstance();
 
   // 根据配置设置代理
-  if (config.proxyEnabled) {
+  final proxyEnabled = prefs.getBool('proxy_enabled') ?? false;
+  if (proxyEnabled) {
+    final proxyHost = prefs.getString('proxy_host') ?? '127.0.0.1';
+    final proxyPort = prefs.getInt('proxy_port') ?? 7890;
     HttpOverrides.global = GlobalHttpOverrides(
-      '${config.proxyHost}:${config.proxyPort}',
+      '$proxyHost:$proxyPort',
       allowBadCertificates: true,
     );
   }
@@ -109,12 +112,17 @@ Future<void> main() async {
   await _migrateUuidsIfNeeded(isar);
 
   await ImageStorageHelper().init();
-  await notificationService.init();
+  final notificationSvc = NotificationService();
+  await notificationSvc.init();
   runApp(
     // 使用 ProviderScope 包裹应用，并 override isarProvider
     // 后续都使用状态管理里面的isar
     ProviderScope(
-      overrides: [isarProvider.overrideWithValue(isar)],
+      overrides: [
+        isarProvider.overrideWithValue(isar),
+        sharedPreferencesProvider.overrideWithValue(prefs),
+        notificationServiceProvider.overrideWithValue(notificationSvc),
+      ],
       child: const MyApp(),
     ),
   );

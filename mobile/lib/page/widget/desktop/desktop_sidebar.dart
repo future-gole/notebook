@@ -86,7 +86,7 @@ class DesktopSidebar extends ConsumerWidget {
               style: TextStyle(
                 fontSize: 11,
                 fontWeight: FontWeight.w600,
-                color: colorScheme.secondary.withOpacity(0.7),
+                color: colorScheme.secondary.withValues(alpha: 0.7),
                 letterSpacing: 1.5,
               ),
             ),
@@ -112,7 +112,7 @@ class DesktopSidebar extends ConsumerWidget {
                       text: item.text,
                       isActive: activeIndex == index,
                       onTap: () {
-                        ref.read(activeNavIndexProvider.notifier).state = index;
+                        ref.read(activeNavIndexProvider.notifier).set(index);
                       },
                       onDelete: canDelete
                           ? () => _onDeletePressed(
@@ -182,7 +182,7 @@ class DesktopSidebar extends ConsumerWidget {
         await ref.read(categoryServiceProvider).deleteCategory(categoryId);
 
         // 重置选中项到"全部"
-        ref.read(activeNavIndexProvider.notifier).state = 0;
+        ref.read(activeNavIndexProvider.notifier).set(0);
 
         if (context.mounted) {
           CreativeToast.success(
@@ -235,8 +235,8 @@ class _SettingsButtonState extends State<_SettingsButton> {
           decoration: BoxDecoration(
             color: _isHovered
                 ? (isDark
-                      ? Colors.white.withOpacity(0.05)
-                      : Colors.black.withOpacity(0.03))
+                      ? Colors.white.withValues(alpha: 0.05)
+                      : Colors.black.withValues(alpha: 0.03))
                 : Colors.transparent,
             borderRadius: BorderRadius.circular(8.r),
           ),

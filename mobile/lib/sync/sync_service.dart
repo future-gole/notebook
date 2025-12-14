@@ -16,7 +16,7 @@ import '../model/note.dart';
 import '../model/category.dart';
 import '../providers/infrastructure_providers.dart';
 import '../util/logger_service.dart';
-import '../util/app_config.dart';
+import '../providers/app_config_provider.dart';
 
 /// 同步服务状态
 class SyncServiceState {
@@ -56,11 +56,12 @@ class SyncServiceState {
 }
 
 /// 同步服务 Notifier
-class SyncServiceNotifier extends StateNotifier<SyncServiceState> {
+class SyncServiceNotifier extends Notifier<SyncServiceState> {
   static const String _tag = 'SyncService';
   static const int defaultPort = SyncWebSocketServer.defaultPort;
 
-  final Isar _isar;
+  Isar get _isar => ref.read(isarProvider);
+
   SyncManager? _manager;
   DeviceInfo? _localDevice;
 
@@ -75,16 +76,32 @@ class SyncServiceNotifier extends StateNotifier<SyncServiceState> {
   // 防抖：避免频繁同步
   Timer? _syncDebounceTimer;
 
-  SyncServiceNotifier(this._isar) : super(const SyncServiceState()) {
+  @override
+  SyncServiceState build() {
+    ref.onDispose(() {
+      _syncDebounceTimer?.cancel();
+      _notesWatcher?.cancel();
+      _categoriesWatcher?.cancel();
+
+      for (final client in _wsClients.values) {
+        client.dispose();
+      }
+      _wsClients.clear();
+
+      _wsServer?.stop();
+      _manager?.dispose();
+    });
+
     _initLocalDevice().then((_) {
       // 根据设置决定是否自动启动同步服务
       _checkAndAutoStartServer();
     });
+    return const SyncServiceState();
   }
 
   /// 检查并自动启动同步服务（根据用户设置）
   Future<void> _checkAndAutoStartServer() async {
-    final config = AppConfig();
+    final config = ref.read(appConfigProvider);
     if (config.syncAutoStart) {
       PMlog.i(_tag, '🚀 自动启动同步服务器（设置中启用）...');
       try {
@@ -708,43 +725,9 @@ class SyncServiceNotifier extends StateNotifier<SyncServiceState> {
     }
   }
 
-  @override
-  void dispose() {
-    _syncDebounceTimer?.cancel();
-    _notesWatcher?.cancel();
-    _categoriesWatcher?.cancel();
 
-    for (final client in _wsClients.values) {
-      client.dispose();
-    }
-    _wsClients.clear();
-
-    _wsServer?.stop();
-    _manager?.dispose();
-    super.dispose();
-  }
 }
 
 /// 同步服务 Provider
 final syncServiceProvider =
-    StateNotifierProvider<SyncServiceNotifier, SyncServiceState>((ref) {
-      final isar = ref.watch(isarProvider);
-      return SyncServiceNotifier(isar);
-    });
-
-/// 便捷的 Provider 访问
-final isSyncServerRunningProvider = Provider<bool>((ref) {
-  return ref.watch(syncServiceProvider).isServerRunning;
-});
-
-final isSyncingProvider = Provider<bool>((ref) {
-  return ref.watch(syncServiceProvider).isSyncing;
-});
-
-final discoveredDevicesProvider = Provider<List<DeviceInfo>>((ref) {
-  return ref.watch(syncServiceProvider).discoveredDevices;
-});
-
-final localDeviceProvider = Provider<DeviceInfo?>((ref) {
-  return ref.watch(syncServiceProvider).localDevice;
-});
+    NotifierProvider<SyncServiceNotifier, SyncServiceState>(SyncServiceNotifier.new);

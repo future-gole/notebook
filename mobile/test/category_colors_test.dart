@@ -15,27 +15,27 @@ void main() {
     test('darkModeColors 都是有效的 Color 对象', () {
       for (var color in CategoryColors.darkModeColors) {
         expect(color, isA<Color>());
-        expect(color.value, isNotNull);
+        expect(color.toARGB32(), isNotNull);
       }
     });
 
     test('lightModeColors 都是有效的 Color 对象', () {
       for (var color in CategoryColors.lightModeColors) {
         expect(color, isA<Color>());
-        expect(color.value, isNotNull);
+        expect(color.toARGB32(), isNotNull);
       }
     });
 
     test('darkModeColors 的颜色值正确', () {
-      expect(CategoryColors.darkModeColors[0].value, 0xFFFF6B6B); // 珊瑚红
-      expect(CategoryColors.darkModeColors[1].value, 0xFFFFD93D); // 金黄色
-      expect(CategoryColors.darkModeColors[2].value, 0xFF6BCF7F); // 薄荷绿
+      expect(CategoryColors.darkModeColors[0].toARGB32(), 0xFFFF6B6B); // 珊瑚红
+      expect(CategoryColors.darkModeColors[1].toARGB32(), 0xFFFFD93D); // 金黄色
+      expect(CategoryColors.darkModeColors[2].toARGB32(), 0xFF6BCF7F); // 薄荷绿
     });
 
     test('lightModeColors 的颜色值正确', () {
-      expect(CategoryColors.lightModeColors[0].value, 0xFFE57373); // 柔和红
-      expect(CategoryColors.lightModeColors[1].value, 0xFFFFD54F); // 柔和金
-      expect(CategoryColors.lightModeColors[2].value, 0xFF81C784); // 柔和绿
+      expect(CategoryColors.lightModeColors[0].toARGB32(), 0xFFE57373); // 柔和红
+      expect(CategoryColors.lightModeColors[1].toARGB32(), 0xFFFFD54F); // 柔和金
+      expect(CategoryColors.lightModeColors[2].toARGB32(), 0xFF81C784); // 柔和绿
     });
   });
 
@@ -82,16 +82,16 @@ void main() {
       final darkColor = CategoryColors.getColor(0, Brightness.dark);
       final lightColor = CategoryColors.getColor(0, Brightness.light);
 
-      expect(darkColor.value, 0xFFFF6B6B); // 珊瑚红
-      expect(lightColor.value, 0xFFE57373); // 柔和红
+      expect(darkColor.toARGB32(), 0xFFFF6B6B); // 珊瑚红
+      expect(lightColor.toARGB32(), 0xFFE57373); // 柔和红
     });
 
     test('边界索引 9 - 淡紫色/柔和淡紫', () {
       final darkColor = CategoryColors.getColor(9, Brightness.dark);
       final lightColor = CategoryColors.getColor(9, Brightness.light);
 
-      expect(darkColor.value, 0xFFB4A7D6); // 淡紫色
-      expect(lightColor.value, 0xFFCE93D8); // 柔和淡紫
+      expect(darkColor.toARGB32(), 0xFFB4A7D6); // 淡紫色
+      expect(lightColor.toARGB32(), 0xFFCE93D8); // 柔和淡紫
     });
   });
 
@@ -134,7 +134,7 @@ void main() {
         final color2 = colors[i + 1];
 
         // 颜色值不应该完全相同
-        expect(color1.value != color2.value, true);
+        expect(color1.toARGB32() != color2.toARGB32(), true);
       }
     });
 
@@ -145,7 +145,7 @@ void main() {
         final color1 = colors[i];
         final color2 = colors[i + 1];
 
-        expect(color1.value != color2.value, true);
+        expect(color1.toARGB32() != color2.toARGB32(), true);
       }
     });
   });
@@ -154,9 +154,9 @@ void main() {
     test('珊瑚红 RGB 值', () {
       final color = CategoryColors.darkModeColors[0];
       // 0xFFFF6B6B: R=FF, G=6B, B=6B
-      final red = (color.value >> 16) & 0xFF;
-      final green = (color.value >> 8) & 0xFF;
-      final blue = color.value & 0xFF;
+      final red = (color.toARGB32() >> 16) & 0xFF;
+      final green = (color.toARGB32() >> 8) & 0xFF;
+      final blue = color.toARGB32() & 0xFF;
 
       expect(red, 0xFF);
       expect(green, 0x6B);
@@ -166,9 +166,9 @@ void main() {
     test('金黄色 RGB 值', () {
       final color = CategoryColors.darkModeColors[1];
       // 0xFFFFD93D: R=FF, G=D9, B=3D
-      final red = (color.value >> 16) & 0xFF;
-      final green = (color.value >> 8) & 0xFF;
-      final blue = color.value & 0xFF;
+      final red = (color.toARGB32() >> 16) & 0xFF;
+      final green = (color.toARGB32() >> 8) & 0xFF;
+      final blue = color.toARGB32() & 0xFF;
 
       expect(red, 0xFF);
       expect(green, 0xD9);
@@ -183,7 +183,7 @@ void main() {
         final lightColor = CategoryColors.getColor(i, Brightness.light);
 
         // 暗色和亮色的相同索引颜色应该不同
-        expect(darkColor.value != lightColor.value, true);
+        expect(darkColor.toARGB32() != lightColor.toARGB32(), true);
       }
     });
 
@@ -193,7 +193,7 @@ void main() {
       final lightColor = CategoryColors.lightModeColors[0];
 
       // 简单验证：两个颜色的值不同
-      expect(darkColor.value != lightColor.value, true);
+      expect(darkColor.toARGB32() != lightColor.toARGB32(), true);
     });
   });
 
@@ -268,12 +268,12 @@ void main() {
   group('Alpha 通道测试', () {
     test('所有颜色都有完整的 Alpha 通道', () {
       for (var color in CategoryColors.darkModeColors) {
-        final alpha = (color.value >> 24) & 0xFF;
+        final alpha = (color.toARGB32() >> 24) & 0xFF;
         expect(alpha, 0xFF); // 完全不透明
       }
 
       for (var color in CategoryColors.lightModeColors) {
-        final alpha = (color.value >> 24) & 0xFF;
+        final alpha = (color.toARGB32() >> 24) & 0xFF;
         expect(alpha, 0xFF); // 完全不透明
       }
     });

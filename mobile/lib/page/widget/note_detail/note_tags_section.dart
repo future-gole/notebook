@@ -71,7 +71,7 @@ class NoteTagsSection extends StatelessWidget {
                   '点击添加标签',
                   style: TextStyle(
                     fontSize: 12.sp,
-                    color: colorScheme.secondary.withOpacity(0.6),
+                    color: colorScheme.secondary.withValues(alpha: 0.6),
                   ),
                 ),
               ),
@@ -94,7 +94,7 @@ class NoteTagsSection extends StatelessWidget {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
       decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerHighest.withOpacity(0.08),
+        color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(16.r),
       ),
       child: Row(

@@ -6,14 +6,14 @@ import 'package:pocketmind/api/note_api_service.dart';
 import 'package:pocketmind/providers/note_providers.dart';
 import 'package:pocketmind/providers/category_providers.dart';
 import 'package:pocketmind/service/category_service.dart';
-import 'package:pocketmind/service/notification_service.dart';
-import 'package:pocketmind/util/app_config.dart';
+import 'package:pocketmind/providers/app_config_provider.dart';
+import 'package:pocketmind/providers/infrastructure_providers.dart';
 import 'package:intl/intl.dart';
 
 import 'package:pocketmind/page/widget/creative_time_picker.dart';
 
 // 标签页枚举
-enum EditTab { title, content, tags, category, AI, reminder }
+enum EditTab { title, content, tags, category, ai, reminder }
 
 class EditNotePage extends ConsumerStatefulWidget {
   final String? initialTitle;
@@ -42,7 +42,6 @@ class EditNotePageState extends ConsumerState<EditNotePage> {
   late final TextEditingController _titleController;
   late final TextEditingController _aiController;
 
-  final _config = AppConfig();
   bool _titleEnabled = false;
 
   EditTab _currentTab = EditTab.content; // 默认从内容标签开始
@@ -60,13 +59,16 @@ class EditNotePageState extends ConsumerState<EditNotePage> {
     _categoryController = TextEditingController();
     _tagController = TextEditingController();
     _aiController = TextEditingController();
-    _loadTitleSetting();
+    // 在下一帧获取配置，因为 initState 中不能直接 watch
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadTitleSetting();
+    });
   }
 
   Future<void> _loadTitleSetting() async {
-    await _config.init();
+    final config = ref.read(appConfigProvider);
     setState(() {
-      _titleEnabled = _config.titleEnabled;
+      _titleEnabled = config.titleEnabled;
       // 根据标题启用状态选择初始标签页
       _currentTab = _titleEnabled ? EditTab.title : EditTab.content;
     });
@@ -96,6 +98,7 @@ class EditNotePageState extends ConsumerState<EditNotePage> {
 
     if (_scheduledTime != null) {
       final notificationService = ref.read(notificationServiceProvider);
+      final config = ref.read(appConfigProvider);
       await notificationService.requestPermissions();
       await notificationService.scheduleNotification(
         id: widget.id,
@@ -106,6 +109,8 @@ class EditNotePageState extends ConsumerState<EditNotePage> {
             ? _contentController.text
             : '您有一条笔记提醒。',
         scheduledDate: _scheduledTime!,
+        highPrecision: config.highPrecisionNotification,
+        intensity: config.notificationIntensity,
       );
     }
 
@@ -168,7 +173,7 @@ class EditNotePageState extends ConsumerState<EditNotePage> {
             _buildNavTab(
               icon: Icons.question_answer_outlined,
               label: 'AI',
-              tab: EditTab.AI,
+              tab: EditTab.ai,
               colorScheme: colorScheme,
             ),
             SizedBox(width: 40.w),
@@ -230,7 +235,7 @@ class EditNotePageState extends ConsumerState<EditNotePage> {
             ? _titleController
             : _aiController,
         decoration: InputDecoration(
-          hintText: _currentTab == EditTab.AI ? '敬请期待' : '开始输入...',
+          hintText: _currentTab == EditTab.ai ? '敬请期待' : '开始输入...',
           hintStyle: TextStyle(color: colorScheme.secondary, fontSize: 16.sp),
           border: InputBorder.none,
           isDense: true,
@@ -319,7 +324,7 @@ class EditNotePageState extends ConsumerState<EditNotePage> {
     final name = _categoryController.text.trim();
     if (name.isNotEmpty) {
       await _addCategory(name);
-      ref.invalidate(categoriesProvider);
+      ref.invalidate(allCategoriesProvider);
     }
     setState(() {
       _isAddingCategory = false;
@@ -329,7 +334,7 @@ class EditNotePageState extends ConsumerState<EditNotePage> {
 
   // 构建分类选择页面
   Widget _buildCategoryContent(ColorScheme colorScheme) {
-    final categoriesAsync = ref.watch(categoriesProvider);
+    final categoriesAsync = ref.watch(allCategoriesProvider);
 
     return Container(
       padding: EdgeInsets.all(20.r),
@@ -520,7 +525,7 @@ class EditNotePageState extends ConsumerState<EditNotePage> {
   }
 
   Widget _buildReminderContent(ColorScheme colorScheme) {
-    final shortcuts = _config.reminderShortcuts;
+    final shortcuts = ref.watch(appConfigProvider).reminderShortcuts;
 
     return Container(
       padding: EdgeInsets.all(20.r),
@@ -537,10 +542,10 @@ class EditNotePageState extends ConsumerState<EditNotePage> {
             Container(
               padding: EdgeInsets.all(24.r),
               decoration: BoxDecoration(
-                color: colorScheme.surfaceContainerHighest.withOpacity(0.15),
+                color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(20.r),
                 border: Border.all(
-                  color: colorScheme.surfaceContainerHighest.withOpacity(0.3),
+                  color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
                   width: 1.w,
                 ),
               ),
@@ -626,7 +631,7 @@ class EditNotePageState extends ConsumerState<EditNotePage> {
                             horizontal: 16.w,
                             vertical: 12.h,
                           ),
-                          backgroundColor: colorScheme.error.withOpacity(0.1),
+                          backgroundColor: colorScheme.error.withValues(alpha: 0.1),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12.r),
                           ),
@@ -660,7 +665,7 @@ class EditNotePageState extends ConsumerState<EditNotePage> {
                     child: Text(
                       '长按删除快捷方式',
                       style: TextStyle(
-                        color: colorScheme.secondary.withOpacity(0.5),
+                        color: colorScheme.secondary.withValues(alpha: 0.5),
                         fontSize: 12.sp,
                       ),
                     ),
@@ -702,7 +707,7 @@ class EditNotePageState extends ConsumerState<EditNotePage> {
                       return GestureDetector(
                         onLongPress: () async {
                           // 长按删除
-                          await _config.removeReminderShortcut(index);
+                          await ref.read(appConfigProvider.notifier).removeReminderShortcut(index);
                           setState(() {}); // 刷新界面
                         },
                         child: _buildQuickOption(
@@ -771,7 +776,7 @@ class EditNotePageState extends ConsumerState<EditNotePage> {
   }) {
     final bgColor = isPrimary
         ? colorScheme.primary
-        : colorScheme.surfaceContainerHighest.withOpacity(0.1);
+        : colorScheme.surfaceContainerHighest.withValues(alpha: 0.1);
     final fgColor = isPrimary
         ? colorScheme.onPrimary
         : colorScheme.onSurfaceVariant;
@@ -791,7 +796,7 @@ class EditNotePageState extends ConsumerState<EditNotePage> {
             border: isPrimary
                 ? null
                 : Border.all(
-                    color: colorScheme.outline.withOpacity(0.1),
+                    color: colorScheme.outline.withValues(alpha: 0.1),
                     width: 1.w,
                   ),
           ),
@@ -812,7 +817,7 @@ class EditNotePageState extends ConsumerState<EditNotePage> {
               Text(
                 timeLabel,
                 style: TextStyle(
-                  color: fgColor.withOpacity(0.7),
+                  color: fgColor.withValues(alpha: 0.7),
                   fontSize: 12.sp,
                 ),
               ),
@@ -835,12 +840,11 @@ class EditNotePageState extends ConsumerState<EditNotePage> {
             setState(() {
               _scheduledTime = selectedTime;
             });
-            Navigator.pop(context); // Close picker
+            Navigator.pop(context);
 
-            // Save shortcut if name is provided
             if (name != null && name.isNotEmpty) {
               final timeStr = DateFormat('HH:mm').format(selectedTime);
-              await _config.addReminderShortcut(name, timeStr);
+              await ref.read(appConfigProvider.notifier).addReminderShortcut(name, timeStr);
               if (mounted) setState(() {});
             }
           },
@@ -906,7 +910,7 @@ class EditNotePageState extends ConsumerState<EditNotePage> {
                           child:
                               _currentTab == EditTab.content ||
                                   _currentTab == EditTab.title ||
-                                  _currentTab == EditTab.AI
+                                  _currentTab == EditTab.ai
                               ? _buildNotesContent(colorScheme)
                               : SingleChildScrollView(
                                   child: _currentTab == EditTab.tags

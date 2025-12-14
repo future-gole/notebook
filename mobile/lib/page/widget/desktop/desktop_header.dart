@@ -2,7 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:pocketmind/providers/infrastructure_providers.dart';
+import 'package:pocketmind/providers/app_config_provider.dart';
 
 /// 布局切换按钮组件
 /// 用于切换卡片布局和列表布局
@@ -18,8 +18,8 @@ class LayoutToggleButton extends ConsumerWidget {
     return Container(
       decoration: BoxDecoration(
         color: isDark
-            ? Colors.white.withOpacity(0.05)
-            : Colors.black.withOpacity(0.03),
+            ? Colors.white.withValues(alpha: 0.05)
+            : Colors.black.withValues(alpha: 0.03),
         borderRadius: BorderRadius.circular(8.r),
       ),
       padding: EdgeInsets.all(4.w),
@@ -31,7 +31,7 @@ class LayoutToggleButton extends ConsumerWidget {
             isActive: isGridMode,
             onTap: () {
               if (!isGridMode) {
-                config.setWaterFallLayout(true);
+                ref.read(appConfigProvider.notifier).setWaterFallLayout(true);
               }
             },
           ),
@@ -41,7 +41,7 @@ class LayoutToggleButton extends ConsumerWidget {
             isActive: !isGridMode,
             onTap: () {
               if (isGridMode) {
-                config.setWaterFallLayout(false);
+                ref.read(appConfigProvider.notifier).setWaterFallLayout(false);
               }
             },
           ),
@@ -86,17 +86,17 @@ class _LayoutButtonState extends State<_LayoutButton> {
           padding: EdgeInsets.all(6.w),
           decoration: BoxDecoration(
             color: widget.isActive
-                ? (isDark ? Colors.white.withOpacity(0.1) : Colors.white)
+                ? (isDark ? Colors.white.withValues(alpha: 0.1) : Colors.white)
                 : (_isHovered
                       ? (isDark
-                            ? Colors.white.withOpacity(0.05)
-                            : Colors.black.withOpacity(0.03))
+                            ? Colors.white.withValues(alpha: 0.05)
+                            : Colors.black.withValues(alpha: 0.03))
                       : Colors.transparent),
             borderRadius: BorderRadius.circular(6.r),
             boxShadow: widget.isActive
                 ? [
                     BoxShadow(
-                      color: Colors.black.withOpacity(isDark ? 0.2 : 0.05),
+                      color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.05),
                       blurRadius: 4.r,
                       offset: Offset(0, 1.h),
                     ),
@@ -146,8 +146,8 @@ class _ThemeToggleButtonState extends State<ThemeToggleButton> {
           decoration: BoxDecoration(
             color: _isHovered
                 ? (isDark
-                      ? Colors.white.withOpacity(0.05)
-                      : Colors.black.withOpacity(0.03))
+                      ? Colors.white.withValues(alpha: 0.05)
+                      : Colors.black.withValues(alpha: 0.03))
                 : Colors.transparent,
             borderRadius: BorderRadius.circular(8.r),
           ),
@@ -179,7 +179,6 @@ class DesktopHeader extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final colorScheme = Theme.of(context).colorScheme;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     final screenWidth = MediaQuery.of(context).size.width;
 
     // Windows 平台预留右侧窗口控制按钮空间
@@ -251,13 +250,13 @@ class _DesktopSearchBar extends StatelessWidget {
       height: 40.w,
       decoration: BoxDecoration(
         color: isDark
-            ? Colors.white.withOpacity(0.05)
-            : Colors.black.withOpacity(0.03),
+            ? Colors.white.withValues(alpha: 0.05)
+            : Colors.black.withValues(alpha: 0.03),
         borderRadius: BorderRadius.circular(20.r),
         border: Border.all(
           color: isDark
-              ? Colors.white.withOpacity(0.08)
-              : Colors.black.withOpacity(0.05),
+              ? Colors.white.withValues(alpha: 0.08)
+              : Colors.black.withValues(alpha: 0.05),
           width: 1,
         ),
       ),
@@ -280,7 +279,7 @@ class _DesktopSearchBar extends StatelessWidget {
                 border: InputBorder.none,
                 contentPadding: EdgeInsets.symmetric(horizontal: 12.w),
                 hintStyle: TextStyle(
-                  color: colorScheme.secondary.withOpacity(0.6),
+                  color: colorScheme.secondary.withValues(alpha: 0.6),
                   fontSize: 14.sp,
                 ),
                 isDense: true,
@@ -307,7 +306,7 @@ class _DesktopSearchBar extends StatelessWidget {
                     child: Icon(
                       Icons.close,
                       size: 16,
-                      color: colorScheme.secondary.withOpacity(0.6),
+                      color: colorScheme.secondary.withValues(alpha: 0.6),
                     ),
                   ),
                 ),

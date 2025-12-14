@@ -5,15 +5,9 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 import 'package:flutter_timezone/flutter_timezone.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pocketmind/util/logger_service.dart';
-import 'package:pocketmind/util/app_config.dart';
 import 'dart:io';
 
-final notificationService = NotificationService();
-final notificationServiceProvider = Provider<NotificationService>((ref) {
-  return notificationService;
-});
 
 class NotificationService {
   final fln.FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
@@ -107,6 +101,8 @@ class NotificationService {
     required String title,
     required String body,
     required DateTime scheduledDate,
+    bool highPrecision = false,
+    int intensity = 2,
   }) async {
     // 0. 先检测权限检查与请求
     PermissionStatus status = await Permission.notification.status;
@@ -130,7 +126,6 @@ class NotificationService {
     // 1. 将输入的 DateTime (本地时间) 转换为 tz.local 时区下的 TZDateTime
     tz.TZDateTime tzDate = tz.TZDateTime.from(scheduledDate, tz.local);
 
-    final config = AppConfig();
     // 定义 Android 变量
     fln.Importance androidImportance;
     fln.Priority androidPriority;
@@ -144,7 +139,7 @@ class NotificationService {
     // 定义 win 变量
     fln.WindowsNotificationDetails? windowsDetails;
 
-    switch (config.notificationIntensity) {
+    switch (intensity) {
       case 0: // 低
         // Android: 无声、无弹窗、仅状态栏
         androidImportance = fln.Importance.low;
@@ -195,8 +190,8 @@ class NotificationService {
         );
         break;
     }
-    String androidChannelId = 'reminder_channel_level_${config.notificationIntensity}';
-    String androidChannelName = '${config.notificationIntensity == 0 ? "低" : config.notificationIntensity == 1 ? "中" : "高"} 强度提醒';
+    String androidChannelId = 'reminder_channel_level_$intensity';
+    String androidChannelName = '${intensity == 0 ? "低" : intensity == 1 ? "中" : "高"} 强度提醒';
 
     try {
       await flutterLocalNotificationsPlugin.zonedSchedule(
@@ -232,7 +227,7 @@ class NotificationService {
           // Windows 主要是靠系统接管，代码里没有类似 Priority 的参数。
           // Linux 同理。
         ),
-        androidScheduleMode: config.highPrecisionNotification
+        androidScheduleMode: highPrecision
             ? fln.AndroidScheduleMode.alarmClock
             : fln.AndroidScheduleMode.exactAllowWhileIdle,
         matchDateTimeComponents: null,

@@ -7,7 +7,6 @@ import 'package:pocketmind/providers/category_providers.dart';
 import 'package:pocketmind/providers/note_providers.dart';
 import 'package:pocketmind/providers/nav_providers.dart';
 import 'package:pocketmind/page/widget/creative_toast.dart';
-import 'package:image_picker/image_picker.dart';
 
 class NoteEditorRoute extends PageRouteBuilder {
   NoteEditorRoute()
@@ -16,7 +15,7 @@ class NoteEditorRoute extends PageRouteBuilder {
         barrierColor: Colors.transparent, // 不要额外蒙一层黑
         transitionDuration: Duration.zero, // 不用默认的 page 动画
         reverseTransitionDuration: Duration.zero,
-        pageBuilder: (_, __, ___) => const NoteEditorSheet(),
+        pageBuilder: (context, animation, secondaryAnimation) => const NoteEditorSheet(),
       );
 }
 
@@ -41,7 +40,6 @@ class _NoteEditorSheetState extends ConsumerState<NoteEditorSheet>
   late AnimationController _animationController;
   late Animation<Offset> _headerSlideAnimation;
   late Animation<Offset> _bodySlideAnimation;
-  late Animation<double> _bgFadeAnimation;
 
   // 状态
   int _selectedCategoryId = 1; // 默认分类ID
@@ -69,18 +67,6 @@ class _NoteEditorSheetState extends ConsumerState<NoteEditorSheet>
       duration: const Duration(milliseconds: 1000),
     );
 
-    // 背景淡入动画
-    _bgFadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(
-        parent: _animationController,
-        curve: const Interval(
-          0.0,
-          0.7, // 🔥 0~40% 动画时间内完成淡入
-          curve: Curves.easeOut,
-        ),
-      ),
-    );
-
     // 头部从右向左滑入
     _headerSlideAnimation =
         Tween<Offset>(begin: const Offset(1.0, 0.0), end: Offset.zero).animate(
@@ -103,9 +89,9 @@ class _NoteEditorSheetState extends ConsumerState<NoteEditorSheet>
     _animationController.forward();
 
     // 初始化分类
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final activeId = ref.read(activeCategoryId).value;
-      if (activeId != null) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final activeId = await ref.read(activeCategoryIdProvider.future);
+      if (mounted) {
         setState(() {
           _selectedCategoryId = activeId;
         });
@@ -140,19 +126,19 @@ class _NoteEditorSheetState extends ConsumerState<NoteEditorSheet>
     }
   }
 
-  Future<void> _pickImage() async {
-    final ImagePicker picker = ImagePicker();
-    final XFile? image = await picker.pickImage(source: ImageSource.gallery);
-
-    if (image != null) {
-      setState(() {
-        _localImagePath = image.path;
-        _isImageInputVisible = true;
-      });
-
-      // TODO: 调用实际的上传API
-    }
-  }
+  // Future<void> _pickImage() async {
+  //   final ImagePicker picker = ImagePicker();
+  //   final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+  //
+  //   if (image != null) {
+  //     setState(() {
+  //       _localImagePath = image.path;
+  //       _isImageInputVisible = true;
+  //     });
+  //
+  //     // TODO: 调用实际的上传API
+  //   }
+  // }
 
   Future<void> _handleClose() async {
     // 反向播放动画
@@ -552,7 +538,7 @@ class _NoteEditorSheetState extends ConsumerState<NoteEditorSheet>
         height: 20,
         child: CircularProgressIndicator(strokeWidth: 2),
       ),
-      error: (_, __) => const Text('Error'),
+      error: (error, stack) => const Text('Error'),
     );
   }
 
@@ -577,7 +563,7 @@ class _NoteEditorSheetState extends ConsumerState<NoteEditorSheet>
               image: DecorationImage(
                 image: FileImage(File(_localImagePath!)),
                 fit: BoxFit.cover,
-                onError: (_, __) {},
+                onError: (exception, stackTrace) {},
               ),
             ),
           ),

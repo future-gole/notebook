@@ -27,7 +27,7 @@ class ItemBar extends StatelessWidget {
       if (isActive) {
         return Theme.of(context).colorScheme.primary;
       } else {
-        return Theme.of(context).colorScheme.primary.withOpacity(0.8);
+        return Theme.of(context).colorScheme.primary.withValues(alpha: 0.8);
       }
     }
 
@@ -44,7 +44,7 @@ class ItemBar extends StatelessWidget {
     // 这是一个静态的从左上到右下的渐变，模仿 '微光'
     final Gradient? activeGradient = isActive
         ? LinearGradient(
-            colors: [glossColor.withOpacity(0.2), glossColor.withOpacity(0.0)],
+            colors: [glossColor.withValues(alpha: 0.2), glossColor.withValues(alpha: 0.0)],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           )

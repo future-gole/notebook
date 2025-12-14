@@ -209,7 +209,7 @@ void main() {
       final lightColor = CategoryColors.getColor(colorIndex, Brightness.light);
 
       // 颜色应该不同
-      expect(darkColor.value != lightColor.value, true);
+      expect(darkColor.toARGB32() != lightColor.toARGB32(), true);
     });
 
     test('无效索引使用默认颜色', () {

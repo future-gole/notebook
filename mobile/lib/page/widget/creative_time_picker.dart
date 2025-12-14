@@ -80,8 +80,8 @@ class _CreativeTimePickerState extends State<CreativeTimePicker>
       _knobColor = const Color(0xFFF472B6); // pink-400
       _themeIcon = Icons.wb_sunny;
       _themeIconColor = const Color(0xFFFBCFE8); // pink-200
-      _glassColor = Colors.white.withOpacity(0.1);
-      _glassBorderColor = Colors.white.withOpacity(0.1);
+      _glassColor = Colors.white.withValues(alpha: 0.1);
+      _glassBorderColor = Colors.white.withValues(alpha: 0.1);
       _textColor = Colors.white;
     } else if (realHour >= 7 && realHour < 17) {
       // Day - Adjusted for better visibility
@@ -96,8 +96,8 @@ class _CreativeTimePickerState extends State<CreativeTimePicker>
       _themeIconColor = const Color(0xFFFEF08A); // yellow-200
 
       // Make glass more visible on bright background
-      _glassColor = Colors.white.withOpacity(0.25);
-      _glassBorderColor = Colors.white.withOpacity(0.4);
+      _glassColor = Colors.white.withValues(alpha: 0.25);
+      _glassBorderColor = Colors.white.withValues(alpha: 0.4);
       _textColor = Colors.white;
     } else if (realHour >= 17 && realHour < 20) {
       // Dusk
@@ -110,8 +110,8 @@ class _CreativeTimePickerState extends State<CreativeTimePicker>
       _knobColor = const Color(0xFFFB923C); // orange-400
       _themeIcon = Icons.nightlight_round;
       _themeIconColor = const Color(0xFFFED7AA); // orange-200
-      _glassColor = Colors.white.withOpacity(0.1);
-      _glassBorderColor = Colors.white.withOpacity(0.1);
+      _glassColor = Colors.white.withValues(alpha: 0.1);
+      _glassBorderColor = Colors.white.withValues(alpha: 0.1);
       _textColor = Colors.white;
     } else {
       // Night
@@ -124,8 +124,8 @@ class _CreativeTimePickerState extends State<CreativeTimePicker>
       _knobColor = const Color(0xFF6366F1); // indigo-500
       _themeIcon = Icons.nightlight_round;
       _themeIconColor = const Color(0xFF818CF8); // indigo-400
-      _glassColor = Colors.white.withOpacity(0.05);
-      _glassBorderColor = Colors.white.withOpacity(0.1);
+      _glassColor = Colors.white.withValues(alpha: 0.05);
+      _glassBorderColor = Colors.white.withValues(alpha: 0.1);
       _textColor = Colors.white;
     }
   }
@@ -171,7 +171,7 @@ class _CreativeTimePickerState extends State<CreativeTimePicker>
           height: size,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            border: Border.all(color: _glassBorderColor.withOpacity(0.2)),
+            border: Border.all(color: _glassBorderColor.withValues(alpha: 0.2)),
           ),
         ),
 
@@ -188,7 +188,7 @@ class _CreativeTimePickerState extends State<CreativeTimePicker>
               child: Container(
                 width: 2.w,
                 height: 8.h,
-                color: _glassBorderColor.withOpacity(0.3),
+                color: _glassBorderColor.withValues(alpha: 0.3),
               ),
             ),
           );
@@ -218,12 +218,12 @@ class _CreativeTimePickerState extends State<CreativeTimePicker>
                           shape: BoxShape.circle,
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.white.withOpacity(0.6),
+                              color: Colors.white.withValues(alpha: 0.6),
                               blurRadius: 15.r,
                             ),
                           ],
                           border: Border.all(
-                            color: Colors.white.withOpacity(0.5),
+                            color: Colors.white.withValues(alpha: 0.5),
                             width: 2.w,
                           ),
                         ),
@@ -246,7 +246,7 @@ class _CreativeTimePickerState extends State<CreativeTimePicker>
                             begin: Alignment.topCenter,
                             end: Alignment.bottomCenter,
                             colors: [
-                              Colors.white.withOpacity(0.5),
+                              Colors.white.withValues(alpha: 0.5),
                               Colors.transparent,
                             ],
                           ),
@@ -266,7 +266,7 @@ class _CreativeTimePickerState extends State<CreativeTimePicker>
           height: size * 0.65,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            border: Border.all(color: _glassBorderColor.withOpacity(0.2)),
+            border: Border.all(color: _glassBorderColor.withValues(alpha: 0.2)),
           ),
         ),
 
@@ -298,7 +298,7 @@ class _CreativeTimePickerState extends State<CreativeTimePicker>
                           BoxShadow(color: Colors.black26, blurRadius: 8.r),
                         ],
                         border: Border.all(
-                          color: Colors.white.withOpacity(0.8),
+                          color: Colors.white.withValues(alpha: 0.8),
                           width: 2.w,
                         ),
                       ),
@@ -332,7 +332,7 @@ class _CreativeTimePickerState extends State<CreativeTimePicker>
                       fontWeight: FontWeight.bold,
                       color: _draggingType == 'hour'
                           ? _textColor
-                          : _textColor.withOpacity(0.9),
+                          : _textColor.withValues(alpha: 0.9),
                       height: 1,
                     ),
                   ),
@@ -342,7 +342,7 @@ class _CreativeTimePickerState extends State<CreativeTimePicker>
                     ':',
                     style: TextStyle(
                       fontSize: 32.sp,
-                      color: _textColor.withOpacity(0.5),
+                      color: _textColor.withValues(alpha: 0.5),
                     ),
                   ),
                 ),
@@ -354,7 +354,7 @@ class _CreativeTimePickerState extends State<CreativeTimePicker>
                       fontWeight: FontWeight.bold,
                       color: _draggingType == 'minute'
                           ? _textColor
-                          : _textColor.withOpacity(0.9),
+                          : _textColor.withValues(alpha: 0.9),
                       height: 1,
                     ),
                   ),
@@ -453,7 +453,7 @@ class _CreativeTimePickerState extends State<CreativeTimePicker>
                   (d) => Text(
                     d,
                     style: TextStyle(
-                      color: _textColor.withOpacity(0.6),
+                      color: _textColor.withValues(alpha: 0.6),
                       fontSize: 12.sp,
                     ),
                   ),
@@ -498,7 +498,7 @@ class _CreativeTimePickerState extends State<CreativeTimePicker>
                       color: isSelected
                           ? _knobColor
                           : (isToday
-                                ? _glassColor.withOpacity(0.3)
+                                ? _glassColor.withValues(alpha: 0.3)
                                 : Colors.transparent),
                       shape: BoxShape.circle,
                       border: isToday && !isSelected
@@ -510,7 +510,7 @@ class _CreativeTimePickerState extends State<CreativeTimePicker>
                         '$day',
                         style: TextStyle(
                           color: isSelected
-                              ? Colors.black.withOpacity(0.8)
+                              ? Colors.black.withValues(alpha: 0.8)
                               : _textColor,
                           fontWeight: isSelected
                               ? FontWeight.bold
@@ -551,11 +551,11 @@ class _CreativeTimePickerState extends State<CreativeTimePicker>
                 width: 200.w,
                 height: 200.w,
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.1),
+                  color: Colors.white.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.white.withOpacity(0.1),
+                      color: Colors.white.withValues(alpha: 0.1),
                       blurRadius: 50.r,
                       spreadRadius: 20.r,
                     ),
@@ -573,7 +573,7 @@ class _CreativeTimePickerState extends State<CreativeTimePicker>
                 child: Text(
                   '设置闹钟',
                   style: TextStyle(
-                    color: Colors.white.withOpacity(0.8),
+                    color: Colors.white.withValues(alpha: 0.8),
                     fontSize: 18.sp,
                     letterSpacing: 3,
                     fontWeight: FontWeight.w300,
@@ -606,7 +606,7 @@ class _CreativeTimePickerState extends State<CreativeTimePicker>
                             border: Border.all(color: _glassBorderColor),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withOpacity(0.2),
+                                color: Colors.black.withValues(alpha: 0.2),
                                 blurRadius: 20.r,
                                 spreadRadius: 5.r,
                               ),
@@ -670,12 +670,12 @@ class _CreativeTimePickerState extends State<CreativeTimePicker>
                           decoration: InputDecoration(
                             hintText: '输入快捷名称 (例如: 晨练)',
                             hintStyle: TextStyle(
-                              color: _textColor.withOpacity(0.5),
+                              color: _textColor.withValues(alpha: 0.5),
                             ),
                             border: InputBorder.none,
                             icon: Icon(
                               Icons.bookmark,
-                              color: _textColor.withOpacity(0.7),
+                              color: _textColor.withValues(alpha: 0.7),
                               size: 20.sp,
                             ),
                           ),
@@ -700,12 +700,12 @@ class _CreativeTimePickerState extends State<CreativeTimePicker>
                       ),
                       decoration: BoxDecoration(
                         color: _isDatePickerMode
-                            ? _glassColor.withOpacity(0.3)
+                            ? _glassColor.withValues(alpha: 0.3)
                             : _glassColor,
                         borderRadius: BorderRadius.circular(20.r),
                         border: Border.all(
                           color: _isDatePickerMode
-                              ? _accentColor.withOpacity(0.5)
+                              ? _accentColor.withValues(alpha: 0.5)
                               : _glassBorderColor,
                         ),
                       ),
@@ -714,7 +714,7 @@ class _CreativeTimePickerState extends State<CreativeTimePicker>
                         children: [
                           Icon(
                             Icons.calendar_today,
-                            color: _textColor.withOpacity(0.8),
+                            color: _textColor.withValues(alpha: 0.8),
                             size: 16.sp,
                           ),
                           SizedBox(width: 8.w),
@@ -761,13 +761,13 @@ class _CreativeTimePickerState extends State<CreativeTimePicker>
                           width: 56.w,
                           height: 56.w,
                           decoration: BoxDecoration(
-                            color: _glassColor.withOpacity(0.05),
+                            color: _glassColor.withValues(alpha: 0.05),
                             shape: BoxShape.circle,
                             border: Border.all(color: _glassBorderColor),
                           ),
                           child: Icon(
                             Icons.refresh,
-                            color: _textColor.withOpacity(0.7),
+                            color: _textColor.withValues(alpha: 0.7),
                           ),
                         ),
                       ),
@@ -785,14 +785,14 @@ class _CreativeTimePickerState extends State<CreativeTimePicker>
                           height: 56.w,
                           decoration: BoxDecoration(
                             color: _showNameInput
-                                ? _glassColor.withOpacity(0.2)
-                                : _glassColor.withOpacity(0.05),
+                                ? _glassColor.withValues(alpha: 0.2)
+                                : _glassColor.withValues(alpha: 0.05),
                             shape: BoxShape.circle,
                             border: Border.all(color: _glassBorderColor),
                           ),
                           child: Icon(
                             Icons.edit,
-                            color: _textColor.withOpacity(0.7),
+                            color: _textColor.withValues(alpha: 0.7),
                           ),
                         ),
                       ),
@@ -833,7 +833,7 @@ class _CreativeTimePickerState extends State<CreativeTimePicker>
                             borderRadius: BorderRadius.circular(28.r),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withOpacity(0.1),
+                                color: Colors.black.withValues(alpha: 0.1),
                                 blurRadius: 10.r,
                                 offset: Offset(0, 4.h),
                               ),
@@ -880,7 +880,7 @@ class _CreativeTimePickerState extends State<CreativeTimePicker>
                   child: Text(
                     '闹钟将于 ${_isAm ? '上午' : '下午'} $_hour:${_minute.toString().padLeft(2, '0')} 响起',
                     style: TextStyle(
-                      color: Colors.white.withOpacity(0.6),
+                      color: Colors.white.withValues(alpha: 0.6),
                       fontSize: 14.sp,
                     ),
                   ),

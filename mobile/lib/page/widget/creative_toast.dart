@@ -208,7 +208,7 @@ class _ToastWidgetState extends State<_ToastWidget>
               borderRadius: BorderRadius.circular(20.r),
               boxShadow: [
                 BoxShadow(
-                  color: config.ringColor.withOpacity(0.25),
+                  color: config.ringColor.withValues(alpha: 0.25),
                   blurRadius: 24.r,
                   offset: Offset(0, 8.h),
                 ),
@@ -220,11 +220,11 @@ class _ToastWidgetState extends State<_ToastWidget>
                 filter: ImageFilter.blur(sigmaX: 24, sigmaY: 24),
                 child: Container(
                   decoration: BoxDecoration(
-                    color: cs.surface.withOpacity(0.92),
+                    color: cs.surface.withValues(alpha: 0.92),
                     borderRadius: BorderRadius.circular(20.r),
                     border: Border.all(
                       width: 1.5.w,
-                      color: config.ringColor.withOpacity(0.3),
+                      color: config.ringColor.withValues(alpha: 0.3),
                     ),
                   ),
                   child: Stack(
@@ -238,9 +238,9 @@ class _ToastWidgetState extends State<_ToastWidget>
                           decoration: BoxDecoration(
                             gradient: LinearGradient(
                               colors: [
-                                Colors.white.withOpacity(0),
-                                Colors.white.withOpacity(0.5),
-                                Colors.white.withOpacity(0),
+                                Colors.white.withValues(alpha: 0),
+                                Colors.white.withValues(alpha: 0.5),
+                                Colors.white.withValues(alpha: 0),
                               ],
                             ),
                           ),
@@ -258,7 +258,7 @@ class _ToastWidgetState extends State<_ToastWidget>
                                 gradient: config.gradient,
                                 boxShadow: [
                                   BoxShadow(
-                                    color: config.ringColor.withOpacity(0.4),
+                                    color: config.ringColor.withValues(alpha: 0.4),
                                     blurRadius: 12.r,
                                   ),
                                 ],
@@ -370,7 +370,7 @@ class _RingPainter extends CustomPainter {
       2 * math.pi * progress,
       false,
       Paint()
-        ..color = color.withOpacity(0.8)
+        ..color = color.withValues(alpha: 0.8)
         ..style = PaintingStyle.stroke
         ..strokeWidth = stroke
         ..strokeCap = StrokeCap.round,
@@ -402,7 +402,7 @@ Future<bool?> showConfirmDialog(
         ),
       );
     },
-    pageBuilder: (ctx, _, __) => _ConfirmDialog(
+    pageBuilder: (ctx, a1, a2) => _ConfirmDialog(
       title: title,
       message: message,
       confirmText: confirmText,
@@ -443,7 +443,7 @@ class _ConfirmDialog extends StatelessWidget {
           borderRadius: BorderRadius.circular(24.r),
           boxShadow: [
             BoxShadow(
-              color: accentColor.withOpacity(0.2),
+              color: accentColor.withValues(alpha: 0.2),
               blurRadius: 32.r,
               offset: Offset(0, 12.h),
             ),
@@ -455,11 +455,11 @@ class _ConfirmDialog extends StatelessWidget {
             filter: ImageFilter.blur(sigmaX: 24, sigmaY: 24),
             child: Container(
               decoration: BoxDecoration(
-                color: cs.surface.withOpacity(0.95),
+                color: cs.surface.withValues(alpha: 0.95),
                 borderRadius: BorderRadius.circular(24.r),
                 border: Border.all(
                   width: 1.5.w,
-                  color: accentColor.withOpacity(0.25),
+                  color: accentColor.withValues(alpha: 0.25),
                 ),
               ),
               child: Stack(
@@ -473,9 +473,9 @@ class _ConfirmDialog extends StatelessWidget {
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
                           colors: [
-                            Colors.white.withOpacity(0),
-                            Colors.white.withOpacity(0.5),
-                            Colors.white.withOpacity(0),
+                            Colors.white.withValues(alpha: 0),
+                            Colors.white.withValues(alpha: 0.5),
+                            Colors.white.withValues(alpha: 0),
                           ],
                         ),
                       ),
@@ -493,7 +493,7 @@ class _ConfirmDialog extends StatelessWidget {
                           gradient: gradient,
                           boxShadow: [
                             BoxShadow(
-                              color: accentColor.withOpacity(0.4),
+                              color: accentColor.withValues(alpha: 0.4),
                               blurRadius: 16.r,
                             ),
                           ],
@@ -535,7 +535,7 @@ class _ConfirmDialog extends StatelessWidget {
                                 child: Container(
                                   height: 48.h,
                                   decoration: BoxDecoration(
-                                    color: cs.outlineVariant.withOpacity(0.3),
+                                    color: cs.outlineVariant.withValues(alpha: 0.3),
                                     borderRadius: BorderRadius.circular(14.r),
                                   ),
                                   alignment: Alignment.center,
@@ -562,7 +562,7 @@ class _ConfirmDialog extends StatelessWidget {
                                     borderRadius: BorderRadius.circular(14.r),
                                     boxShadow: [
                                       BoxShadow(
-                                        color: accentColor.withOpacity(0.3),
+                                        color: accentColor.withValues(alpha: 0.3),
                                         blurRadius: 8.r,
                                         offset: Offset(0, 4.h),
                                       ),
@@ -621,7 +621,7 @@ Future<String?> showInputDialog(
         ),
       );
     },
-    pageBuilder: (ctx, _, __) => _InputDialog(
+    pageBuilder: (ctx, a1, a2) => _InputDialog(
       title: title,
       message: message,
       hintText: hintText,
@@ -694,7 +694,7 @@ class _InputDialogState extends State<_InputDialog> {
             borderRadius: BorderRadius.circular(24.r),
             boxShadow: [
               BoxShadow(
-                color: accentColor.withOpacity(0.2),
+                color: accentColor.withValues(alpha: 0.2),
                 blurRadius: 32.r,
                 offset: Offset(0, 12.h),
               ),
@@ -706,11 +706,11 @@ class _InputDialogState extends State<_InputDialog> {
               filter: ImageFilter.blur(sigmaX: 24, sigmaY: 24),
               child: Container(
                 decoration: BoxDecoration(
-                  color: cs.surface.withOpacity(0.95),
+                  color: cs.surface.withValues(alpha: 0.95),
                   borderRadius: BorderRadius.circular(24.r),
                   border: Border.all(
                     width: 1.5.w,
-                    color: accentColor.withOpacity(0.25),
+                    color: accentColor.withValues(alpha: 0.25),
                   ),
                 ),
                 child: Stack(
@@ -724,9 +724,9 @@ class _InputDialogState extends State<_InputDialog> {
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
                             colors: [
-                              Colors.white.withOpacity(0),
-                              Colors.white.withOpacity(0.5),
-                              Colors.white.withOpacity(0),
+                              Colors.white.withValues(alpha: 0),
+                              Colors.white.withValues(alpha: 0.5),
+                              Colors.white.withValues(alpha: 0),
                             ],
                           ),
                         ),
@@ -744,7 +744,7 @@ class _InputDialogState extends State<_InputDialog> {
                             gradient: gradient,
                             boxShadow: [
                               BoxShadow(
-                                color: accentColor.withOpacity(0.4),
+                                color: accentColor.withValues(alpha: 0.4),
                                 blurRadius: 16.r,
                               ),
                             ],
@@ -782,10 +782,10 @@ class _InputDialogState extends State<_InputDialog> {
                           padding: EdgeInsets.symmetric(horizontal: 20.w),
                           child: Container(
                             decoration: BoxDecoration(
-                              color: cs.outlineVariant.withOpacity(0.15),
+                              color: cs.outlineVariant.withValues(alpha: 0.15),
                               borderRadius: BorderRadius.circular(14.r),
                               border: Border.all(
-                                color: accentColor.withOpacity(0.2),
+                                color: accentColor.withValues(alpha: 0.2),
                                 width: 1.w,
                               ),
                             ),
@@ -801,7 +801,7 @@ class _InputDialogState extends State<_InputDialog> {
                                 hintText: widget.hintText,
                                 hintStyle: theme.textTheme.bodyLarge?.copyWith(
                                   fontSize: 15.sp,
-                                  color: cs.secondary.withOpacity(0.5),
+                                  color: cs.secondary.withValues(alpha: 0.5),
                                 ),
                                 border: InputBorder.none,
                                 contentPadding: EdgeInsets.symmetric(
@@ -823,7 +823,7 @@ class _InputDialogState extends State<_InputDialog> {
                                   child: Container(
                                     height: 48.h,
                                     decoration: BoxDecoration(
-                                      color: cs.outlineVariant.withOpacity(0.3),
+                                      color: cs.outlineVariant.withValues(alpha: 0.3),
                                       borderRadius: BorderRadius.circular(14.r),
                                     ),
                                     alignment: Alignment.center,
@@ -850,7 +850,7 @@ class _InputDialogState extends State<_InputDialog> {
                                       borderRadius: BorderRadius.circular(14.r),
                                       boxShadow: [
                                         BoxShadow(
-                                          color: accentColor.withOpacity(0.3),
+                                          color: accentColor.withValues(alpha: 0.3),
                                           blurRadius: 8.r,
                                           offset: Offset(0, 4.h),
                                         ),

@@ -1,0 +1,55 @@
+// GENERATED CODE - DO NOT MODIFY BY HAND
+
+part of 'note_api_service.dart';
+
+// **************************************************************************
+// RiverpodGenerator
+// **************************************************************************
+
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint, type=warning
+/// 笔记 API 服务 Provider - 全局单例
+
+@ProviderFor(noteApiService)
+const noteApiServiceProvider = NoteApiServiceProvider._();
+
+/// 笔记 API 服务 Provider - 全局单例
+
+final class NoteApiServiceProvider
+    extends $FunctionalProvider<NoteApiService, NoteApiService, NoteApiService>
+    with $Provider<NoteApiService> {
+  /// 笔记 API 服务 Provider - 全局单例
+  const NoteApiServiceProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'noteApiServiceProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$noteApiServiceHash();
+
+  @$internal
+  @override
+  $ProviderElement<NoteApiService> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  NoteApiService create(Ref ref) {
+    return noteApiService(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(NoteApiService value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<NoteApiService>(value),
+    );
+  }
+}
+
+String _$noteApiServiceHash() => r'17a81579d9a1b7f0a834ce0e0318a3d340926fd4';

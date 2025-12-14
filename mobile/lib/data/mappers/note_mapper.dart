@@ -13,7 +13,7 @@ class NoteMapper {
       content: note.content,
       url: note.url,
       time: note.time,
-      categoryId: note.categoryId ?? 1,
+      categoryId: note.categoryId,
       tag: note.tag,
       previewImageUrl: note.previewImageUrl,
       previewTitle: note.previewTitle,

@@ -1,20 +1,23 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:pocketmind/api/api_constants.dart';
 import 'package:pocketmind/api/http_client.dart';
 import 'package:pocketmind/providers/http_providers.dart';
 
 import '../util/logger_service.dart';
 
-final noteApiServiceProvider = Provider<NoteApiService>((ref){
+part 'note_api_service.g.dart';
+
+/// 笔记 API 服务 Provider - 全局单例
+@Riverpod(keepAlive: true)
+NoteApiService noteApiService(Ref ref) {
   // 从 ref 中获取统一的 httpClient
   final httpClient = ref.watch(httpClientProvider);
   return NoteApiService(httpClient);
-});
+}
 
 final String tag = 'NoteApiService';
 
-class NoteApiService{
-
+class NoteApiService {
   final HttpClient _http;
   NoteApiService(this._http);
 
@@ -30,11 +33,11 @@ class NoteApiService{
     String? webUrl,
     required String userEmail,
   }) async {
-      PMlog.d(tag, '开始分析页面: $webUrl, 用户查询: $userQuery');
-      // 暂且后端没有返回
-      final data = await _http.post(
-        ApiConstants.analysis_service,
-        data: {'userQuery': userQuery, 'url': webUrl, 'userEmail': userEmail},
-      );
+    PMlog.d(tag, '开始分析页面: $webUrl, 用户查询: $userQuery');
+    // 暂且后端没有返回
+    await _http.post(
+      ApiConstants.analysisService,
+      data: {'userQuery': userQuery, 'url': webUrl, 'userEmail': userEmail},
+    );
   }
 }

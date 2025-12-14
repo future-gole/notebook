@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:pocketmind/util/app_config.dart';
+import 'package:pocketmind/providers/app_config_provider.dart';
+import 'package:pocketmind/model/app_config_state.dart';
 import 'package:pocketmind/page/home/sync_settings_page.dart';
 import 'dart:io';
 import 'package:pocketmind/util/proxy_config.dart';
@@ -19,7 +20,6 @@ class SettingsPage extends ConsumerStatefulWidget {
 }
 
 class _SettingsPageState extends ConsumerState<SettingsPage> {
-  final _config = AppConfig();
   final _apiKeyController = TextEditingController();
   final _meteCacheTimeController = TextEditingController();
   final _proxyHostController = TextEditingController();
@@ -50,51 +50,51 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
   }
 
   Future<void> _loadSettings() async {
-    setState(() => _isLoading = true);
-
-    await _config.init();
+    final config = ref.read(appConfigProvider);
 
     setState(() {
-      _proxyEnabled = _config.proxyEnabled;
-      _titleEnabled = _config.titleEnabled;
-      _currentEnvironment = _config.environment;
-      _proxyHostController.text = _config.proxyHost;
-      _proxyPortController.text = _config.proxyPort.toString();
-      _apiKeyController.text = _config.linkPreviewApiKey;
-      _meteCacheTimeController.text = _config.metaCacheTime.toString();
-      _isWaterfallLayout = _config.waterfallLayoutEnabled;
-      _highPrecisionNotification = _config.highPrecisionNotification;
-      _notificationIntensity = _config.notificationIntensity;
+      _proxyEnabled = config.proxyEnabled;
+      _titleEnabled = config.titleEnabled;
+      _currentEnvironment = config.environment;
+      _proxyHostController.text = config.proxyHost;
+      _proxyPortController.text = config.proxyPort.toString();
+      _apiKeyController.text = config.linkPreviewApiKey;
+      _meteCacheTimeController.text = config.metaCacheTime.toString();
+      _isWaterfallLayout = config.waterfallLayoutEnabled;
+      _highPrecisionNotification = config.highPrecisionNotification;
+      _notificationIntensity = config.notificationIntensity;
       _isLoading = false;
     });
   }
 
   Future<void> _saveSettings() async {
+    final notifier = ref.read(appConfigProvider.notifier);
+
     // 保存代理设置
-    await _config.setProxyEnabled(_proxyEnabled);
-    await _config.setProxyHost(_proxyHostController.text);
-    await _config.setProxyPort(int.tryParse(_proxyPortController.text) ?? 7890);
+    await notifier.setProxyEnabled(_proxyEnabled);
+    await notifier.setProxyHost(_proxyHostController.text);
+    await notifier.setProxyPort(int.tryParse(_proxyPortController.text) ?? 7890);
 
     // 保存 Title 显示设置
-    await _config.setTitleEnabled(_titleEnabled);
+    await notifier.setTitleEnabled(_titleEnabled);
 
     // 保存 布局 显示设置
-    await _config.setWaterFallLayout(_isWaterfallLayout);
+    await notifier.setWaterFallLayout(_isWaterfallLayout);
 
     // 保存环境设置
-    await _config.setEnvironment(_currentEnvironment);
+    await notifier.setEnvironment(_currentEnvironment);
 
     // 保存 API Key
-    await _config.setLinkPreviewApiKey(_apiKeyController.text);
+    await notifier.setLinkPreviewApiKey(_apiKeyController.text);
 
     // 保存 缓存时间
-    await _config.setMetaCacheTime(
+    await notifier.setMetaCacheTime(
       int.tryParse(_meteCacheTimeController.text) ?? 10,
     );
 
     // 保存通知设置
-    await _config.setHighPrecisionNotification(_highPrecisionNotification);
-    await _config.setNotificationIntensity(_notificationIntensity);
+    await notifier.setHighPrecisionNotification(_highPrecisionNotification);
+    await notifier.setNotificationIntensity(_notificationIntensity);
 
     // 应用代理设置
     _applyProxySettings();
@@ -110,9 +110,10 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
   }
 
   void _applyProxySettings() {
+    final config = ref.read(appConfigProvider);
     if (_proxyEnabled) {
       HttpOverrides.global = GlobalHttpOverrides(
-        '${_config.proxyHost}:${_config.proxyPort}',
+        '${config.proxyHost}:${config.proxyPort}',
         allowBadCertificates: true,
       );
     } else {
@@ -197,7 +198,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12.r),
-        side: BorderSide(color: theme.dividerColor.withOpacity(0.1)),
+        side: BorderSide(color: theme.dividerColor.withValues(alpha: 0.1)),
       ),
       child: Padding(
         padding: EdgeInsets.symmetric(horizontal: 16.w),
@@ -240,7 +241,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12.r),
-        side: BorderSide(color: theme.dividerColor.withOpacity(0.1)),
+        side: BorderSide(color: theme.dividerColor.withValues(alpha: 0.1)),
       ),
       child: Padding(
         padding: EdgeInsets.all(16.r),
@@ -299,7 +300,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12.r),
-        side: BorderSide(color: theme.dividerColor.withOpacity(0.1)),
+        side: BorderSide(color: theme.dividerColor.withValues(alpha: 0.1)),
       ),
       child: ListTile(
         leading: Icon(Icons.sync, color: theme.colorScheme.primary),
@@ -322,7 +323,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12.r),
-        side: BorderSide(color: theme.dividerColor.withOpacity(0.1)),
+        side: BorderSide(color: theme.dividerColor.withValues(alpha: 0.1)),
       ),
       child: Padding(
         padding: EdgeInsets.all(16.r),
@@ -425,106 +426,8 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
     }
   }
 
-  Widget _buildEnvironmentCard(ThemeData theme) {
-    // 获取当前环境的显示信息
-    String getCurrentEnvDescription() {
-      switch (_currentEnvironment) {
-        case Environment.development:
-          return 'http://localhost:8080';
-        case Environment.staging:
-          return 'https://staging-api.pocketmind.com';
-        case Environment.production:
-          return 'https://api.pocketmind.com';
-      }
-    }
 
-    String getEnvLabel(Environment env) {
-      switch (env) {
-        case Environment.development:
-          return '开发环境（本地）';
-        case Environment.staging:
-          return '预发布环境';
-        case Environment.production:
-          return '生产环境';
-      }
-    }
 
-    return Card(
-      color: theme.cardColor,
-      elevation: 0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12.r),
-        side: BorderSide(color: theme.dividerColor.withOpacity(0.1)),
-      ),
-      child: Padding(
-        padding: EdgeInsets.all(16.r),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(Icons.cloud_outlined, color: theme.colorScheme.primary),
-                SizedBox(width: 12.w),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('API 环境切换', style: theme.textTheme.bodyLarge),
-                      SizedBox(height: 4.h),
-                      Text(
-                        getCurrentEnvDescription(),
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: theme.colorScheme.primary,
-                          fontFamily: 'monospace',
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            Divider(height: 24.h),
-            // 环境选择
-            ...Environment.values.map((env) {
-              return RadioListTile<Environment>(
-                contentPadding: EdgeInsets.zero,
-                title: Text(
-                  getEnvLabel(env),
-                  style: theme.textTheme.bodyMedium,
-                ),
-                subtitle: Text(
-                  _getEnvUrl(env),
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    fontFamily: 'monospace',
-                  ),
-                ),
-                value: env,
-                groupValue: _currentEnvironment,
-                onChanged: (Environment? value) {
-                  if (value != null) {
-                    setState(() {
-                      _currentEnvironment = value;
-                    });
-                  }
-                },
-              );
-            }),
-          ],
-        ),
-      ),
-    );
-  }
-
-  String _getEnvUrl(Environment env) {
-    switch (env) {
-      case Environment.development:
-        return 'http://localhost:8080';
-      case Environment.staging:
-        return 'https://staging-api.pocketmind.com';
-      case Environment.production:
-        return 'https://api.pocketmind.com';
-    }
-  }
 
   Widget _buildProxyCard(ThemeData theme) {
     return Card(
@@ -532,7 +435,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12.r),
-        side: BorderSide(color: theme.dividerColor.withOpacity(0.1)),
+        side: BorderSide(color: theme.dividerColor.withValues(alpha: 0.1)),
       ),
       child: Padding(
         padding: EdgeInsets.all(16.r),
@@ -596,7 +499,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12.r),
-        side: BorderSide(color: theme.dividerColor.withOpacity(0.1)),
+        side: BorderSide(color: theme.dividerColor.withValues(alpha: 0.1)),
       ),
       child: Padding(
         padding: EdgeInsets.all(16.r),
@@ -648,7 +551,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
 
   Widget _buildInfoCard(ThemeData theme) {
     return Card(
-      color: theme.colorScheme.surfaceContainerHighest.withOpacity(0.1),
+      color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.1),
       elevation: 0,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
       child: Padding(
@@ -722,13 +625,13 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
         padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
         decoration: BoxDecoration(
           color: isSelected
-              ? colorScheme.primaryContainer.withOpacity(0.4)
+              ? colorScheme.primaryContainer.withValues(alpha: 0.4)
               : Colors.transparent,
           borderRadius: BorderRadius.circular(8.r),
           border: Border.all(
             color: isSelected
                 ? colorScheme.primary
-                : theme.dividerColor.withOpacity(0.2),
+                : theme.dividerColor.withValues(alpha: 0.2),
             width: isSelected ? 1.5 : 1,
           ),
         ),
@@ -738,7 +641,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
               icon,
               color: isSelected
                   ? colorScheme.primary
-                  : theme.iconTheme.color?.withOpacity(0.7),
+                  : theme.iconTheme.color?.withValues(alpha: 0.7),
               size: 20.sp,
             ),
             SizedBox(width: 12.w),
@@ -761,7 +664,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                       subtitle,
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: isSelected
-                            ? colorScheme.primary.withOpacity(0.8)
+                            ? colorScheme.primary.withValues(alpha: 0.8)
                             : null,
                         fontSize: 11.sp,
                       ),

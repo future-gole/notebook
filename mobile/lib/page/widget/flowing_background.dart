@@ -107,16 +107,16 @@ class FlowingGradientPainter extends CustomPainter {
     // 从主题获取颜色
     final colors = isDark
         ? [
-            DarkFlowingBackgroundColors.blob1.withOpacity(0.6),
-            DarkFlowingBackgroundColors.blob2.withOpacity(0.5),
-            DarkFlowingBackgroundColors.blob3.withOpacity(0.45),
-            DarkFlowingBackgroundColors.blob4.withOpacity(0.4),
+            DarkFlowingBackgroundColors.blob1.withValues(alpha: 0.6),
+            DarkFlowingBackgroundColors.blob2.withValues(alpha: 0.5),
+            DarkFlowingBackgroundColors.blob3.withValues(alpha: 0.45),
+            DarkFlowingBackgroundColors.blob4.withValues(alpha: 0.4),
           ]
         : [
-            LightFlowingBackgroundColors.blob1.withOpacity(0.7),
-            LightFlowingBackgroundColors.blob2.withOpacity(0.6),
-            LightFlowingBackgroundColors.blob3.withOpacity(0.55),
-            LightFlowingBackgroundColors.blob4.withOpacity(0.5),
+            LightFlowingBackgroundColors.blob1.withValues(alpha: 0.7),
+            LightFlowingBackgroundColors.blob2.withValues(alpha: 0.6),
+            LightFlowingBackgroundColors.blob3.withValues(alpha: 0.55),
+            LightFlowingBackgroundColors.blob4.withValues(alpha: 0.5),
           ];
 
     // 绘制多个大型流动渐变球 - 增加到 5 个以增加丰富度
@@ -128,7 +128,7 @@ class FlowingGradientPainter extends CustomPainter {
         size.height * (0.3 + 0.2 * math.cos(slowProgress * 2 * math.pi)),
       ),
       radius: size.width * (0.6 + 0.1 * math.sin(mediumProgress * 2 * math.pi)),
-      colors: [colors[0], colors[0].withOpacity(0)],
+      colors: [colors[0], colors[0].withValues(alpha: 0)],
     );
 
     _drawFlowingBlob(
@@ -139,7 +139,7 @@ class FlowingGradientPainter extends CustomPainter {
         size.height * (0.5 + 0.25 * math.sin(mediumProgress * 2 * math.pi + 1)),
       ),
       radius: size.width * (0.7 + 0.15 * math.cos(fastProgress * 2 * math.pi)),
-      colors: [colors[1], colors[1].withOpacity(0)],
+      colors: [colors[1], colors[1].withValues(alpha: 0)],
     );
 
     _drawFlowingBlob(
@@ -150,7 +150,7 @@ class FlowingGradientPainter extends CustomPainter {
         size.height * (0.7 + 0.2 * math.cos(slowProgress * 2 * math.pi + 2)),
       ),
       radius: size.width * (0.5 + 0.12 * math.sin(slowProgress * 2 * math.pi)),
-      colors: [colors[2], colors[2].withOpacity(0)],
+      colors: [colors[2], colors[2].withValues(alpha: 0)],
     );
 
     // 第四个球 - 增加色彩层次
@@ -162,7 +162,7 @@ class FlowingGradientPainter extends CustomPainter {
         size.height * (0.2 + 0.15 * math.sin(fastProgress * 2 * math.pi + 3)),
       ),
       radius: size.width * 0.45,
-      colors: [colors[3], colors[3].withOpacity(0)],
+      colors: [colors[3], colors[3].withValues(alpha: 0)],
     );
 
     // 第五个球 - 进一步丰富色彩
@@ -174,7 +174,7 @@ class FlowingGradientPainter extends CustomPainter {
         size.height * (0.15 + 0.18 * math.cos(fastProgress * 2 * math.pi + 4)),
       ),
       radius: size.width * 0.5,
-      colors: [colors[0].withOpacity(0.4), colors[0].withOpacity(0)],
+      colors: [colors[0].withValues(alpha: 0.4), colors[0].withValues(alpha: 0)],
     );
   }
 

@@ -89,7 +89,7 @@ class DeveloperLogOutput extends LogOutput {
 
   String _levelLabel(Level level) {
     switch (level) {
-      case Level.verbose:
+      case Level.trace:
         return 'VERBOSE';
       case Level.debug:
         return 'DEBUG';
@@ -152,7 +152,7 @@ class LogService {
   LogService._internal() {
     _logger = Logger(
       // 1. 设置过滤级别
-      level: kReleaseMode ? Level.info : Level.verbose,
+      level: kReleaseMode ? Level.info : Level.trace,
 
       printer: SimplePrinter(colors: true),
 
@@ -168,7 +168,7 @@ class LogService {
 
   // 4. 封装的日志方法
   void v(String tag, dynamic message, {dynamic error, StackTrace? stackTrace}) {
-    _logger.v(
+    _logger.t(
       {'tag': tag, 'msg': message},
       error: error,
       stackTrace: stackTrace,

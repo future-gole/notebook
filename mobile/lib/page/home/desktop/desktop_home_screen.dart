@@ -4,15 +4,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:pocketmind/domain/entities/note_entity.dart';
-import 'package:pocketmind/page/widget/note_Item.dart';
+import 'package:pocketmind/page/widget/note_item.dart';
 import 'package:pocketmind/page/widget/desktop/desktop_sidebar.dart';
 import 'package:pocketmind/page/widget/desktop/desktop_header.dart';
 import 'package:pocketmind/page/home/note_add_sheet.dart';
 import 'package:pocketmind/page/home/note_detail_page.dart';
-import 'package:pocketmind/providers/infrastructure_providers.dart';
 import 'package:pocketmind/providers/nav_providers.dart';
 import 'package:pocketmind/providers/note_providers.dart';
 import 'package:pocketmind/providers/ui_providers.dart';
+import 'package:pocketmind/providers/app_config_provider.dart';
 import 'package:pocketmind/util/logger_service.dart';
 
 final String tag = 'DesktopHomeScreen';
@@ -77,7 +77,7 @@ class _DesktopHomeScreenState extends ConsumerState<DesktopHomeScreen> {
             child: isAddingNote
                 ? NoteEditorSheet(
                     onClose: () {
-                      ref.read(isAddingNoteProvider.notifier).state = false;
+                      ref.read(isAddingNoteProvider.notifier).set(false);
                     },
                   )
                 : selectedNote != null
@@ -85,7 +85,7 @@ class _DesktopHomeScreenState extends ConsumerState<DesktopHomeScreen> {
                 ? NoteDetailPage(
                     note: selectedNote,
                     onBack: () {
-                      ref.read(selectedNoteProvider.notifier).state = null;
+                      ref.read(selectedNoteProvider.notifier).set(null);
                     },
                   )
                 // 否则显示笔记列表
@@ -101,8 +101,7 @@ class _DesktopHomeScreenState extends ConsumerState<DesktopHomeScreen> {
                         onSearchSubmit: () {
                           final query = _searchController.text.trim();
                           if (query.isNotEmpty) {
-                            ref.read(searchQueryProvider.notifier).state =
-                                query;
+                            ref.read(searchQueryProvider.notifier).set(query);
                           }
                         },
                       ),
@@ -150,13 +149,13 @@ class _DesktopHomeScreenState extends ConsumerState<DesktopHomeScreen> {
                     end: Alignment.bottomRight,
                     colors: [
                       colorScheme.tertiary,
-                      colorScheme.tertiary.withOpacity(0.85),
+                      colorScheme.tertiary.withValues(alpha: 0.85),
                     ],
                   ),
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
-                      color: colorScheme.tertiary.withOpacity(0.4),
+                      color: colorScheme.tertiary.withValues(alpha: 0.4),
                       blurRadius: 16.r,
                       offset: Offset(0, 6.h),
                     ),
@@ -171,7 +170,7 @@ class _DesktopHomeScreenState extends ConsumerState<DesktopHomeScreen> {
 
   /// 显示添加笔记页面（嵌入式）
   void _showAddNotePage(BuildContext context) {
-    ref.read(isAddingNoteProvider.notifier).state = true;
+    ref.read(isAddingNoteProvider.notifier).set(true);
   }
 
   /// 构建笔记内容区域
@@ -196,7 +195,7 @@ class _DesktopHomeScreenState extends ConsumerState<DesktopHomeScreen> {
           Icon(
             Icons.note_add_outlined,
             size: 100.sp,
-            color: colorScheme.secondary.withOpacity(0.4),
+            color: colorScheme.secondary.withValues(alpha: 0.4),
           ),
           SizedBox(height: 24.h),
           Text(
@@ -209,7 +208,7 @@ class _DesktopHomeScreenState extends ConsumerState<DesktopHomeScreen> {
           Text(
             '点击右下角，捕捉第一个灵感',
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: colorScheme.secondary.withOpacity(0.6),
+              color: colorScheme.secondary.withValues(alpha: 0.6),
             ),
           ),
         ],
@@ -248,7 +247,7 @@ class _DesktopHomeScreenState extends ConsumerState<DesktopHomeScreen> {
           Icon(
             Icons.search_off,
             size: 100.sp,
-            color: colorScheme.secondary.withOpacity(0.4),
+            color: colorScheme.secondary.withValues(alpha: 0.4),
           ),
           SizedBox(height: 24.h),
           Text(
@@ -261,7 +260,7 @@ class _DesktopHomeScreenState extends ConsumerState<DesktopHomeScreen> {
           Text(
             '尝试使用其他关键词',
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: colorScheme.secondary.withOpacity(0.6),
+              color: colorScheme.secondary.withValues(alpha: 0.6),
             ),
           ),
         ],

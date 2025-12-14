@@ -86,8 +86,7 @@ class CategoriesBar extends ConsumerWidget {
                                 onTap: () {
                                   ref
                                           .read(activeNavIndexProvider.notifier)
-                                          .state =
-                                      index;
+                                          .set(index);
                                 },
                               ),
                             ),
@@ -137,7 +136,8 @@ class CategoriesBar extends ConsumerWidget {
                     .read(categoryServiceProvider)
                     .deleteCategory(categoryId);
                 // 下标切换为home
-                ref.watch(activeNavIndexProvider.notifier).state = 1;
+                ref.read(activeNavIndexProvider.notifier).set(1);
+                if (!context.mounted) return;
                 Navigator.of(context).pop();
               },
               child: Text('删除', style: TextStyle(color: colorScheme.error)),

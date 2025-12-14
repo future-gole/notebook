@@ -2,7 +2,7 @@ import 'package:pocketmind/domain/entities/category_entity.dart';
 import 'package:pocketmind/domain/repositories/category_repository.dart';
 import 'package:pocketmind/util/logger_service.dart';
 
-final String CategoryServiceTag = 'CategoryService';
+final String categoryServiceTag = 'CategoryService';
 
 /// 分类业务服务层
 /// 
@@ -43,9 +43,9 @@ class CategoryService {
 
     final resultId = await _categoryRepository.save(newCategory);
     if (resultId != -1) {
-      PMlog.d(CategoryServiceTag, '分类添加成功: id: $resultId,name: $name');
+      PMlog.d(categoryServiceTag, '分类添加成功: id: $resultId,name: $name');
     } else {
-      PMlog.e(CategoryServiceTag, '分类添加失败');
+      PMlog.e(categoryServiceTag, '分类添加失败');
     }
     return resultId;
   }
@@ -53,7 +53,7 @@ class CategoryService {
   /// 删除分类
   Future<void> deleteCategory(int categoryId) async {
     await _categoryRepository.delete(categoryId);
-    PMlog.d(CategoryServiceTag, '分类删除成功');
+    PMlog.d(categoryServiceTag, '分类删除成功');
   }
 
   /// 监听所有分类变化

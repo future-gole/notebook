@@ -6,12 +6,12 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:pocketmind/domain/entities/note_entity.dart';
 import 'package:pocketmind/page/widget/glass_nav_bar.dart';
-import 'package:pocketmind/page/widget/note_Item.dart';
+import 'package:pocketmind/page/widget/note_item.dart';
 import 'package:pocketmind/page/home/note_add_sheet.dart';
 import 'package:pocketmind/page/home/desktop/desktop_home_screen.dart';
-import 'package:pocketmind/providers/infrastructure_providers.dart';
 import 'package:pocketmind/providers/nav_providers.dart';
 import 'package:pocketmind/providers/note_providers.dart';
+import 'package:pocketmind/providers/app_config_provider.dart';
 import 'package:pocketmind/util/logger_service.dart';
 
 final String tag = 'HomeScreen';
@@ -95,14 +95,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 
     // 如果输入为空，立即清空搜索结果
     if (query.isEmpty) {
-      ref.read(searchQueryProvider.notifier).state = null;
+      ref.read(searchQueryProvider.notifier).set(null);
       return;
     }
 
     // 设置新的防抖计时器，500ms 后执行搜索
     _debounceTimer = Timer(const Duration(milliseconds: 500), () {
       if (query.isNotEmpty) {
-        ref.read(searchQueryProvider.notifier).state = query;
+        ref.read(searchQueryProvider.notifier).set(query);
       }
     });
   }
@@ -123,7 +123,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         _searchFocusNode.unfocus();
         _debounceTimer?.cancel();
         // 清空搜索，返回到分类视图
-        ref.read(searchQueryProvider.notifier).state = null;
+        ref.read(searchQueryProvider.notifier).set(null);
       }
     });
   }

@@ -188,7 +188,7 @@ final ThemeData calmBeigeTheme = ThemeData(
     // 2. 定义轨道颜色 (Track)
     trackColor: WidgetStateProperty.resolveWith<Color?>((states) {
       if (states.contains(WidgetState.selected)) {
-        return const Color(0xFFD97757).withOpacity(0.5); // 【打开】状态：淡橙色
+        return const Color(0xFFD97757).withValues(alpha: 0.5); // 【打开】状态：淡橙色
       }
       // 【关闭】状态：显式指定为浅灰色
       return const Color(0xFFE7E0EC);
@@ -205,7 +205,7 @@ final ThemeData calmBeigeTheme = ThemeData(
   scaffoldBackgroundColor: const Color(0xFFF2F0ED), // Scaffold 背景
   canvasColor: const Color(0xFFF2F0ED),
   cardColor: const Color(0xFFFFFFFF), // 卡片背景
-  shadowColor: Colors.black.withOpacity(0.05),
+  shadowColor: Colors.black.withValues(alpha: 0.05),
   fontFamily: 'SF Pro',
   textTheme: TextTheme(
     titleLarge: TextStyle(
@@ -314,7 +314,7 @@ final ThemeData quietNightTheme = ThemeData(
     // 2. 定义轨道颜色 (Track)
     trackColor: WidgetStateProperty.resolveWith<Color?>((states) {
       if (states.contains(WidgetState.selected)) {
-        return const Color(0xFFD97757).withOpacity(0.5); // 【打开】状态：淡橙色
+        return const Color(0xFFD97757).withValues(alpha: 0.5); // 【打开】状态：淡橙色
       }
       // 【关闭】状态：显式指定为浅灰色
       return const Color(0xFFE7E0EC);
@@ -331,7 +331,7 @@ final ThemeData quietNightTheme = ThemeData(
   scaffoldBackgroundColor: const Color(0xFF202022), // Scaffold 背景
   canvasColor: const Color(0xFF09090B),
   cardColor: const Color(0xFF18181B), // 卡片背景 - 提亮
-  shadowColor: Colors.black.withOpacity(0.3),
+  shadowColor: Colors.black.withValues(alpha: 0.3),
   fontFamily: 'SF Pro',
   textTheme: TextTheme(
     titleLarge: TextStyle(

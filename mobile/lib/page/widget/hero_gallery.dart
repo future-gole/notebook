@@ -293,8 +293,8 @@ class _HeroGalleryState extends State<HeroGallery> {
       return CachedNetworkImage(
         imageUrl: imageUrl,
         fit: BoxFit.cover,
-        placeholder: (_, __) => Container(color: Colors.grey[200]),
-        errorWidget: (_, __, _) =>
+        placeholder: (context, url) => Container(color: Colors.grey[200]),
+        errorWidget: (context, url, error) =>
             Container(color: Colors.grey[200], child: Icon(Icons.error)),
       );
     }

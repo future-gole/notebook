@@ -4,7 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../sync/sync_service.dart';
 import '../../sync/models/device_info.dart';
-import '../../util/app_config.dart';
+import '../../providers/app_config_provider.dart';
 import '../widget/creative_toast.dart';
 
 /// 同步设置页面
@@ -24,7 +24,7 @@ class _SyncSettingsPageState extends ConsumerState<SyncSettingsPage> {
   @override
   void initState() {
     super.initState();
-    _syncAutoStart = AppConfig().syncAutoStart;
+    _syncAutoStart = ref.read(appConfigProvider).syncAutoStart;
   }
 
   @override
@@ -150,7 +150,7 @@ class _SyncSettingsPageState extends ConsumerState<SyncSettingsPage> {
               ),
               value: _syncAutoStart,
               onChanged: (value) async {
-                await AppConfig().setSyncAutoStart(value);
+                await ref.read(appConfigProvider.notifier).setSyncAutoStart(value);
                 setState(() => _syncAutoStart = value);
               },
             ),

@@ -44,7 +44,7 @@ class _NoteItemState extends ConsumerState<NoteItem>
   void _showNoteDetail(BuildContext context) {
     // 桌面端：设置 selectedNoteProvider 以在侧边栏旁边显示详情
     if (widget.isDesktop) {
-      ref.read(selectedNoteProvider.notifier).state = widget.note;
+      ref.read(selectedNoteProvider.notifier).set(widget.note);
     } else {
       // 移动端：使用常规导航
       Navigator.of(context).push(
@@ -90,7 +90,7 @@ class _NoteItemState extends ConsumerState<NoteItem>
     final shadow = widget.isDesktop && _isHovered
         ? [
             BoxShadow(
-              color: colorScheme.shadow.withOpacity(0.15),
+              color: colorScheme.shadow.withValues(alpha: 0.15),
               blurRadius: 24,
               offset: const Offset(0, 8),
             ),
@@ -106,8 +106,8 @@ class _NoteItemState extends ConsumerState<NoteItem>
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final borderColor = isDark
-        ? Colors.white.withOpacity(0.2)
-        : Colors.black.withOpacity(0.1);
+        ? Colors.white.withValues(alpha: 0.2)
+        : Colors.black.withValues(alpha: 0.1);
 
     return MouseRegion(
       onEnter: (_) => setState(() => _isHovered = true),

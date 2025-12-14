@@ -1,4 +1,12 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
+
+part 'ui_providers.g.dart';
 
 /// 是否正在添加笔记（桌面端使用）
-final isAddingNoteProvider = StateProvider<bool>((ref) => false);
+@riverpod
+class IsAddingNote extends _$IsAddingNote {
+  @override
+  bool build() => false;
+
+  void set(bool value) => state = value;
+}

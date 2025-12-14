@@ -4,10 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:lottie/lottie.dart';
-import 'package:pocketmind/util/theme_data.dart'
-    show sharePageColors, SharePageThemeColors;
-
-final String _tag = 'ShareSuccessPage';
+import 'package:pocketmind/util/theme_data.dart' show SharePageThemeColors;
 
 class ShareSuccessPage extends ConsumerStatefulWidget {
   final VoidCallback onDismiss;

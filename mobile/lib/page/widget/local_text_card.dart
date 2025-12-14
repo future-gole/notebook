@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:pocketmind/domain/entities/note_entity.dart';
-import 'package:pocketmind/util/app_config.dart';
+import 'package:pocketmind/providers/app_config_provider.dart';
 
 /// 纯文本卡片变体类型
 enum TextCardVariant {
@@ -18,7 +19,7 @@ String formatDateChinese(DateTime? date) {
 }
 
 /// 本地纯文本笔记卡片组件
-class LocalTextCard extends StatefulWidget {
+class LocalTextCard extends ConsumerStatefulWidget {
   final NoteEntity note;
   final bool isDesktop;
   final bool isHovered;
@@ -31,26 +32,14 @@ class LocalTextCard extends StatefulWidget {
   });
 
   @override
-  State<LocalTextCard> createState() => _LocalTextCardState();
+  ConsumerState<LocalTextCard> createState() => _LocalTextCardState();
 }
 
-class _LocalTextCardState extends State<LocalTextCard> {
-  final _config = AppConfig();
-  bool _titleEnabled = false;
+class _LocalTextCardState extends ConsumerState<LocalTextCard> {
 
   @override
   void initState() {
     super.initState();
-    _loadTitleSetting();
-  }
-
-  Future<void> _loadTitleSetting() async {
-    await _config.init();
-    if (mounted) {
-      setState(() {
-        _titleEnabled = _config.titleEnabled;
-      });
-    }
   }
 
   /// 根据笔记内容特征判断变体类型
@@ -58,7 +47,7 @@ class _LocalTextCardState extends State<LocalTextCard> {
     final title = widget.note.title?.trim() ?? '';
     final content = widget.note.content?.trim() ?? '';
     final tag = widget.note.tag?.toLowerCase() ?? '';
-    final hasTitle = _titleEnabled && title.isNotEmpty;
+    final hasTitle = ref.watch(appConfigProvider).titleEnabled && title.isNotEmpty;
 
     // 无标题的情况
     if (!hasTitle) {
@@ -201,7 +190,7 @@ class _QuoteCard extends StatelessWidget {
               style: TextStyle(
                 fontSize: 60.sp,
                 fontFamily: 'Merriweather',
-                color: colorScheme.tertiary.withOpacity(0.08),
+                color: colorScheme.tertiary.withValues(alpha: 0.08),
                 height: 1,
               ),
             ),
@@ -215,7 +204,7 @@ class _QuoteCard extends StatelessWidget {
             style: TextStyle(
               fontSize: 60.sp,
               fontFamily: 'Merriweather',
-              color: colorScheme.tertiary.withOpacity(0.08),
+              color: colorScheme.tertiary.withValues(alpha: 0.08),
               height: 1,
             ),
           ),
@@ -232,7 +221,7 @@ class _QuoteCard extends StatelessWidget {
                   margin: EdgeInsets.only(bottom: 16.w),
                   padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.w),
                   decoration: BoxDecoration(
-                    color: colorScheme.tertiary.withOpacity(0.1),
+                    color: colorScheme.tertiary.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(20.r),
                   ),
                   child: Text(
@@ -323,7 +312,7 @@ class _HeadlineCard extends StatelessWidget {
               height: 120.w,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: Colors.white.withOpacity(0.1),
+                color: Colors.white.withValues(alpha: 0.1),
               ),
             ),
           ),
@@ -343,7 +332,7 @@ class _HeadlineCard extends StatelessWidget {
                         padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.w),
                         decoration: BoxDecoration(
                           border: Border.all(
-                            color: Colors.white.withOpacity(0.3),
+                            color: Colors.white.withValues(alpha: 0.3),
                           ),
                           borderRadius: BorderRadius.circular(4.r),
                         ),
@@ -353,7 +342,7 @@ class _HeadlineCard extends StatelessWidget {
                             fontSize: 9.sp,
                             fontWeight: FontWeight.w700,
                             letterSpacing: 1.2,
-                            color: Colors.white.withOpacity(0.9),
+                            color: Colors.white.withValues(alpha: 0.9),
                           ),
                         ),
                       )
@@ -364,7 +353,7 @@ class _HeadlineCard extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 10.sp,
                         fontWeight: FontWeight.w500,
-                        color: Colors.white.withOpacity(0.8),
+                        color: Colors.white.withValues(alpha: 0.8),
                       ),
                     ),
                   ],
@@ -402,7 +391,7 @@ class _HeadlineCard extends StatelessWidget {
                     Container(
                       width: 24.w,
                       height: 1,
-                      color: Colors.white.withOpacity(0.5),
+                      color: Colors.white.withValues(alpha: 0.5),
                     ),
                   ],
                 ),
@@ -583,7 +572,7 @@ class _TagBadge extends StatelessWidget {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.w),
       decoration: BoxDecoration(
-        color: colorScheme.outline.withOpacity(0.3),
+        color: colorScheme.outline.withValues(alpha: 0.3),
         borderRadius: BorderRadius.circular(4.r),
       ),
       child: Text(
@@ -614,7 +603,7 @@ class _TagsFooter extends StatelessWidget {
       decoration: BoxDecoration(
         border: Border(
           top: BorderSide(
-            color: colorScheme.outline.withOpacity(0.5),
+            color: colorScheme.outline.withValues(alpha: 0.5),
           ),
         ),
       ),
@@ -649,7 +638,7 @@ class _ReadMoreFooter extends StatelessWidget {
       decoration: BoxDecoration(
         border: Border(
           top: BorderSide(
-            color: colorScheme.outline.withOpacity(0.3),
+            color: colorScheme.outline.withValues(alpha: 0.3),
           ),
         ),
       ),

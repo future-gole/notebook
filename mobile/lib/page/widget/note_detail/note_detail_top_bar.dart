@@ -23,10 +23,10 @@ class NoteDetailTopBar extends StatelessWidget {
       height: 56.h,
       padding: EdgeInsets.symmetric(horizontal: 4.w),
       decoration: BoxDecoration(
-        color: colorScheme.surface.withOpacity(0.9),
+        color: colorScheme.surface.withValues(alpha: 0.9),
         border: Border(
           bottom: BorderSide(
-            color: colorScheme.outlineVariant.withOpacity(0.2),
+            color: colorScheme.outlineVariant.withValues(alpha: 0.2),
             width: 1,
           ),
         ),
@@ -63,7 +63,7 @@ class NoteDetailTopBar extends StatelessWidget {
                 width: 1,
                 height: 20.h,
                 margin: EdgeInsets.symmetric(horizontal: 8.w),
-                color: colorScheme.outlineVariant.withOpacity(0.3),
+                color: colorScheme.outlineVariant.withValues(alpha: 0.3),
               ),
               _buildNavButton(
                 icon: Icons.delete_outline,
@@ -88,11 +88,11 @@ class NoteDetailTopBar extends StatelessWidget {
     bool isDestructive = false,
   }) {
     final color = isDestructive
-        ? colorScheme.error.withOpacity(0.8)
+        ? colorScheme.error.withValues(alpha: 0.8)
         : colorScheme.secondary;
     final hoverColor = isDestructive
-        ? colorScheme.error.withOpacity(0.1)
-        : colorScheme.surfaceContainerHighest.withOpacity(0.1);
+        ? colorScheme.error.withValues(alpha: 0.1)
+        : colorScheme.surfaceContainerHighest.withValues(alpha: 0.1);
 
     return Material(
       color: Colors.transparent,

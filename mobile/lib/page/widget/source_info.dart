@@ -58,7 +58,7 @@ class SourceInfo extends StatelessWidget {
             style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w600,
-              color: colorScheme.primary.withOpacity(0.7),
+              color: colorScheme.primary.withValues(alpha: 0.7),
             ),
             overflow: TextOverflow.ellipsis,
             maxLines: 1,
@@ -71,7 +71,7 @@ class SourceInfo extends StatelessWidget {
               '•',
               style: TextStyle(
                 fontSize: 12,
-                color: colorScheme.secondary.withOpacity(0.5),
+                color: colorScheme.secondary.withValues(alpha: 0.5),
               ),
             ),
           ),
@@ -79,7 +79,7 @@ class SourceInfo extends StatelessWidget {
             publishDate!,
             style: TextStyle(
               fontSize: 12,
-              color: colorScheme.secondary.withOpacity(0.7),
+              color: colorScheme.secondary.withValues(alpha: 0.7),
             ),
           ),
         ],

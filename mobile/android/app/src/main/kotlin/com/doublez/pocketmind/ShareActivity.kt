@@ -350,7 +350,7 @@ class ShareActivity : FlutterActivity() {
                         appBundlePath,
                         // 启动flutter应用的第二个入口
                         "package:pocketmind/main_share.dart",
-                        "main_share"
+                        "mainShare"
                     )
                 )
             }

@@ -32,11 +32,11 @@ class _SidebarItemState extends State<SidebarItem> {
     // 背景颜色逻辑
     Color backgroundColor;
     if (widget.isActive) {
-      backgroundColor = colorScheme.tertiary.withOpacity(isDark ? 0.15 : 0.12);
+      backgroundColor = colorScheme.tertiary.withValues(alpha: isDark ? 0.15 : 0.12);
     } else if (_isHovered) {
       backgroundColor = isDark
-          ? Colors.white.withOpacity(0.05)
-          : Colors.black.withOpacity(0.03);
+          ? Colors.white.withValues(alpha: 0.05)
+          : Colors.black.withValues(alpha: 0.03);
     } else {
       backgroundColor = Colors.transparent;
     }
@@ -44,7 +44,7 @@ class _SidebarItemState extends State<SidebarItem> {
     // 文本颜色
     final textColor = widget.isActive
         ? colorScheme.tertiary
-        : colorScheme.primary.withOpacity(0.8);
+        : colorScheme.primary.withValues(alpha: 0.8);
 
     return MouseRegion(
       onEnter: (_) => setState(() => _isHovered = true),
@@ -98,7 +98,7 @@ class _SidebarItemState extends State<SidebarItem> {
                     icon: Icon(
                       Icons.more_horiz,
                       size: 16.sp,
-                      color: textColor.withOpacity(0.6),
+                      color: textColor.withValues(alpha: 0.6),
                     ),
                     tooltip: '更多选项',
                     elevation: 4,

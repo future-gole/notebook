@@ -4,7 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:pocketmind/domain/entities/note_entity.dart';
 import 'package:pocketmind/providers/note_providers.dart';
 import 'package:pocketmind/providers/category_providers.dart';
-import 'package:pocketmind/util/app_config.dart';
+import 'package:pocketmind/providers/app_config_provider.dart';
 import 'package:pocketmind/util/image_storage_helper.dart'
     show ImageStorageHelper;
 import 'package:pocketmind/util/logger_service.dart';
@@ -68,10 +68,6 @@ class _NoteDetailPageState extends ConsumerState<NoteDetailPage>
   // 标签列表（从note.tag解析，逗号分隔）
   List<String> _tags = [];
 
-  // AppConfig
-  final _config = AppConfig();
-  bool _titleEnabled = false;
-
   // 当前选中的分类ID
   late int _selectedCategoryId;
 
@@ -108,9 +104,6 @@ class _NoteDetailPageState extends ConsumerState<NoteDetailPage>
     _previewTitle = widget.note.previewTitle;
     _previewDescription = widget.note.previewDescription;
 
-    // 加载标题设置
-    _loadTitleSetting();
-
     // 如果没有缓存的预览数据，才请求网络
     if (_previewImageUrl == null && _previewTitle == null) {
       _loadLinkPreview();
@@ -137,15 +130,6 @@ class _NoteDetailPageState extends ConsumerState<NoteDetailPage>
             curve: Curves.easeInOut,
           ),
         );
-  }
-
-  Future<void> _loadTitleSetting() async {
-    await _config.init();
-    if (mounted) {
-      setState(() {
-        _titleEnabled = _config.titleEnabled;
-      });
-    }
   }
 
   /// 加载链接预览数据并保存到数据库
@@ -420,10 +404,10 @@ class _NoteDetailPageState extends ConsumerState<NoteDetailPage>
       height: 56.h,
       padding: EdgeInsets.symmetric(horizontal: 4.w),
       decoration: BoxDecoration(
-        color: colorScheme.surface.withOpacity(0.9),
+        color: colorScheme.surface.withValues(alpha: 0.9),
         border: Border(
           bottom: BorderSide(
-            color: colorScheme.outlineVariant.withOpacity(0.2),
+            color: colorScheme.outlineVariant.withValues(alpha: 0.2),
             width: 1,
           ),
         ),
@@ -467,7 +451,7 @@ class _NoteDetailPageState extends ConsumerState<NoteDetailPage>
                 width: 1,
                 height: 20.h,
                 margin: EdgeInsets.symmetric(horizontal: 8.w),
-                color: colorScheme.outlineVariant.withOpacity(0.3),
+                color: colorScheme.outlineVariant.withValues(alpha: 0.3),
               ),
               _buildNavButton(
                 icon: Icons.delete_outline,
@@ -492,11 +476,11 @@ class _NoteDetailPageState extends ConsumerState<NoteDetailPage>
     bool isDestructive = false,
   }) {
     final color = isDestructive
-        ? colorScheme.error.withOpacity(0.8)
+        ? colorScheme.error.withValues(alpha: 0.8)
         : colorScheme.secondary;
     final hoverColor = isDestructive
-        ? colorScheme.error.withOpacity(0.1)
-        : colorScheme.surfaceContainerHighest.withOpacity(0.1);
+        ? colorScheme.error.withValues(alpha: 0.1)
+        : colorScheme.surfaceContainerHighest.withValues(alpha: 0.1);
 
     return Material(
       color: Colors.transparent,
@@ -534,7 +518,7 @@ class _NoteDetailPageState extends ConsumerState<NoteDetailPage>
     final isLocalImage = UrlHelper.isLocalImagePath(widget.note.url);
     final isHttpsUrl = UrlHelper.containsHttpsUrl(widget.note.url);
     final hasTitle =
-        _titleEnabled &&
+        ref.watch(appConfigProvider).titleEnabled &&
         widget.note.title != null &&
         widget.note.title!.isNotEmpty;
     final formattedDate = _formatDateChinese(widget.note.time);
@@ -755,10 +739,7 @@ class _NoteDetailPageState extends ConsumerState<NoteDetailPage>
       children: [
         // 链接正文/描述
         if (hasDescription) ...[
-          Text(
-            linkDescription,
-            style: textTheme.bodyMedium,
-          ),
+          Text(linkDescription, style: textTheme.bodyMedium),
           SizedBox(height: 24.h),
           // 分隔线
           Row(
@@ -814,7 +795,9 @@ class _NoteDetailPageState extends ConsumerState<NoteDetailPage>
 
   /// 获取分类名称
   String _getCategoryName() {
-    final categories = ref.read(allCategoriesProvider).valueOrNull;
+    final categoriesAsync = ref.read(allCategoriesProvider);
+    if (!categoriesAsync.hasValue) return 'HOME';
+    final categories = categoriesAsync.value;
     if (categories != null) {
       final category = categories.firstWhere(
         (c) => c.id == _selectedCategoryId,
@@ -835,10 +818,10 @@ class _NoteDetailPageState extends ConsumerState<NoteDetailPage>
       child: Container(
         padding: EdgeInsets.all(16.r),
         decoration: BoxDecoration(
-          color: colorScheme.surfaceContainerHighest.withOpacity(0.08),
+          color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.08),
           borderRadius: BorderRadius.circular(12.r),
           border: Border.all(
-            color: colorScheme.outlineVariant.withOpacity(0.2),
+            color: colorScheme.outlineVariant.withValues(alpha: 0.2),
           ),
         ),
         child: Row(
@@ -849,7 +832,7 @@ class _NoteDetailPageState extends ConsumerState<NoteDetailPage>
                 color: colorScheme.surface,
                 borderRadius: BorderRadius.circular(8.r),
                 border: Border.all(
-                  color: colorScheme.outlineVariant.withOpacity(0.2),
+                  color: colorScheme.outlineVariant.withValues(alpha: 0.2),
                 ),
               ),
               child: Icon(
@@ -869,7 +852,7 @@ class _NoteDetailPageState extends ConsumerState<NoteDetailPage>
                       fontSize: 10.sp,
                       fontWeight: FontWeight.w500,
                       letterSpacing: 0.5,
-                      color: colorScheme.secondary.withOpacity(0.7),
+                      color: colorScheme.secondary.withValues(alpha: 0.7),
                     ),
                   ),
                   SizedBox(height: 2.h),
@@ -892,7 +875,7 @@ class _NoteDetailPageState extends ConsumerState<NoteDetailPage>
                         Icon(
                           Icons.open_in_new_rounded,
                           size: 14.sp,
-                          color: colorScheme.secondary.withOpacity(0.5),
+                          color: colorScheme.secondary.withValues(alpha: 0.5),
                         ),
                       ],
                     ],
@@ -919,8 +902,8 @@ class _NoteDetailPageState extends ConsumerState<NoteDetailPage>
                 borderRadius: BorderRadius.circular(16.r),
                 gradient: LinearGradient(
                   colors: [
-                    colorScheme.tertiary.withOpacity(0.15),
-                    Colors.orange.withOpacity(0.1),
+                    colorScheme.tertiary.withValues(alpha: 0.15),
+                    Colors.orange.withValues(alpha: 0.1),
                   ],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
@@ -936,7 +919,7 @@ class _NoteDetailPageState extends ConsumerState<NoteDetailPage>
               color: colorScheme.surface,
               borderRadius: BorderRadius.circular(15.r),
               border: Border.all(
-                color: colorScheme.outlineVariant.withOpacity(0.2),
+                color: colorScheme.outlineVariant.withValues(alpha: 0.2),
               ),
             ),
             child: Column(
@@ -1077,7 +1060,7 @@ class _NoteDetailPageState extends ConsumerState<NoteDetailPage>
                   '点击添加标签',
                   style: TextStyle(
                     fontSize: 12.sp,
-                    color: colorScheme.secondary.withOpacity(0.6),
+                    color: colorScheme.secondary.withValues(alpha: 0.6),
                   ),
                 ),
               ),
@@ -1100,7 +1083,7 @@ class _NoteDetailPageState extends ConsumerState<NoteDetailPage>
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
       decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerHighest.withOpacity(0.08),
+        color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(16.r),
       ),
       child: Row(
@@ -1485,7 +1468,13 @@ class _NoteDetailPageState extends ConsumerState<NoteDetailPage>
       await launchUrl(uri, mode: LaunchMode.externalApplication);
     } catch (e) {
       PMlog.e(_tag, '❌ URL 跳转失败: $e');
-      CreativeToast.error(context, title: '出错咯~', message: 'URL 跳转失败', direction: ToastDirection.top);
+      if (!mounted) return;
+      CreativeToast.error(
+        context,
+        title: '出错咯~',
+        message: 'URL 跳转失败',
+        direction: ToastDirection.top,
+      );
     }
   }
 }

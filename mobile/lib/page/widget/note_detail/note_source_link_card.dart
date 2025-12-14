@@ -23,10 +23,10 @@ class NoteSourceLinkCard extends StatelessWidget {
       child: Container(
         padding: EdgeInsets.all(16.r),
         decoration: BoxDecoration(
-          color: colorScheme.surfaceContainerHighest.withOpacity(0.08),
+          color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.08),
           borderRadius: BorderRadius.circular(12.r),
           border: Border.all(
-            color: colorScheme.outlineVariant.withOpacity(0.2),
+            color: colorScheme.outlineVariant.withValues(alpha: 0.2),
           ),
         ),
         child: Row(
@@ -37,7 +37,7 @@ class NoteSourceLinkCard extends StatelessWidget {
                 color: colorScheme.surface,
                 borderRadius: BorderRadius.circular(8.r),
                 border: Border.all(
-                  color: colorScheme.outlineVariant.withOpacity(0.2),
+                  color: colorScheme.outlineVariant.withValues(alpha: 0.2),
                 ),
               ),
               child: Icon(
@@ -57,7 +57,7 @@ class NoteSourceLinkCard extends StatelessWidget {
                       fontSize: 10.sp,
                       fontWeight: FontWeight.w500,
                       letterSpacing: 0.5,
-                      color: colorScheme.secondary.withOpacity(0.7),
+                      color: colorScheme.secondary.withValues(alpha: 0.7),
                     ),
                   ),
                   SizedBox(height: 2.h),
@@ -80,7 +80,7 @@ class NoteSourceLinkCard extends StatelessWidget {
                         Icon(
                           Icons.open_in_new_rounded,
                           size: 14.sp,
-                          color: colorScheme.secondary.withOpacity(0.5),
+                          color: colorScheme.secondary.withValues(alpha: 0.5),
                         ),
                       ],
                     ],

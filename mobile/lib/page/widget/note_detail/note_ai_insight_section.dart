@@ -21,8 +21,8 @@ class NoteAIInsightSection extends StatelessWidget {
                 borderRadius: BorderRadius.circular(16.r),
                 gradient: LinearGradient(
                   colors: [
-                    colorScheme.tertiary.withOpacity(0.15),
-                    Colors.orange.withOpacity(0.1),
+                    colorScheme.tertiary.withValues(alpha: 0.15),
+                    Colors.orange.withValues(alpha: 0.1),
                   ],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
@@ -38,7 +38,7 @@ class NoteAIInsightSection extends StatelessWidget {
               color: colorScheme.surface,
               borderRadius: BorderRadius.circular(15.r),
               border: Border.all(
-                color: colorScheme.outlineVariant.withOpacity(0.2),
+                color: colorScheme.outlineVariant.withValues(alpha: 0.2),
               ),
             ),
             child: Column(

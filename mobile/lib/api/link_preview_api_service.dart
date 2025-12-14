@@ -2,7 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pocketmind/providers/http_providers.dart';
 import 'package:pocketmind/api/api_constants.dart';
-import 'package:pocketmind/util/app_config.dart';
+import 'package:pocketmind/providers/app_config_provider.dart';
 import 'package:pocketmind/util/logger_service.dart';
 
 import 'http_client.dart';
@@ -11,7 +11,9 @@ import 'http_client.dart';
 final linkPreviewServiceProvider = Provider<LinkPreviewApiService>((ref) {
   // 从 ref 中获取统一的 httpClient
   final httpClient = ref.watch(httpClientProvider);
-  return LinkPreviewApiService(httpClient);
+  // 获取 API Key
+  final config = ref.watch(appConfigProvider);
+  return LinkPreviewApiService(httpClient, config.linkPreviewApiKey);
 });
 
 /// 使用 LinkPreview.net API 的链接预览服务
@@ -22,19 +24,16 @@ final String tag = 'LinkPreviewApiService';
 class LinkPreviewApiService {
 
   final HttpClient _http;
-  LinkPreviewApiService(this._http);
+  final String _apiKey;
+  LinkPreviewApiService(this._http, this._apiKey);
 
   /// 获取链接的元数据
   Future<ApiLinkMetadata> fetchMetadata(String url) async {
     try {
-      // 从配置中获取 API Key
-      final config = AppConfig();
-      final apiKey = config.linkPreviewApiKey;
-
       final data = await _http.get<Map<String, dynamic>>(
         ApiConstants.linkPreviewBaseUrl,
         queryParameters: {
-          'key': apiKey,
+          'key': _apiKey,
           'q': url,
         },
       );

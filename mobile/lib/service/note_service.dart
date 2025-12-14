@@ -2,7 +2,7 @@ import 'package:pocketmind/domain/entities/note_entity.dart';
 import 'package:pocketmind/domain/repositories/note_repository.dart';
 import 'package:pocketmind/util/logger_service.dart';
 
-final String NoteServiceTag = 'NoteService';
+final String noteServiceTag = 'NoteService';
 
 /// 笔记业务服务层
 ///
@@ -28,7 +28,7 @@ class NoteService {
     String? previewImageUrl,
   }) async {
     PMlog.d(
-      NoteServiceTag,
+      noteServiceTag,
       'Note added: title: $title, content: $content, url: $url, category: $category, categoryId: $categoryId',
     );
 
@@ -45,7 +45,7 @@ class NoteService {
     );
 
     if (id != null && id != -1) {
-      PMlog.d(NoteServiceTag, 'id:$id, 进行更新操作');
+      PMlog.d(noteServiceTag, 'id:$id, 进行更新操作');
     }
 
     // 通过仓库保存
@@ -122,6 +122,6 @@ class NoteService {
       previewDescription: previewDescription,
     );
     await _noteRepository.save(updated);
-    PMlog.d(NoteServiceTag, '预览数据已保存: noteId=$noteId');
+    PMlog.d(noteServiceTag, '预览数据已保存: noteId=$noteId');
   }
 }

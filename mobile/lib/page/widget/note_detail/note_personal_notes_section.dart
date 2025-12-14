@@ -35,7 +35,7 @@ class NotePersonalNotesSection extends StatelessWidget {
           // 多行输入框 - 无边框风格
           Container(
             decoration: BoxDecoration(
-              color: colorScheme.surfaceContainerHighest.withOpacity(0.05),
+              color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.05),
               borderRadius: BorderRadius.circular(12.r),
             ),
             child: TextField(
@@ -46,7 +46,7 @@ class NotePersonalNotesSection extends StatelessWidget {
                 hintText: '添加你的想法和注释...',
                 hintStyle: TextStyle(
                   fontSize: 13.sp,
-                  color: colorScheme.secondary.withOpacity(0.5),
+                  color: colorScheme.secondary.withValues(alpha: 0.5),
                 ),
                 border: InputBorder.none,
                 contentPadding: EdgeInsets.all(16.r),

@@ -29,7 +29,7 @@ enum ShareUIState { waiting, success, editing }
 
 // 关键：这是一个新的、独立的入口点
 @pragma('vm:entry-point')
-Future<void> main_share() async {
+Future<void> mainShare() async {
   // 1. 初始化
   WidgetsFlutterBinding.ensureInitialized();
   final dir = await getApplicationDocumentsDirectory();
@@ -37,12 +37,16 @@ Future<void> main_share() async {
   // 2. 打开 Isar 实例,和主示例相同，要不然存的地方就不一样了
   isar = await Isar.open([NoteSchema, CategorySchema], directory: dir.path);
 
-  await notificationService.init();
+  final notificationSvc = NotificationService();
+  await notificationSvc.init();
 
   // 4. 运行一个 只 包含分享 UI 的应用
   runApp(
     ProviderScope(
-      overrides: [isarProvider.overrideWithValue(isar)],
+      overrides: [
+        isarProvider.overrideWithValue(isar),
+        notificationServiceProvider.overrideWithValue(notificationSvc),
+      ],
       child: const MyShareApp(),
     ),
   );
@@ -199,7 +203,7 @@ class _MyShareAppState extends ConsumerState<MyShareApp>
       children: [
         Container(
           // todo 这边还需要细调先这样吧
-          color: Colors.black.withOpacity(0.77),
+          color: Colors.black.withValues(alpha: 0.77),
         ),
 
         // --- 层 1: 流动的渐变背景 ---

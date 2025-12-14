@@ -5,5 +5,5 @@ class ApiConstants {
   /// LinkPreview.net API 基础 URL
   static const String linkPreviewBaseUrl = 'https://api.linkpreview.net';
 
-  static const String analysis_service = 'http://127.0.0.1:8080/api/mydemo/analyze';
+  static const String analysisService = 'http://127.0.0.1:8080/api/mydemo/analyze';
 }

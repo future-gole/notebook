@@ -1,19 +1,19 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import 'package:isar_community/isar.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../service/notification_service.dart';
-import '../util/app_config.dart';
 
-/// Isar 实例 Provider（基础设施层）
-/// 需要在 main.dart 中通过 overrideWithValue 提供实际的 Isar 实例
-final isarProvider = Provider<Isar>((ref) {
+part 'infrastructure_providers.g.dart';
+
+/// Isar 实例 Provider
+@Riverpod(keepAlive: true)
+Isar isar(Ref ref) {
   throw UnimplementedError('isarProvider must be overridden in main()');
-});
+}
 
-final appConfigProvider = ChangeNotifierProvider<AppConfig>((ref) {
-  return AppConfig();
-});
-
-final notificationServiceProvider = Provider<NotificationService>((ref) {
+/// 通知服务 Provider - 全局单例
+@Riverpod(keepAlive: true)
+NotificationService notificationService(Ref ref) {
   return NotificationService();
-});
+}
