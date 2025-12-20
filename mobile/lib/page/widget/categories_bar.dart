@@ -85,8 +85,8 @@ class CategoriesBar extends ConsumerWidget {
                                 isActive: activeIndex == index,
                                 onTap: () {
                                   ref
-                                          .read(activeNavIndexProvider.notifier)
-                                          .set(index);
+                                      .read(activeNavIndexProvider.notifier)
+                                      .set(index);
                                 },
                               ),
                             ),

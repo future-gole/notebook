@@ -5,7 +5,7 @@ import 'package:pocketmind/util/logger_service.dart';
 final String categoryServiceTag = 'CategoryService';
 
 /// 分类业务服务层
-/// 
+///
 /// 现在依赖抽象的 CategoryRepository 接口，而不是具体的 Isar 实现
 /// 这使得服务层与数据库实现完全解耦
 class CategoryService {

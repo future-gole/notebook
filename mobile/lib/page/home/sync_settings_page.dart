@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-import '../../sync/sync_service.dart';
-import '../../sync/models/device_info.dart';
+import '../../lan_sync/lan_sync_service.dart';
+import '../../lan_sync/model/lan_peer.dart';
+import '../../lan_sync/model/device_info.dart';
 import '../../providers/app_config_provider.dart';
 import '../widget/creative_toast.dart';
 
@@ -29,8 +30,8 @@ class _SyncSettingsPageState extends ConsumerState<SyncSettingsPage> {
 
   @override
   Widget build(BuildContext context) {
-    final syncState = ref.watch(syncServiceProvider);
-    final syncNotifier = ref.read(syncServiceProvider.notifier);
+    final syncState = ref.watch(lanSyncProvider);
+    final syncNotifier = ref.read(lanSyncProvider.notifier);
 
     return Scaffold(
       appBar: AppBar(title: const Text('局域网同步')),
@@ -90,10 +91,7 @@ class _SyncSettingsPageState extends ConsumerState<SyncSettingsPage> {
   }
 
   /// 同步设置卡片
-  Widget _buildSyncSettingsCard(
-    SyncServiceState state,
-    SyncServiceNotifier notifier,
-  ) {
+  Widget _buildSyncSettingsCard(LanSyncState state, LanSyncNotifier notifier) {
     return Card(
       child: Padding(
         padding: EdgeInsets.all(16.r),
@@ -150,7 +148,9 @@ class _SyncSettingsPageState extends ConsumerState<SyncSettingsPage> {
               ),
               value: _syncAutoStart,
               onChanged: (value) async {
-                await ref.read(appConfigProvider.notifier).setSyncAutoStart(value);
+                await ref
+                    .read(appConfigProvider.notifier)
+                    .setSyncAutoStart(value);
                 setState(() => _syncAutoStart = value);
               },
             ),
@@ -161,10 +161,7 @@ class _SyncSettingsPageState extends ConsumerState<SyncSettingsPage> {
   }
 
   /// 本机设备信息卡片
-  Widget _buildLocalDeviceCard(
-    SyncServiceState state,
-    SyncServiceNotifier notifier,
-  ) {
+  Widget _buildLocalDeviceCard(LanSyncState state, LanSyncNotifier notifier) {
     final device = state.localDevice;
 
     return Card(
@@ -254,7 +251,7 @@ class _SyncSettingsPageState extends ConsumerState<SyncSettingsPage> {
   }
 
   /// 测试服务器
-  Future<void> _testServer(SyncServiceNotifier notifier) async {
+  Future<void> _testServer(LanSyncNotifier notifier) async {
     setState(() {
       _isTesting = true;
       _testResult = null;
@@ -282,8 +279,8 @@ class _SyncSettingsPageState extends ConsumerState<SyncSettingsPage> {
 
   /// 发现的设备卡片
   Widget _buildDiscoveredDevicesCard(
-    SyncServiceState state,
-    SyncServiceNotifier notifier,
+    LanSyncState state,
+    LanSyncNotifier notifier,
   ) {
     return Card(
       child: Padding(
@@ -341,7 +338,7 @@ class _SyncSettingsPageState extends ConsumerState<SyncSettingsPage> {
                 ),
               ),
             SizedBox(height: 12.h),
-            if (state.discoveredDevices.isEmpty)
+            if (state.peers.isEmpty)
               Padding(
                 padding: EdgeInsets.symmetric(vertical: 16.h),
                 child: Center(
@@ -353,41 +350,58 @@ class _SyncSettingsPageState extends ConsumerState<SyncSettingsPage> {
                 ),
               )
             else
-              ...state.discoveredDevices.map(
-                (device) => _buildDeviceTile(device, state, notifier),
-              ),
+              ..._sortedPeers(
+                state,
+              ).map((peer) => _buildPeerTile(peer, state, notifier)),
           ],
         ),
       ),
     );
   }
 
+  List<LanPeer> _sortedPeers(LanSyncState state) {
+    final peers = [...state.peers];
+    peers.sort((a, b) {
+      if (a.connected != b.connected) return a.connected ? -1 : 1;
+      return b.lastSeen.compareTo(a.lastSeen);
+    });
+    return peers;
+  }
+
   /// 设备列表项
-  Widget _buildDeviceTile(
-    DeviceInfo device,
-    SyncServiceState state,
-    SyncServiceNotifier notifier,
+  Widget _buildPeerTile(
+    LanPeer peer,
+    LanSyncState state,
+    LanSyncNotifier notifier,
   ) {
+    final isConnected = peer.connected;
     return ListTile(
       leading: CircleAvatar(
-        backgroundColor: Colors.green.withAlpha(50),
-        child: const Icon(Icons.phone_android, color: Colors.green),
+        backgroundColor: (isConnected ? Colors.green : Colors.grey).withAlpha(
+          50,
+        ),
+        child: Icon(
+          Icons.phone_android,
+          color: isConnected ? Colors.green : Colors.grey,
+        ),
       ),
       title: Row(
         children: [
-          Text(device.deviceName),
+          Text(peer.deviceName),
           SizedBox(width: 8.w),
           Container(
             width: 8.w,
             height: 8.w,
-            decoration: const BoxDecoration(
-              color: Colors.green,
+            decoration: BoxDecoration(
+              color: isConnected ? Colors.green : Colors.grey,
               shape: BoxShape.circle,
             ),
           ),
         ],
       ),
-      subtitle: Text('${device.ipAddress}:${device.port} · 已连接'),
+      subtitle: Text(
+        '${peer.ip}:${peer.wsPort} · ${isConnected ? '已连接' : '未连接'}',
+      ),
       trailing: state.isSyncing
           ? SizedBox(
               width: 24.w,
@@ -397,13 +411,24 @@ class _SyncSettingsPageState extends ConsumerState<SyncSettingsPage> {
           : IconButton(
               icon: const Icon(Icons.sync),
               tooltip: '手动同步',
-              onPressed: () => _syncWithDevice(notifier, device),
+              onPressed: () => _syncWithPeer(notifier, peer),
             ),
     );
   }
 
+  Future<void> _syncWithPeer(LanSyncNotifier notifier, LanPeer peer) async {
+    final device = DeviceInfo(
+      deviceId: peer.deviceId,
+      deviceName: peer.deviceName,
+      ipAddress: peer.ip,
+      port: peer.wsPort,
+      lastSeen: peer.lastSeen,
+    );
+    await _syncWithDevice(notifier, device);
+  }
+
   /// 同步状态卡片
-  Widget _buildSyncStatusCard(SyncServiceState state) {
+  Widget _buildSyncStatusCard(LanSyncState state) {
     return Card(
       child: Padding(
         padding: EdgeInsets.all(16.r),
@@ -461,7 +486,7 @@ class _SyncSettingsPageState extends ConsumerState<SyncSettingsPage> {
   }
 
   /// 诊断信息卡片
-  Widget _buildDiagnosticsCard(SyncServiceState state) {
+  Widget _buildDiagnosticsCard(LanSyncState state) {
     return Card(
       child: Padding(
         padding: EdgeInsets.all(16.r),
@@ -492,7 +517,7 @@ class _SyncSettingsPageState extends ConsumerState<SyncSettingsPage> {
             SizedBox(height: 8.h),
             _buildCheckItem('两台设备连接到同一 WiFi 网络'),
             _buildCheckItem('两台设备都开启了"允许其他设备同步"'),
-            _buildCheckItem('防火墙允许端口 54321 的访问'),
+            _buildCheckItem('防火墙允许端口 54322 的访问'),
             _buildCheckItem('路由器未开启 AP 隔离功能'),
             SizedBox(height: 12.h),
             Text(
@@ -540,7 +565,7 @@ class _SyncSettingsPageState extends ConsumerState<SyncSettingsPage> {
   }
 
   /// 自动发现并同步
-  Future<void> _discoverAndSync(SyncServiceNotifier notifier) async {
+  Future<void> _discoverAndSync(LanSyncNotifier notifier) async {
     setState(() => _isScanning = true);
     try {
       final results = await notifier.discoverAndSyncAll();
@@ -577,7 +602,7 @@ class _SyncSettingsPageState extends ConsumerState<SyncSettingsPage> {
 
   /// 与设备同步
   Future<void> _syncWithDevice(
-    SyncServiceNotifier notifier,
+    LanSyncNotifier notifier,
     DeviceInfo device,
   ) async {
     if (device.ipAddress == null) return;

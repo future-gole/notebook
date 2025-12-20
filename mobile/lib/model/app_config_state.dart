@@ -63,11 +63,14 @@ class AppConfigState {
       proxyPort: proxyPort ?? this.proxyPort,
       metaCacheTime: metaCacheTime ?? this.metaCacheTime,
       titleEnabled: titleEnabled ?? this.titleEnabled,
-      waterfallLayoutEnabled: waterfallLayoutEnabled ?? this.waterfallLayoutEnabled,
+      waterfallLayoutEnabled:
+          waterfallLayoutEnabled ?? this.waterfallLayoutEnabled,
       syncAutoStart: syncAutoStart ?? this.syncAutoStart,
       reminderShortcuts: reminderShortcuts ?? this.reminderShortcuts,
-      highPrecisionNotification: highPrecisionNotification ?? this.highPrecisionNotification,
-      notificationIntensity: notificationIntensity ?? this.notificationIntensity,
+      highPrecisionNotification:
+          highPrecisionNotification ?? this.highPrecisionNotification,
+      notificationIntensity:
+          notificationIntensity ?? this.notificationIntensity,
       linkPreviewApiKey: linkPreviewApiKey ?? this.linkPreviewApiKey,
       environment: environment ?? this.environment,
     );

@@ -2,9 +2,9 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import '../models/device_info.dart';
-import '../models/sync_response.dart';
-import '../mappers/sync_data_mapper.dart';
+import '../model/device_info.dart';
+import '../model/sync_response.dart';
+import '../mapper/sync_data_mapper.dart';
 import '../../util/logger_service.dart';
 import 'sync_websocket_server.dart';
 
@@ -153,10 +153,11 @@ class SyncWebSocketClient {
       _socket = null;
     }
 
+    final remoteDeviceSnapshot = _remoteDevice;
     _isConnected = false;
     _remoteDevice = null;
 
-    onConnectionChanged?.call(false, null);
+    onConnectionChanged?.call(false, remoteDeviceSnapshot);
   }
 
   /// 停止自动重连

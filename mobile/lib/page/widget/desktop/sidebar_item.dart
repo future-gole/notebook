@@ -32,7 +32,9 @@ class _SidebarItemState extends State<SidebarItem> {
     // 背景颜色逻辑
     Color backgroundColor;
     if (widget.isActive) {
-      backgroundColor = colorScheme.tertiary.withValues(alpha: isDark ? 0.15 : 0.12);
+      backgroundColor = colorScheme.tertiary.withValues(
+        alpha: isDark ? 0.15 : 0.12,
+      );
     } else if (_isHovered) {
       backgroundColor = isDark
           ? Colors.white.withValues(alpha: 0.05)

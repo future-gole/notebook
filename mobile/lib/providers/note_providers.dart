@@ -1,4 +1,3 @@
-
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:pocketmind/domain/entities/note_entity.dart';
 import 'package:pocketmind/domain/repositories/note_repository.dart';

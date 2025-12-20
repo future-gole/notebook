@@ -15,7 +15,8 @@ class NoteEditorRoute extends PageRouteBuilder {
         barrierColor: Colors.transparent, // 不要额外蒙一层黑
         transitionDuration: Duration.zero, // 不用默认的 page 动画
         reverseTransitionDuration: Duration.zero,
-        pageBuilder: (context, animation, secondaryAnimation) => const NoteEditorSheet(),
+        pageBuilder: (context, animation, secondaryAnimation) =>
+            const NoteEditorSheet(),
       );
 }
 

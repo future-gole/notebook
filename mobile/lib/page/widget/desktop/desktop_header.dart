@@ -96,7 +96,9 @@ class _LayoutButtonState extends State<_LayoutButton> {
             boxShadow: widget.isActive
                 ? [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.05),
+                      color: Colors.black.withValues(
+                        alpha: isDark ? 0.2 : 0.05,
+                      ),
                       blurRadius: 4.r,
                       offset: Offset(0, 1.h),
                     ),

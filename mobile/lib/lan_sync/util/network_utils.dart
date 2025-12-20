@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import '../util/logger_service.dart';
+import 'package:pocketmind/util/logger_service.dart';
 
 class LocalIpInfo {
   final String ip;

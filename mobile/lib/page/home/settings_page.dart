@@ -73,7 +73,9 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
     // 保存代理设置
     await notifier.setProxyEnabled(_proxyEnabled);
     await notifier.setProxyHost(_proxyHostController.text);
-    await notifier.setProxyPort(int.tryParse(_proxyPortController.text) ?? 7890);
+    await notifier.setProxyPort(
+      int.tryParse(_proxyPortController.text) ?? 7890,
+    );
 
     // 保存 Title 显示设置
     await notifier.setTitleEnabled(_titleEnabled);
@@ -425,9 +427,6 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
       );
     }
   }
-
-
-
 
   Widget _buildProxyCard(ThemeData theme) {
     return Card(

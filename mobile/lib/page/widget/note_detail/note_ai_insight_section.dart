@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:pocketmind/page/widget/creative_toast.dart';
 
-
 class NoteAIInsightSection extends StatelessWidget {
   const NoteAIInsightSection({super.key});
 

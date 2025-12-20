@@ -5,7 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 enum ToastType { success, error, info, warning }
+
 enum ToastDirection { top, bottom }
+
 class _ToastConfig {
   final Gradient gradient;
   final Color ringColor;
@@ -91,17 +93,57 @@ class CreativeToast {
     overlay.insert(entry);
   }
 
-  static void success(BuildContext context, {required String title, required String message, required ToastDirection direction}) =>
-      show(context, type: ToastType.success, title: title, message: message, direction: direction);
+  static void success(
+    BuildContext context, {
+    required String title,
+    required String message,
+    required ToastDirection direction,
+  }) => show(
+    context,
+    type: ToastType.success,
+    title: title,
+    message: message,
+    direction: direction,
+  );
 
-  static void error(BuildContext context, {required String title, required String message, required ToastDirection direction}) =>
-      show(context, type: ToastType.error, title: title, message: message, direction: direction);
+  static void error(
+    BuildContext context, {
+    required String title,
+    required String message,
+    required ToastDirection direction,
+  }) => show(
+    context,
+    type: ToastType.error,
+    title: title,
+    message: message,
+    direction: direction,
+  );
 
-  static void info(BuildContext context, {required String title, required String message, required ToastDirection direction}) =>
-      show(context, type: ToastType.info, title: title, message: message, direction: direction);
+  static void info(
+    BuildContext context, {
+    required String title,
+    required String message,
+    required ToastDirection direction,
+  }) => show(
+    context,
+    type: ToastType.info,
+    title: title,
+    message: message,
+    direction: direction,
+  );
 
-  static void warning(BuildContext context, {required String title, required String message, required ToastDirection direction}) =>
-      show(context, type: ToastType.warning, title: title, message: message, direction: direction);
+  static void warning(
+    BuildContext context, {
+    required String title,
+    required String message,
+    required ToastDirection direction,
+  }) => show(
+    context,
+    type: ToastType.warning,
+    title: title,
+    message: message,
+    direction: direction,
+  );
 }
 
 class _ToastWidget extends StatefulWidget {
@@ -143,7 +185,9 @@ class _ToastWidgetState extends State<_ToastWidget>
 
     _fade = CurvedAnimation(parent: _controller, curve: Curves.easeOut);
     _slide = Tween<Offset>(
-      begin: widget.direction == ToastDirection.top ? const Offset(0, -1) : const Offset(0, 1),
+      begin: widget.direction == ToastDirection.top
+          ? const Offset(0, -1)
+          : const Offset(0, 1),
       end: Offset.zero,
     ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic));
 
@@ -163,7 +207,10 @@ class _ToastWidgetState extends State<_ToastWidget>
         return;
       }
       final remaining = end.difference(DateTime.now()).inMilliseconds;
-      final percent = (remaining / widget.duration.inMilliseconds).clamp(0.0, 1.0);
+      final percent = (remaining / widget.duration.inMilliseconds).clamp(
+        0.0,
+        1.0,
+      );
       setState(() => _progress = percent);
 
       if (remaining <= 0) {
@@ -195,7 +242,9 @@ class _ToastWidgetState extends State<_ToastWidget>
     final width = math.min(mq.size.width - 32.w, 380.0.w);
 
     return Positioned(
-      top: widget.direction == ToastDirection.top ? mq.padding.top + 16.h : null,
+      top: widget.direction == ToastDirection.top
+          ? mq.padding.top + 16.h
+          : null,
       bottom: widget.direction == ToastDirection.bottom ? 32.h : null,
       left: (mq.size.width - width) / 2,
       child: FadeTransition(
@@ -258,12 +307,18 @@ class _ToastWidgetState extends State<_ToastWidget>
                                 gradient: config.gradient,
                                 boxShadow: [
                                   BoxShadow(
-                                    color: config.ringColor.withValues(alpha: 0.4),
+                                    color: config.ringColor.withValues(
+                                      alpha: 0.4,
+                                    ),
                                     blurRadius: 12.r,
                                   ),
                                 ],
                               ),
-                              child: Icon(config.icon, color: Colors.white, size: 24.sp),
+                              child: Icon(
+                                config.icon,
+                                color: Colors.white,
+                                size: 24.sp,
+                              ),
                             ),
                             SizedBox(width: 14.w),
                             Expanded(
@@ -273,11 +328,12 @@ class _ToastWidgetState extends State<_ToastWidget>
                                 children: [
                                   Text(
                                     widget.title,
-                                    style: theme.textTheme.titleMedium?.copyWith(
-                                      fontSize: 15.sp,
-                                      fontWeight: FontWeight.w600,
-                                      decoration: TextDecoration.none,
-                                    ),
+                                    style: theme.textTheme.titleMedium
+                                        ?.copyWith(
+                                          fontSize: 15.sp,
+                                          fontWeight: FontWeight.w600,
+                                          decoration: TextDecoration.none,
+                                        ),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                   ),
@@ -316,7 +372,11 @@ class _ToastWidgetState extends State<_ToastWidget>
                                         ),
                                       ),
                                     ),
-                                    Icon(Icons.close, size: 12.sp, color: cs.secondary),
+                                    Icon(
+                                      Icons.close,
+                                      size: 12.sp,
+                                      color: cs.secondary,
+                                    ),
                                   ],
                                 ),
                               ),
@@ -498,7 +558,11 @@ class _ConfirmDialog extends StatelessWidget {
                             ),
                           ],
                         ),
-                        child: Icon(Icons.help_outline_rounded, color: Colors.white, size: 28.sp),
+                        child: Icon(
+                          Icons.help_outline_rounded,
+                          color: Colors.white,
+                          size: 28.sp,
+                        ),
                       ),
                       SizedBox(height: 20.h),
                       Text(
@@ -535,7 +599,9 @@ class _ConfirmDialog extends StatelessWidget {
                                 child: Container(
                                   height: 48.h,
                                   decoration: BoxDecoration(
-                                    color: cs.outlineVariant.withValues(alpha: 0.3),
+                                    color: cs.outlineVariant.withValues(
+                                      alpha: 0.3,
+                                    ),
                                     borderRadius: BorderRadius.circular(14.r),
                                   ),
                                   alignment: Alignment.center,
@@ -562,7 +628,9 @@ class _ConfirmDialog extends StatelessWidget {
                                     borderRadius: BorderRadius.circular(14.r),
                                     boxShadow: [
                                       BoxShadow(
-                                        color: accentColor.withValues(alpha: 0.3),
+                                        color: accentColor.withValues(
+                                          alpha: 0.3,
+                                        ),
                                         blurRadius: 8.r,
                                         offset: Offset(0, 4.h),
                                       ),
@@ -749,7 +817,11 @@ class _InputDialogState extends State<_InputDialog> {
                               ),
                             ],
                           ),
-                          child: Icon(Icons.edit_rounded, color: Colors.white, size: 26.sp),
+                          child: Icon(
+                            Icons.edit_rounded,
+                            color: Colors.white,
+                            size: 26.sp,
+                          ),
                         ),
                         SizedBox(height: 20.h),
                         Text(
@@ -823,18 +895,21 @@ class _InputDialogState extends State<_InputDialog> {
                                   child: Container(
                                     height: 48.h,
                                     decoration: BoxDecoration(
-                                      color: cs.outlineVariant.withValues(alpha: 0.3),
+                                      color: cs.outlineVariant.withValues(
+                                        alpha: 0.3,
+                                      ),
                                       borderRadius: BorderRadius.circular(14.r),
                                     ),
                                     alignment: Alignment.center,
                                     child: Text(
                                       widget.cancelText,
-                                      style: theme.textTheme.bodyLarge?.copyWith(
-                                        fontSize: 15.sp,
-                                        color: cs.secondary,
-                                        fontWeight: FontWeight.w600,
-                                        decoration: TextDecoration.none,
-                                      ),
+                                      style: theme.textTheme.bodyLarge
+                                          ?.copyWith(
+                                            fontSize: 15.sp,
+                                            color: cs.secondary,
+                                            fontWeight: FontWeight.w600,
+                                            decoration: TextDecoration.none,
+                                          ),
                                     ),
                                   ),
                                 ),
@@ -842,7 +917,9 @@ class _InputDialogState extends State<_InputDialog> {
                               SizedBox(width: 12.w),
                               Expanded(
                                 child: GestureDetector(
-                                  onTap: () => Navigator.of(context).pop(_controller.text),
+                                  onTap: () => Navigator.of(
+                                    context,
+                                  ).pop(_controller.text),
                                   child: Container(
                                     height: 48.h,
                                     decoration: BoxDecoration(
@@ -850,7 +927,9 @@ class _InputDialogState extends State<_InputDialog> {
                                       borderRadius: BorderRadius.circular(14.r),
                                       boxShadow: [
                                         BoxShadow(
-                                          color: accentColor.withValues(alpha: 0.3),
+                                          color: accentColor.withValues(
+                                            alpha: 0.3,
+                                          ),
                                           blurRadius: 8.r,
                                           offset: Offset(0, 4.h),
                                         ),
@@ -859,12 +938,13 @@ class _InputDialogState extends State<_InputDialog> {
                                     alignment: Alignment.center,
                                     child: Text(
                                       widget.confirmText,
-                                      style: theme.textTheme.bodyLarge?.copyWith(
-                                        fontSize: 15.sp,
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.bold,
-                                        decoration: TextDecoration.none,
-                                      ),
+                                      style: theme.textTheme.bodyLarge
+                                          ?.copyWith(
+                                            fontSize: 15.sp,
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.bold,
+                                            decoration: TextDecoration.none,
+                                          ),
                                     ),
                                   ),
                                 ),
@@ -884,4 +964,3 @@ class _InputDialogState extends State<_InputDialog> {
     );
   }
 }
-

@@ -22,7 +22,6 @@ final linkPreviewServiceProvider = Provider<LinkPreviewApiService>((ref) {
 final String tag = 'LinkPreviewApiService';
 
 class LinkPreviewApiService {
-
   final HttpClient _http;
   final String _apiKey;
   LinkPreviewApiService(this._http, this._apiKey);
@@ -32,33 +31,33 @@ class LinkPreviewApiService {
     try {
       final data = await _http.get<Map<String, dynamic>>(
         ApiConstants.linkPreviewBaseUrl,
-        queryParameters: {
-          'key': _apiKey,
-          'q': url,
-        },
+        queryParameters: {'key': _apiKey, 'q': url},
       );
 
       return ApiLinkMetadata(
-          title: data['title'],
-          description: data['description'],
-          imageUrl: data['image'],
-          url: data['url'] ?? url,
-          success: true,
+        title: data['title'],
+        description: data['description'],
+        imageUrl: data['image'],
+        url: data['url'] ?? url,
+        success: true,
+      );
+    } on DioException catch (e) {
+      // 捕获 Dio 特有的异常
+      // 如果有响应数据，通常在 e.response 中
+      if (e.response != null) {
+        PMlog.e(
+          tag,
+          '❌ API 返回错误: ${e.response?.statusCode} - ${e.response?.data}',
         );
-      }on DioException catch (e) {
-        // 捕获 Dio 特有的异常
-        // 如果有响应数据，通常在 e.response 中
-        if (e.response != null) {
-          PMlog.e(tag, '❌ API 返回错误: ${e.response?.statusCode} - ${e.response?.data}');
-        } else {
-          PMlog.e(tag, '❌ API 请求失败 (网络或超时): ${e.message}');
-        }
-        return ApiLinkMetadata(url: url, success: false);
-      } catch (e) {
-        // 捕获其他未知异常
-        PMlog.e(tag, '❌ 未知错误: $e');
-        return ApiLinkMetadata(url: url, success: false);
+      } else {
+        PMlog.e(tag, '❌ API 请求失败 (网络或超时): ${e.message}');
       }
+      return ApiLinkMetadata(url: url, success: false);
+    } catch (e) {
+      // 捕获其他未知异常
+      PMlog.e(tag, '❌ 未知错误: $e');
+      return ApiLinkMetadata(url: url, success: false);
+    }
   }
 }
 

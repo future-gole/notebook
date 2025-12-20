@@ -4,13 +4,13 @@ import 'dart:async';
 
 import 'package:isar_community/isar.dart';
 
-import 'models/device_info.dart';
-import 'models/sync_log.dart';
+import 'model/device_info.dart';
+import 'model/sync_log.dart';
 import 'repository/sync_log_repository.dart';
-import 'mappers/sync_data_mapper.dart';
+import 'mapper/sync_data_mapper.dart';
 import 'realtime/sync_websocket_client.dart';
 import 'realtime/sync_websocket_server.dart';
-import 'network_utils.dart';
+import 'util/network_utils.dart';
 import '../model/note.dart';
 import '../model/category.dart';
 import '../util/logger_service.dart';
@@ -388,6 +388,7 @@ class SyncManager {
     String subnetMask = LanNetworkHelper.defaultSubnetMask,
     Duration timeout = const Duration(seconds: 3),
     int port = SyncWebSocketServer.defaultPort,
+    int concurrency = 96,
   }) async {
     PMlog.i(_tag, '=== 网络扫描开始 ===');
     PMlog.i(_tag, '本地 IP: $localIp');
@@ -396,7 +397,6 @@ class SyncManager {
     PMlog.i(_tag, '超时: ${timeout.inMilliseconds}ms');
 
     final devices = <DeviceInfo>[];
-    final futures = <Future<DeviceInfo?>>[];
 
     final hosts = LanNetworkHelper.hostsInSubnet(
       localIp,
@@ -404,13 +404,26 @@ class SyncManager {
     );
     PMlog.i(_tag, '扫描子网中的 ${hosts.length} 个主机...');
 
-    for (final ip in hosts) {
-      if (ip == localIp) continue; // skip self
-      futures.add(_scanHost(ip, port, timeout));
+    // Limit concurrency to avoid socket exhaustion / router throttling.
+    // A higher default keeps discovery responsive while still avoiding "all-at-once".
+    final int effectiveConcurrency = concurrency < 1 ? 1 : concurrency;
+    final results = <DeviceInfo?>[];
+    final pending = <Future<DeviceInfo?>>[];
+
+    Future<void> flushPending() async {
+      if (pending.isEmpty) return;
+      results.addAll(await Future.wait(pending));
+      pending.clear();
     }
 
-    // 并发执行扫描
-    final results = await Future.wait(futures);
+    for (final ip in hosts) {
+      if (ip == localIp) continue; // skip self
+      pending.add(_scanHost(ip, port, timeout));
+      if (pending.length >= effectiveConcurrency) {
+        await flushPending();
+      }
+    }
+    await flushPending();
 
     for (final device in results) {
       if (device != null) {

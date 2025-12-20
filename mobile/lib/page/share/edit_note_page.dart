@@ -542,10 +542,14 @@ class EditNotePageState extends ConsumerState<EditNotePage> {
             Container(
               padding: EdgeInsets.all(24.r),
               decoration: BoxDecoration(
-                color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.15),
+                color: colorScheme.surfaceContainerHighest.withValues(
+                  alpha: 0.15,
+                ),
                 borderRadius: BorderRadius.circular(20.r),
                 border: Border.all(
-                  color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+                  color: colorScheme.surfaceContainerHighest.withValues(
+                    alpha: 0.3,
+                  ),
                   width: 1.w,
                 ),
               ),
@@ -631,7 +635,9 @@ class EditNotePageState extends ConsumerState<EditNotePage> {
                             horizontal: 16.w,
                             vertical: 12.h,
                           ),
-                          backgroundColor: colorScheme.error.withValues(alpha: 0.1),
+                          backgroundColor: colorScheme.error.withValues(
+                            alpha: 0.1,
+                          ),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12.r),
                           ),
@@ -707,7 +713,9 @@ class EditNotePageState extends ConsumerState<EditNotePage> {
                       return GestureDetector(
                         onLongPress: () async {
                           // 长按删除
-                          await ref.read(appConfigProvider.notifier).removeReminderShortcut(index);
+                          await ref
+                              .read(appConfigProvider.notifier)
+                              .removeReminderShortcut(index);
                           setState(() {}); // 刷新界面
                         },
                         child: _buildQuickOption(
@@ -844,7 +852,9 @@ class EditNotePageState extends ConsumerState<EditNotePage> {
 
             if (name != null && name.isNotEmpty) {
               final timeStr = DateFormat('HH:mm').format(selectedTime);
-              await ref.read(appConfigProvider.notifier).addReminderShortcut(name, timeStr);
+              await ref
+                  .read(appConfigProvider.notifier)
+                  .addReminderShortcut(name, timeStr);
               if (mounted) setState(() {});
             }
           },

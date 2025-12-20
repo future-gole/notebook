@@ -1,6 +1,6 @@
 import 'package:isar_community/isar.dart';
 
-import '../models/sync_log.dart';
+import '../model/sync_log.dart';
 import '../../util/logger_service.dart';
 
 /// 同步日志仓库

@@ -8,7 +8,6 @@ import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:pocketmind/util/logger_service.dart';
 import 'dart:io';
 
-
 class NotificationService {
   final fln.FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
       fln.FlutterLocalNotificationsPlugin();
@@ -48,7 +47,11 @@ class NotificationService {
         fln.AndroidInitializationSettings('@mipmap/launcher_icon');
 
     const fln.WindowsInitializationSettings initializationSettingsWindows =
-    fln.WindowsInitializationSettings(appName: 'pocketmind', appUserModelId: 'com.doublez.pocketmind', guid: '81984258-2100-44F4-893C-311394038165');
+        fln.WindowsInitializationSettings(
+          appName: 'pocketmind',
+          appUserModelId: 'com.doublez.pocketmind',
+          guid: '81984258-2100-44F4-893C-311394038165',
+        );
 
     final fln.DarwinInitializationSettings initializationSettingsDarwin =
         fln.DarwinInitializationSettings();
@@ -114,8 +117,8 @@ class NotificationService {
       // 如果请求后还是拒绝 (用户点了“不允许”或“不再询问”)
       if (!status.isGranted) {
         Fluttertoast.showToast(
-            msg: '设置闹钟需要通知权限，请在设置中开启！',
-            toastLength: Toast.LENGTH_LONG
+          msg: '设置闹钟需要通知权限，请在设置中开启！',
+          toastLength: Toast.LENGTH_LONG,
         );
         //打开系统设置页面
         await openAppSettings();
@@ -191,7 +194,12 @@ class NotificationService {
         break;
     }
     String androidChannelId = 'reminder_channel_level_$intensity';
-    String androidChannelName = '${intensity == 0 ? "低" : intensity == 1 ? "中" : "高"} 强度提醒';
+    String androidChannelName =
+        '${intensity == 0
+            ? "低"
+            : intensity == 1
+            ? "中"
+            : "高"} 强度提醒';
 
     try {
       await flutterLocalNotificationsPlugin.zonedSchedule(
@@ -222,7 +230,7 @@ class NotificationService {
             presentSound: iosPresentSound,
             interruptionLevel: iosInterruptionLevel,
           ),
-          windows: windowsDetails
+          windows: windowsDetails,
           // --- Windows 配置 (功能有限) ---
           // Windows 主要是靠系统接管，代码里没有类似 Priority 的参数。
           // Linux 同理。
@@ -234,12 +242,12 @@ class NotificationService {
       );
       PMlog.i('NotificationService', '通知调度成功');
     } catch (e) {
-        PMlog.e('NotificationService', '闹钟保存失败');
-        Fluttertoast.showToast(
-            msg: '闹钟保存失败',
-            toastLength: Toast.LENGTH_LONG,
-            gravity: ToastGravity.CENTER,
-        );
+      PMlog.e('NotificationService', '闹钟保存失败');
+      Fluttertoast.showToast(
+        msg: '闹钟保存失败',
+        toastLength: Toast.LENGTH_LONG,
+        gravity: ToastGravity.CENTER,
+      );
       PMlog.e('NotificationService', '调度通知失败: $e');
     }
   }

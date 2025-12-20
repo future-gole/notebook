@@ -27,7 +27,8 @@ class DeviceInfo {
     required this.deviceId,
     required this.deviceName,
     this.ipAddress,
-    this.port = 54321,
+    // Must match SyncWebSocketServer.defaultPort.
+    this.port = 54322,
     this.platform,
     this.appVersion,
     this.lastSeen,
@@ -39,7 +40,7 @@ class DeviceInfo {
       deviceId: json['deviceId'] as String,
       deviceName: json['deviceName'] as String,
       ipAddress: json['ipAddress'] as String?,
-      port: json['port'] as int? ?? 54321,
+      port: json['port'] as int? ?? 54322,
       platform: json['platform'] as String?,
       appVersion: json['appVersion'] as String?,
       lastSeen: json['lastSeen'] != null

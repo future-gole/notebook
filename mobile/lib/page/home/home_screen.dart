@@ -13,6 +13,7 @@ import 'package:pocketmind/providers/nav_providers.dart';
 import 'package:pocketmind/providers/note_providers.dart';
 import 'package:pocketmind/providers/app_config_provider.dart';
 import 'package:pocketmind/util/logger_service.dart';
+import 'package:pocketmind/lan_sync/lan_sync_service.dart';
 
 final String tag = 'HomeScreen';
 
@@ -130,6 +131,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 
   @override
   Widget build(BuildContext context) {
+    // Keep sync service alive so auto-start and inbound connections work
+    // even if the user never opens the sync settings page.
+    ref.watch(lanSyncProvider);
+
     // 桌面端使用专门的桌面布局
     if (_isDesktop) {
       return const DesktopHomeScreen();

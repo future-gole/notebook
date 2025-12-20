@@ -17,20 +17,23 @@ class AppConfig extends _$AppConfig {
   static const String _isWaterfallLayout = 'waterfall_layout';
   static const String _keySyncAutoStart = 'sync_auto_start';
   static const String _keyReminderShortcuts = 'reminder_shortcuts';
-  static const String _keyHighPrecisionNotification = 'high_precision_notification';
+  static const String _keyHighPrecisionNotification =
+      'high_precision_notification';
   static const String _keyNotificationIntensity = 'notification_intensity';
 
   @override
   AppConfigState build() {
     final prefs = ref.watch(sharedPreferencesProvider);
-    
+
     // Load reminder shortcuts
     List<Map<String, String>> reminderShortcuts = [];
     final shortcutsValue = prefs.getString(_keyReminderShortcuts);
     if (shortcutsValue != null) {
       try {
         final List<dynamic> list = json.decode(shortcutsValue);
-        reminderShortcuts = list.map((e) => Map<String, String>.from(e)).toList();
+        reminderShortcuts = list
+            .map((e) => Map<String, String>.from(e))
+            .toList();
       } catch (e) {
         // ignore error
       }
@@ -54,7 +57,8 @@ class AppConfig extends _$AppConfig {
       waterfallLayoutEnabled: prefs.getBool(_isWaterfallLayout) ?? true,
       syncAutoStart: prefs.getBool(_keySyncAutoStart) ?? false,
       reminderShortcuts: reminderShortcuts,
-      highPrecisionNotification: prefs.getBool(_keyHighPrecisionNotification) ?? false,
+      highPrecisionNotification:
+          prefs.getBool(_keyHighPrecisionNotification) ?? false,
       notificationIntensity: prefs.getInt(_keyNotificationIntensity) ?? 2,
       linkPreviewApiKey: prefs.getString(_keyLinkPreviewApiKey) ?? '',
       environment: environment,
@@ -62,7 +66,9 @@ class AppConfig extends _$AppConfig {
   }
 
   Future<void> setProxyEnabled(bool enabled) async {
-    await ref.read(sharedPreferencesProvider).setBool(_keyProxyEnabled, enabled);
+    await ref
+        .read(sharedPreferencesProvider)
+        .setBool(_keyProxyEnabled, enabled);
     state = state.copyWith(proxyEnabled: enabled);
   }
 
@@ -82,38 +88,52 @@ class AppConfig extends _$AppConfig {
   }
 
   Future<void> setTitleEnabled(bool enabled) async {
-    await ref.read(sharedPreferencesProvider).setBool(_keyTitleEnabled, enabled);
+    await ref
+        .read(sharedPreferencesProvider)
+        .setBool(_keyTitleEnabled, enabled);
     state = state.copyWith(titleEnabled: enabled);
   }
 
   Future<void> setWaterFallLayout(bool enabled) async {
-    await ref.read(sharedPreferencesProvider).setBool(_isWaterfallLayout, enabled);
+    await ref
+        .read(sharedPreferencesProvider)
+        .setBool(_isWaterfallLayout, enabled);
     state = state.copyWith(waterfallLayoutEnabled: enabled);
   }
 
   Future<void> setSyncAutoStart(bool enabled) async {
-    await ref.read(sharedPreferencesProvider).setBool(_keySyncAutoStart, enabled);
+    await ref
+        .read(sharedPreferencesProvider)
+        .setBool(_keySyncAutoStart, enabled);
     state = state.copyWith(syncAutoStart: enabled);
   }
 
   Future<void> setHighPrecisionNotification(bool enabled) async {
-    await ref.read(sharedPreferencesProvider).setBool(_keyHighPrecisionNotification, enabled);
+    await ref
+        .read(sharedPreferencesProvider)
+        .setBool(_keyHighPrecisionNotification, enabled);
     state = state.copyWith(highPrecisionNotification: enabled);
   }
 
   Future<void> setNotificationIntensity(int level) async {
-    await ref.read(sharedPreferencesProvider).setInt(_keyNotificationIntensity, level);
+    await ref
+        .read(sharedPreferencesProvider)
+        .setInt(_keyNotificationIntensity, level);
     state = state.copyWith(notificationIntensity: level);
   }
 
   Future<void> setLinkPreviewApiKey(String apiKey) async {
-    await ref.read(sharedPreferencesProvider).setString(_keyLinkPreviewApiKey, apiKey);
+    await ref
+        .read(sharedPreferencesProvider)
+        .setString(_keyLinkPreviewApiKey, apiKey);
     state = state.copyWith(linkPreviewApiKey: apiKey);
   }
 
   Future<void> setEnvironment(Environment env) async {
     final envString = env.toString().split('.').last;
-    await ref.read(sharedPreferencesProvider).setString(_keyEnvironment, envString);
+    await ref
+        .read(sharedPreferencesProvider)
+        .setString(_keyEnvironment, envString);
     state = state.copyWith(environment: env);
   }
 
@@ -123,8 +143,10 @@ class AppConfig extends _$AppConfig {
       shortcuts.removeAt(0);
     }
     shortcuts.add({'name': name, 'time': time});
-    
-    await ref.read(sharedPreferencesProvider).setString(_keyReminderShortcuts, json.encode(shortcuts));
+
+    await ref
+        .read(sharedPreferencesProvider)
+        .setString(_keyReminderShortcuts, json.encode(shortcuts));
     state = state.copyWith(reminderShortcuts: shortcuts);
   }
 
@@ -132,7 +154,9 @@ class AppConfig extends _$AppConfig {
     final shortcuts = List<Map<String, String>>.from(state.reminderShortcuts);
     if (index >= 0 && index < shortcuts.length) {
       shortcuts.removeAt(index);
-      await ref.read(sharedPreferencesProvider).setString(_keyReminderShortcuts, json.encode(shortcuts));
+      await ref
+          .read(sharedPreferencesProvider)
+          .setString(_keyReminderShortcuts, json.encode(shortcuts));
       state = state.copyWith(reminderShortcuts: shortcuts);
     }
   }

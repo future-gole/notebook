@@ -17,7 +17,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
 import 'model/category.dart';
 import 'model/note.dart';
-import 'sync/models/sync_log.dart';
+import 'lan_sync/model/sync_log.dart';
 import 'data/repositories/isar_category_repository.dart';
 import 'util/logger_service.dart';
 

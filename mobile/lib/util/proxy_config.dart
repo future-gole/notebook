@@ -14,6 +14,10 @@ class GlobalHttpOverrides extends HttpOverrides {
 
     // 设置代理
     client.findProxy = (uri) {
+      // 如果是局域网地址，直接连接，不走代理
+      if (_isLocalAddress(uri.host)) {
+        return 'DIRECT';
+      }
       return 'PROXY $proxyString;';
     };
 
@@ -25,5 +29,34 @@ class GlobalHttpOverrides extends HttpOverrides {
     }
 
     return client;
+  }
+
+  bool _isLocalAddress(String host) {
+    if (host == 'localhost' || host == '127.0.0.1' || host == '::1') {
+      return true;
+    }
+
+    // 检查常见的局域网 IP 段
+    // 10.0.0.0 - 10.255.255.255
+    // 172.16.0.0 - 172.31.255.255
+    // 192.168.0.0 - 192.168.255.255
+    // 169.254.0.0 - 169.254.255.255 (Link-local)
+
+    final parts = host.split('.');
+    if (parts.length != 4) return false;
+
+    try {
+      final p0 = int.parse(parts[0]);
+      final p1 = int.parse(parts[1]);
+
+      if (p0 == 10) return true;
+      if (p0 == 172 && p1 >= 16 && p1 <= 31) return true;
+      if (p0 == 192 && p1 == 168) return true;
+      if (p0 == 169 && p1 == 254) return true;
+    } catch (_) {
+      return false;
+    }
+
+    return false;
   }
 }

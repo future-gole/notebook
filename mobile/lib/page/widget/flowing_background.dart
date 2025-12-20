@@ -174,7 +174,10 @@ class FlowingGradientPainter extends CustomPainter {
         size.height * (0.15 + 0.18 * math.cos(fastProgress * 2 * math.pi + 4)),
       ),
       radius: size.width * 0.5,
-      colors: [colors[0].withValues(alpha: 0.4), colors[0].withValues(alpha: 0)],
+      colors: [
+        colors[0].withValues(alpha: 0.4),
+        colors[0].withValues(alpha: 0),
+      ],
     );
   }
 

@@ -44,7 +44,10 @@ class ItemBar extends StatelessWidget {
     // 这是一个静态的从左上到右下的渐变，模仿 '微光'
     final Gradient? activeGradient = isActive
         ? LinearGradient(
-            colors: [glossColor.withValues(alpha: 0.2), glossColor.withValues(alpha: 0.0)],
+            colors: [
+              glossColor.withValues(alpha: 0.2),
+              glossColor.withValues(alpha: 0.0),
+            ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           )

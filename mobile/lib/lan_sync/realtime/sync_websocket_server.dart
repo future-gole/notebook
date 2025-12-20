@@ -4,8 +4,8 @@ import 'dart:io';
 
 import 'package:isar_community/isar.dart';
 
-import '../mappers/sync_data_mapper.dart';
-import '../models/device_info.dart';
+import '../mapper/sync_data_mapper.dart';
+import '../model/device_info.dart';
 import '../../model/note.dart';
 import '../../model/category.dart';
 import '../../util/logger_service.dart';
@@ -90,16 +90,20 @@ class SyncWebSocketServer {
   StreamSubscription? _categoriesSubscription;
 
   /// 当有新设备连接时的回调
-  void Function(DeviceInfo device)? onDeviceConnected;
+  void Function(String clientIp, DeviceInfo device)? onDeviceConnected;
 
   /// 当设备断开连接时的回调
-  void Function(DeviceInfo device)? onDeviceDisconnected;
+  void Function(String clientIp, DeviceInfo device)? onDeviceDisconnected;
 
   /// 当收到远程数据变化时的回调
-  void Function()? onRemoteDataChanged;
+  void Function(String clientIp)? onRemoteDataChanged;
 
   /// 当收到同步响应时的回调（包含变更数据）
-  void Function(String clientIp, List<Map<String, dynamic>> changes)?
+  void Function(
+    String clientIp,
+    List<Map<String, dynamic>> changes,
+    int timestamp,
+  )?
   onSyncResponseReceived;
 
   SyncWebSocketServer({
@@ -311,7 +315,7 @@ class SyncWebSocketServer {
     Future.delayed(const Duration(milliseconds: 100), () {
       // 确认客户端仍然连接
       if (_clients.containsKey(clientIp)) {
-        onDeviceConnected?.call(deviceInfo);
+        onDeviceConnected?.call(clientIp, deviceInfo);
       }
     });
   }
@@ -321,7 +325,7 @@ class SyncWebSocketServer {
     PMlog.i(_tag, '📥 来自 $clientIp 的数据更改通知');
 
     // 通知上层进行同步
-    onRemoteDataChanged?.call();
+    onRemoteDataChanged?.call(clientIp);
   }
 
   /// 处理同步请求
@@ -367,7 +371,7 @@ class SyncWebSocketServer {
     final client = _clients.remove(clientIp);
     if (client != null) {
       PMlog.i(_tag, '❌ 设备断开连接: ${client.deviceInfo.deviceName}');
-      onDeviceDisconnected?.call(client.deviceInfo);
+      onDeviceDisconnected?.call(clientIp, client.deviceInfo);
     }
   }
 
@@ -378,7 +382,11 @@ class SyncWebSocketServer {
     final changes = message.data?['changes'] as List<dynamic>? ?? [];
     final typedChanges = changes.cast<Map<String, dynamic>>();
 
-    onSyncResponseReceived?.call(clientIp, typedChanges);
+    final timestamp =
+        (message.data?['timestamp'] as int?) ??
+        DateTime.now().millisecondsSinceEpoch;
+
+    onSyncResponseReceived?.call(clientIp, typedChanges, timestamp);
   }
 
   /// 处理图片请求

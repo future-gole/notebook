@@ -1,4 +1,3 @@
-
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:pocketmind/model/nav_item.dart';
 import 'package:pocketmind/repository/isar_nav_item_repository.dart';
