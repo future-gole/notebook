@@ -9,7 +9,7 @@ import '../util/logger_service.dart';
 import 'storage/lan_sync_log_store.dart';
 
 /// 局域网同步引擎
-/// 
+///
 /// 负责协调同步流程，包括从远程拉取数据和处理本地数据变更。
 class LanSyncEngine {
   static const String _tag = 'LanSyncEngine';

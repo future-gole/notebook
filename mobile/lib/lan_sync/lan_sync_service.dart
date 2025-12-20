@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:uuid/uuid.dart';
 
 import '../providers/app_config_provider.dart';
@@ -19,37 +20,42 @@ import 'model/lan_identity.dart';
 import 'model/lan_peer.dart';
 import 'udp/udp_lan_discovery.dart';
 
+part 'lan_sync_service.freezed.dart';
+
 /// 局域网同步状态
-class LanSyncState {
-  /// 服务是否正在运行
-  final bool isRunning;
-  /// 是否正在同步中
-  final bool isSyncing;
-  /// 本地设备信息
-  final DeviceInfo? localDevice;
-  /// 发现的对等节点列表
-  final List<LanPeer> peers;
-  /// 最后一次错误信息
-  final String? lastError;
-  /// 最后一次同步成功的时间
-  final DateTime? lastSyncTime;
+@freezed
+abstract class LanSyncState with _$LanSyncState {
+  const LanSyncState._();
 
-  const LanSyncState({
-    required this.isRunning,
-    required this.isSyncing,
-    required this.localDevice,
-    required this.peers,
-    required this.lastError,
-    required this.lastSyncTime,
-  });
+  const factory LanSyncState({
+    /// 服务是否正在运行
+    required bool isRunning,
 
-  const LanSyncState.initial()
-    : isRunning = false,
-      isSyncing = false,
-      localDevice = null,
-      peers = const [],
-      lastError = null,
-      lastSyncTime = null;
+    /// 是否正在同步中
+    required bool isSyncing,
+
+    /// 本地设备信息
+    required DeviceInfo? localDevice,
+
+    /// 发现的对等节点列表
+    required List<LanPeer> peers,
+
+    /// 最后一次错误信息
+    required String? lastError,
+
+    /// 最后一次同步成功的时间
+    required DateTime? lastSyncTime,
+  }) = _LanSyncState;
+
+  /// 初始状态
+  factory LanSyncState.initial() => LanSyncState(
+        isRunning: false,
+        isSyncing: false,
+        localDevice: null,
+        peers: const [],
+        lastError: null,
+        lastSyncTime: null,
+      );
 
   // 兼容现有 UI (sync_settings_page.dart)
   bool get isServerRunning => isRunning;
@@ -66,24 +72,6 @@ class LanSyncState {
         ),
       )
       .toList();
-
-  LanSyncState copyWith({
-    bool? isRunning,
-    bool? isSyncing,
-    DeviceInfo? localDevice,
-    List<LanPeer>? peers,
-    String? lastError,
-    DateTime? lastSyncTime,
-  }) {
-    return LanSyncState(
-      isRunning: isRunning ?? this.isRunning,
-      isSyncing: isSyncing ?? this.isSyncing,
-      localDevice: localDevice ?? this.localDevice,
-      peers: peers ?? this.peers,
-      lastError: lastError,
-      lastSyncTime: lastSyncTime ?? this.lastSyncTime,
-    );
-  }
 }
 
 /// 局域网同步 Provider
@@ -92,7 +80,7 @@ final lanSyncProvider = NotifierProvider<LanSyncNotifier, LanSyncState>(
 );
 
 /// 局域网同步通知器
-/// 
+///
 /// 负责管理 UDP 发现、WebSocket 服务端和客户端连接，以及同步流程的调度。
 class LanSyncNotifier extends Notifier<LanSyncState> {
   static const String _tag = 'LanSyncNotifier';
@@ -136,7 +124,7 @@ class LanSyncNotifier extends Notifier<LanSyncState> {
       unawaited(_init());
     }
 
-    return const LanSyncState.initial();
+    return LanSyncState.initial();
   }
 
   Future<void> _init() async {
@@ -444,7 +432,7 @@ class LanSyncNotifier extends Notifier<LanSyncState> {
       await _wsServer?.stop();
       _wsServer = null;
 
-      state = const LanSyncState.initial();
+      state = LanSyncState.initial();
       PMlog.i(_tag, '🛑 LAN sync stopped');
     } finally {
       _startingOrStopping = false;

@@ -46,8 +46,8 @@ class SyncLogRepository {
             .findFirst();
 
         syncLog ??= SyncLog()
-            ..remoteIp = ip
-            ..createdTime = DateTime.now();
+          ..remoteIp = ip
+          ..createdTime = DateTime.now();
 
         syncLog
           ..remoteDeviceId = deviceId ?? syncLog.remoteDeviceId
@@ -77,8 +77,8 @@ class SyncLogRepository {
             .findFirst();
 
         syncLog ??= SyncLog()
-            ..remoteIp = ip
-            ..createdTime = DateTime.now();
+          ..remoteIp = ip
+          ..createdTime = DateTime.now();
 
         syncLog.syncStatus = SyncStatus.syncing.value;
         await _isar.syncLogs.put(syncLog);

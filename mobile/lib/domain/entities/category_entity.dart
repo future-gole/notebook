@@ -1,58 +1,26 @@
+import 'package:freezed_annotation/freezed_annotation.dart';
+
+part 'category_entity.freezed.dart';
+part 'category_entity.g.dart';
+
 /// 分类领域实体 - 不依赖任何具体数据库实现
-/// 
+///
 /// 这是纯净的业务对象，只包含业务逻辑需要的数据字段
-class CategoryEntity {
-  final int id;
+@freezed
+abstract class CategoryEntity with _$CategoryEntity {
+  const factory CategoryEntity({
+    @Default(1) int id,
 
-  /// 分类名称（唯一）
-  final String name;
+    /// 分类名称（唯一）
+    required String name,
 
-  /// 分类描述
-  final String? description;
-
-  /// 创建时间
-  final DateTime? createdTime;
-
-  const CategoryEntity({
-    this.id = 1,
-    required this.name,
-    this.description,
-    this.createdTime,
-  });
-
-  /// 复制并修改部分字段
-  CategoryEntity copyWith({
-    int? id,
-    String? name,
+    /// 分类描述
     String? description,
+
+    /// 创建时间
     DateTime? createdTime,
-  }) {
-    return CategoryEntity(
-      id: id ?? this.id,
-      name: name ?? this.name,
-      description: description ?? this.description,
-      createdTime: createdTime ?? this.createdTime,
-    );
-  }
+  }) = _CategoryEntity;
 
-  @override
-  String toString() {
-    return 'CategoryEntity(id: $id, name: $name, description: $description)';
-  }
-
-  @override
-  bool operator ==(Object other) {
-    if (identical(this, other)) return true;
-
-    return other is CategoryEntity &&
-        other.id == id &&
-        other.name == name &&
-        other.description == description &&
-        other.createdTime == createdTime;
-  }
-
-  @override
-  int get hashCode {
-    return Object.hash(id, name, description, createdTime);
-  }
+  factory CategoryEntity.fromJson(Map<String, dynamic> json) =>
+      _$CategoryEntityFromJson(json);
 }

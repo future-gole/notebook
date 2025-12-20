@@ -8,19 +8,16 @@ part of 'infrastructure_providers.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
-/// Isar 实例 Provider（基础设施层）
-/// 需要在 main.dart 中通过 overrideWithValue 提供实际的 Isar 实例
+/// Isar 实例 Provider
 
 @ProviderFor(isar)
 const isarProvider = IsarProvider._();
 
-/// Isar 实例 Provider（基础设施层）
-/// 需要在 main.dart 中通过 overrideWithValue 提供实际的 Isar 实例
+/// Isar 实例 Provider
 
 final class IsarProvider extends $FunctionalProvider<Isar, Isar, Isar>
     with $Provider<Isar> {
-  /// Isar 实例 Provider（基础设施层）
-  /// 需要在 main.dart 中通过 overrideWithValue 提供实际的 Isar 实例
+  /// Isar 实例 Provider
   const IsarProvider._()
     : super(
         from: null,

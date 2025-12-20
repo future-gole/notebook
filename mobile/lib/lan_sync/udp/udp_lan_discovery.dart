@@ -6,7 +6,7 @@ import '../model/lan_identity.dart';
 import '../../util/logger_service.dart';
 
 /// UDP 局域网发现服务
-/// 
+///
 /// 通过 UDP 广播在局域网内宣告本地设备的存在，并监听其他设备的宣告。
 class UdpLanDiscovery {
   static const String _tag = 'UdpLanDiscovery';
