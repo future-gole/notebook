@@ -64,10 +64,10 @@ class UdpLanDiscovery {
         if (remote == null) return;
 
         final remoteIp = datagram.address.address;
-        PMlog.d(
-          _tag,
-          '📥 收到来自 $remoteIp 的宣告 id=${remote.deviceId} port=${remote.wsPort}',
-        );
+        // PMlog.d(
+        //   _tag,
+        //   '📥 收到来自 $remoteIp 的宣告 id=${remote.deviceId} port=${remote.wsPort}',
+        // );
         onPeerAnnouncement?.call(remote, remoteIp);
       } catch (e) {
         // 忽略格式错误的包
@@ -126,7 +126,7 @@ class UdpLanDiscovery {
       }
     }
 
-    PMlog.d(_tag, '📤 已向 ${targets.length} 个目标发送宣告');
+    // PMlog.d(_tag, '📤 已向 ${targets.length} 个目标发送宣告');
   }
 
   /// 计算广播目标地址

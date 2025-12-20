@@ -67,7 +67,15 @@ class NoteOriginalDataSection extends StatelessWidget {
     if (isHttpsUrl && !isLocalImage) {
       isNetworkImage = true;
       if (previewImageUrl != null && previewImageUrl!.isNotEmpty) {
-        displayImages.add(previewImageUrl!);
+        if (UrlHelper.isLocalImagePath(previewImageUrl)) {
+          // 如果预览图是本地路径，转换为绝对路径
+          final fullPath = ImageStorageHelper()
+              .getFileByRelativePath(previewImageUrl!)
+              .path;
+          displayImages.add(fullPath);
+        } else {
+          displayImages.add(previewImageUrl!);
+        }
       }
     }
 

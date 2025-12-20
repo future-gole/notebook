@@ -68,10 +68,16 @@ class IsarCategoryRepository implements CategoryRepository {
       });
       PMlog.d(_tag, 'Default categories initialized successfully');
     } on IsarError catch (e, stackTrace) {
-      PMlog.e(_tag, 'Isar error while initializing categories: $e\n$stackTrace');
+      PMlog.e(
+        _tag,
+        'Isar error while initializing categories: $e\n$stackTrace',
+      );
       throw CategoryOperationFailure('initDefaultCategories', e);
     } catch (e, stackTrace) {
-      PMlog.e(_tag, 'Unexpected error while initializing categories: $e\n$stackTrace');
+      PMlog.e(
+        _tag,
+        'Unexpected error while initializing categories: $e\n$stackTrace',
+      );
       throw CategoryOperationFailure('initDefaultCategories', e);
     }
   }
@@ -89,7 +95,10 @@ class IsarCategoryRepository implements CategoryRepository {
       PMlog.e(_tag, 'Isar error while getting all categories: $e\n$stackTrace');
       throw CategoryOperationFailure('getAll', e);
     } catch (e, stackTrace) {
-      PMlog.e(_tag, 'Unexpected error while getting all categories: $e\n$stackTrace');
+      PMlog.e(
+        _tag,
+        'Unexpected error while getting all categories: $e\n$stackTrace',
+      );
       throw CategoryOperationFailure('getAll', e);
     }
   }
@@ -104,7 +113,10 @@ class IsarCategoryRepository implements CategoryRepository {
       PMlog.e(_tag, 'Isar error while getting category by id: $e\n$stackTrace');
       throw CategoryOperationFailure('getById($id)', e);
     } catch (e, stackTrace) {
-      PMlog.e(_tag, 'Unexpected error while getting category by id: $e\n$stackTrace');
+      PMlog.e(
+        _tag,
+        'Unexpected error while getting category by id: $e\n$stackTrace',
+      );
       throw CategoryOperationFailure('getById($id)', e);
     }
   }
@@ -119,10 +131,16 @@ class IsarCategoryRepository implements CategoryRepository {
           .findFirst();
       return category != null ? _toDomain(category) : null;
     } on IsarError catch (e, stackTrace) {
-      PMlog.e(_tag, 'Isar error while getting category by name: $e\n$stackTrace');
+      PMlog.e(
+        _tag,
+        'Isar error while getting category by name: $e\n$stackTrace',
+      );
       throw CategoryOperationFailure('getByName($name)', e);
     } catch (e, stackTrace) {
-      PMlog.e(_tag, 'Unexpected error while getting category by name: $e\n$stackTrace');
+      PMlog.e(
+        _tag,
+        'Unexpected error while getting category by name: $e\n$stackTrace',
+      );
       throw CategoryOperationFailure('getByName($name)', e);
     }
   }
@@ -177,7 +195,10 @@ class IsarCategoryRepository implements CategoryRepository {
       PMlog.e(_tag, 'Isar error while deleting category: $e\n$stackTrace');
       throw DeleteCategoryFailure(id, e);
     } catch (e, stackTrace) {
-      PMlog.e(_tag, 'Unexpected error while deleting category: $e\n$stackTrace');
+      PMlog.e(
+        _tag,
+        'Unexpected error while deleting category: $e\n$stackTrace',
+      );
       throw DeleteCategoryFailure(id, e);
     }
   }

@@ -39,10 +39,7 @@ class ErrorHandler {
   }
 
   /// 处理笔记操作成功并显示 Toast
-  static void showNoteSuccess(
-    BuildContext context, {
-    required String action,
-  }) {
+  static void showNoteSuccess(BuildContext context, {required String action}) {
     CreativeToast.success(
       context,
       title: '成功',

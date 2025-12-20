@@ -17,7 +17,8 @@ abstract class RepositoryFailure implements Exception {
   const RepositoryFailure(this.message, [this.originalException]);
 
   @override
-  String toString() => 'RepositoryFailure: $message'
+  String toString() =>
+      'RepositoryFailure: $message'
       '${originalException != null ? ' (原因: $originalException)' : ''}';
 }
 
@@ -33,10 +34,11 @@ class DeleteNoteFailure extends RepositoryFailure {
   final int noteId;
 
   const DeleteNoteFailure(this.noteId, [Object? cause])
-      : super('删除笔记失败', cause);
+    : super('删除笔记失败', cause);
 
   @override
-  String toString() => 'DeleteNoteFailure: 删除笔记 $noteId 失败'
+  String toString() =>
+      'DeleteNoteFailure: 删除笔记 $noteId 失败'
       '${originalException != null ? ' (原因: $originalException)' : ''}';
 }
 
@@ -53,7 +55,7 @@ class NoteNotFoundFailure extends RepositoryFailure {
 /// 查询笔记失败
 class QueryNoteFailure extends RepositoryFailure {
   const QueryNoteFailure(String operation, [Object? cause])
-      : super('查询笔记失败', cause);
+    : super('查询笔记失败', cause);
 }
 
 // ==================== 分类相关异常 ====================
@@ -63,10 +65,11 @@ class CategoryOperationFailure extends RepositoryFailure {
   final String operation;
 
   const CategoryOperationFailure(this.operation, [Object? cause])
-      : super('分类操作失败', cause);
+    : super('分类操作失败', cause);
 
   @override
-  String toString() => 'CategoryOperationFailure: $operation 失败'
+  String toString() =>
+      'CategoryOperationFailure: $operation 失败'
       '${originalException != null ? ' (原因: $originalException)' : ''}';
 }
 
@@ -80,10 +83,11 @@ class DeleteCategoryFailure extends RepositoryFailure {
   final int categoryId;
 
   const DeleteCategoryFailure(this.categoryId, [Object? cause])
-      : super('删除分类失败', cause);
+    : super('删除分类失败', cause);
 
   @override
-  String toString() => 'DeleteCategoryFailure: 删除分类 $categoryId 失败'
+  String toString() =>
+      'DeleteCategoryFailure: 删除分类 $categoryId 失败'
       '${originalException != null ? ' (原因: $originalException)' : ''}';
 }
 
@@ -101,12 +105,11 @@ class CategoryNotFoundFailure extends RepositoryFailure {
 
 /// 数据库连接失败
 class DatabaseConnectionFailure extends RepositoryFailure {
-  const DatabaseConnectionFailure([Object? cause])
-      : super('数据库连接失败', cause);
+  const DatabaseConnectionFailure([Object? cause]) : super('数据库连接失败', cause);
 }
 
 /// 数据库事务失败
 class DatabaseTransactionFailure extends RepositoryFailure {
   const DatabaseTransactionFailure(String operation, [Object? cause])
-      : super('数据库事务失败', cause);
+    : super('数据库事务失败', cause);
 }

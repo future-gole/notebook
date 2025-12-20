@@ -86,6 +86,13 @@ class NoteService {
       await _imageHelper.deleteImage(url);
     }
 
+    final previewUrl = note.previewImageUrl;
+    if (previewUrl != null &&
+        previewUrl.isNotEmpty &&
+        _isLocalImage(previewUrl)) {
+      await _imageHelper.deleteImage(previewUrl);
+    }
+
     // 2. 从数据库删除
     await _noteRepository.delete(note.id!);
     PMlog.d(noteServiceTag, 'Note deleted: ${note.id}');

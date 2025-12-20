@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -298,6 +299,20 @@ class _HeroGalleryState extends State<HeroGallery> {
             Container(color: Colors.grey[200], child: Icon(Icons.error)),
       );
     }
+    // 如果是绝对路径（包含盘符或以/开头），使用 Image.file
+    if (imageUrl.contains(':\\') ||
+        imageUrl.contains(':/') ||
+        imageUrl.startsWith('/')) {
+      return Image.file(
+        File(imageUrl),
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) => Container(
+          color: Colors.grey[200],
+          child: const Icon(Icons.broken_image_outlined),
+        ),
+      );
+    }
+    // 否则尝试作为 Asset 加载
     return Image.asset(imageUrl, fit: BoxFit.cover);
   }
 

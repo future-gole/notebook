@@ -6,7 +6,10 @@ import 'package:pocketmind/util/link_preview_config.dart';
 import 'package:pocketmind/api/link_preview_api_service.dart';
 import 'package:pocketmind/domain/entities/note_entity.dart';
 import 'package:pocketmind/providers/note_providers.dart';
+import 'package:pocketmind/providers/app_config_provider.dart';
 import 'package:pocketmind/util/theme_data.dart';
+import 'package:pocketmind/util/url_helper.dart';
+import 'package:pocketmind/util/image_storage_helper.dart';
 
 import '../../util/logger_service.dart';
 import 'source_info.dart';
@@ -16,7 +19,7 @@ import 'source_info.dart';
 /// - 如果没有，请求网络并保存到 Note
 final String tag = 'LinkPreviewCard';
 
-class LinkPreviewCard extends StatefulWidget {
+class LinkPreviewCard extends ConsumerStatefulWidget {
   final NoteEntity note;
   final bool isVertical;
   final bool hasContent;
@@ -39,12 +42,13 @@ class LinkPreviewCard extends StatefulWidget {
   String get url => note.url ?? '';
 
   @override
-  State<LinkPreviewCard> createState() => _LinkPreviewCardState();
+  ConsumerState<LinkPreviewCard> createState() => _LinkPreviewCardState();
 }
 
-class _LinkPreviewCardState extends State<LinkPreviewCard> {
+class _LinkPreviewCardState extends ConsumerState<LinkPreviewCard> {
   @override
   Widget build(BuildContext context) {
+    final titleEnabled = ref.watch(appConfigProvider).titleEnabled;
     // 智能选择：国外网站用API，国内网站用any_link_preview
     final useApi = LinkPreviewConfig.shouldUseApiService(widget.url);
 
@@ -62,6 +66,7 @@ class _LinkPreviewCardState extends State<LinkPreviewCard> {
         isDesktop: widget.isDesktop,
         publishDate: widget.publishDate,
         isHovered: widget.isHovered,
+        titleEnabled: titleEnabled,
       );
     } else if (useApi) {
       // 国外网站：使用 API 方案
@@ -73,6 +78,7 @@ class _LinkPreviewCardState extends State<LinkPreviewCard> {
         isDesktop: widget.isDesktop,
         publishDate: widget.publishDate,
         isHovered: widget.isHovered,
+        titleEnabled: titleEnabled,
       );
     } else {
       // 国内网站：直接使用 any_link_preview
@@ -84,6 +90,7 @@ class _LinkPreviewCardState extends State<LinkPreviewCard> {
         isDesktop: widget.isDesktop,
         publishDate: widget.publishDate,
         isHovered: widget.isHovered,
+        titleEnabled: titleEnabled,
       );
     }
   }
@@ -98,6 +105,7 @@ class _CachedLinkPreview extends StatelessWidget {
   final bool isDesktop;
   final String? publishDate;
   final bool isHovered;
+  final bool titleEnabled;
 
   const _CachedLinkPreview({
     required this.note,
@@ -107,6 +115,7 @@ class _CachedLinkPreview extends StatelessWidget {
     this.isDesktop = false,
     this.publishDate,
     this.isHovered = false,
+    required this.titleEnabled,
   });
 
   @override
@@ -118,28 +127,37 @@ class _CachedLinkPreview extends StatelessWidget {
     metadata.url = note.url;
 
     final imageUrl = note.previewImageUrl;
+    ImageProvider? imageProvider;
+
+    if (imageUrl != null && imageUrl.isNotEmpty) {
+      if (UrlHelper.isLocalImagePath(imageUrl)) {
+        imageProvider = FileImage(
+          ImageStorageHelper().getFileByRelativePath(imageUrl),
+        );
+      } else {
+        imageProvider = NetworkImage(imageUrl);
+      }
+    }
 
     return isVertical
         ? _VerticalPreviewCard(
             url: note.url ?? '',
             metadata: metadata,
-            imageProvider: imageUrl != null && imageUrl.isNotEmpty
-                ? NetworkImage(imageUrl)
-                : null,
+            imageProvider: imageProvider,
             hasContent: hasContent,
             onTap: onTap,
             isDesktop: isDesktop,
             publishDate: publishDate,
             isHovered: isHovered,
+            titleEnabled: titleEnabled,
           )
         : _HorizontalPreviewCard(
             url: note.url ?? '',
             metadata: metadata,
-            imageProvider: imageUrl != null && imageUrl.isNotEmpty
-                ? NetworkImage(imageUrl)
-                : null,
+            imageProvider: imageProvider,
             onTap: onTap,
             publishDate: publishDate,
+            titleEnabled: titleEnabled,
           );
   }
 }
@@ -153,6 +171,7 @@ class _NativeLinkPreview extends ConsumerStatefulWidget {
   final bool isDesktop;
   final String? publishDate;
   final bool isHovered;
+  final bool titleEnabled;
 
   const _NativeLinkPreview({
     required this.note,
@@ -162,6 +181,7 @@ class _NativeLinkPreview extends ConsumerStatefulWidget {
     this.isDesktop = false,
     this.publishDate,
     this.isHovered = false,
+    required this.titleEnabled,
   });
 
   @override
@@ -187,6 +207,7 @@ class _NativeLinkPreviewState extends ConsumerState<_NativeLinkPreview> {
                 isDesktop: widget.isDesktop,
                 publishDate: widget.publishDate,
                 isHovered: widget.isHovered,
+                titleEnabled: widget.titleEnabled,
               )
             : _HorizontalPreviewCard(
                 url: widget.note.url ?? '',
@@ -194,6 +215,7 @@ class _NativeLinkPreviewState extends ConsumerState<_NativeLinkPreview> {
                 imageProvider: imageProvider,
                 onTap: widget.onTap,
                 publishDate: widget.publishDate,
+                titleEnabled: widget.titleEnabled,
               );
       },
       placeholderWidget: widget.isVertical
@@ -221,6 +243,13 @@ class _NativeLinkPreviewState extends ConsumerState<_NativeLinkPreview> {
     final noteId = widget.note.id;
     if (noteId == null) return;
 
+    // 验证数据有效性：至少要有标题或者图片
+    if ((metadata.title == null || metadata.title!.isEmpty) &&
+        (metadata.image == null || metadata.image!.isEmpty)) {
+      PMlog.w(tag, '预览数据不完整，跳过保存');
+      return;
+    }
+
     // 只保存一次
     if (widget.note.previewImageUrl != null ||
         widget.note.previewTitle != null) {
@@ -230,10 +259,22 @@ class _NativeLinkPreviewState extends ConsumerState<_NativeLinkPreview> {
     // 异步保存，不阻塞 UI
     Future.microtask(() async {
       try {
+        String? finalImageUrl = metadata.image;
+
+        // 尝试本地化图片
+        if (finalImageUrl != null && finalImageUrl.startsWith('http')) {
+          final localPath = await ImageStorageHelper().downloadAndSaveImage(
+            finalImageUrl,
+          );
+          if (localPath != null) {
+            finalImageUrl = localPath;
+          }
+        }
+
         final noteService = ref.read(noteServiceProvider);
         await noteService.updatePreviewData(
           noteId: noteId,
-          previewImageUrl: metadata.image,
+          previewImageUrl: finalImageUrl,
           previewTitle: metadata.title,
           previewDescription: metadata.desc,
         );
@@ -257,6 +298,7 @@ class _ApiLinkPreview extends ConsumerStatefulWidget {
   final bool isDesktop;
   final String? publishDate;
   final bool isHovered;
+  final bool titleEnabled;
 
   const _ApiLinkPreview({
     required this.note,
@@ -266,6 +308,7 @@ class _ApiLinkPreview extends ConsumerStatefulWidget {
     this.isDesktop = false,
     this.publishDate,
     this.isHovered = false,
+    required this.titleEnabled,
   });
 
   @override
@@ -341,12 +384,32 @@ class _ApiLinkPreviewState extends ConsumerState<_ApiLinkPreview> {
     final noteId = widget.note.id;
     if (noteId == null) return;
 
+    // 验证数据有效性：至少要有标题或者图片
+    if ((metadata['title'] == null || metadata['title'].toString().isEmpty) &&
+        (metadata['imageUrl'] == null ||
+            metadata['imageUrl'].toString().isEmpty)) {
+      PMlog.w(tag, 'API 预览数据不完整，跳过保存');
+      return;
+    }
+
     Future.microtask(() async {
       try {
+        String? finalImageUrl = metadata['imageUrl'];
+
+        // 尝试本地化图片
+        if (finalImageUrl != null && finalImageUrl.startsWith('http')) {
+          final localPath = await ImageStorageHelper().downloadAndSaveImage(
+            finalImageUrl,
+          );
+          if (localPath != null) {
+            finalImageUrl = localPath;
+          }
+        }
+
         final noteService = ref.read(noteServiceProvider);
         await noteService.updatePreviewData(
           noteId: noteId,
-          previewImageUrl: metadata['imageUrl'],
+          previewImageUrl: finalImageUrl,
           previewTitle: metadata['title'],
           previewDescription: metadata['description'],
         );
@@ -375,33 +438,42 @@ class _ApiLinkPreviewState extends ConsumerState<_ApiLinkPreview> {
 
     // 创建 Metadata 对象用于显示
     final metadata = Metadata();
-    metadata.title = _metadata!['title'];
+    metadata.title = _metadata!['title'] ?? 'No Title';
     metadata.desc = _metadata!['description'];
     metadata.image = _metadata!['imageUrl'];
     metadata.url = _metadata!['url'];
 
     final imageUrl = _metadata!['imageUrl'] as String?;
+    ImageProvider? imageProvider;
+
+    if (imageUrl != null && imageUrl.isNotEmpty) {
+      if (UrlHelper.isLocalImagePath(imageUrl)) {
+        imageProvider = FileImage(
+          ImageStorageHelper().getFileByRelativePath(imageUrl),
+        );
+      } else {
+        imageProvider = NetworkImage(imageUrl);
+      }
+    }
 
     return widget.isVertical
         ? _VerticalPreviewCard(
             url: url,
             metadata: metadata,
-            imageProvider: imageUrl != null && imageUrl.isNotEmpty
-                ? NetworkImage(imageUrl)
-                : null,
+            imageProvider: imageProvider,
             hasContent: widget.hasContent,
             onTap: widget.onTap,
             isDesktop: widget.isDesktop,
             publishDate: widget.publishDate,
             isHovered: widget.isHovered,
+            titleEnabled: widget.titleEnabled,
           )
         : _HorizontalPreviewCard(
             url: url,
             metadata: metadata,
-            imageProvider: imageUrl != null && imageUrl.isNotEmpty
-                ? NetworkImage(imageUrl)
-                : null,
+            imageProvider: imageProvider,
             onTap: widget.onTap,
+            titleEnabled: widget.titleEnabled,
           );
   }
 }
@@ -469,6 +541,7 @@ class _VerticalPreviewCard extends StatelessWidget {
   final bool isDesktop;
   final String? publishDate;
   final bool isHovered;
+  final bool titleEnabled;
 
   const _VerticalPreviewCard({
     required this.url,
@@ -479,6 +552,7 @@ class _VerticalPreviewCard extends StatelessWidget {
     this.isDesktop = false,
     this.publishDate,
     this.isHovered = false,
+    required this.titleEnabled,
   });
 
   @override
@@ -517,6 +591,7 @@ class _VerticalPreviewCard extends StatelessWidget {
             isDesktop: isDesktop,
             publishDate: publishDate,
             isHovered: isHovered,
+            titleEnabled: titleEnabled,
           ),
         ],
       ),
@@ -530,6 +605,7 @@ class _HorizontalPreviewCard extends StatelessWidget {
   final ImageProvider? imageProvider;
   final VoidCallback onTap;
   final String? publishDate;
+  final bool titleEnabled;
 
   const _HorizontalPreviewCard({
     required this.url,
@@ -537,6 +613,7 @@ class _HorizontalPreviewCard extends StatelessWidget {
     this.imageProvider,
     required this.onTap,
     this.publishDate,
+    required this.titleEnabled,
   });
 
   @override
@@ -551,6 +628,7 @@ class _HorizontalPreviewCard extends StatelessWidget {
           _HorizontalContentSection(
             metadata: metadata,
             publishData: publishDate,
+            titleEnabled: titleEnabled,
           ),
         ],
       ),
@@ -677,10 +755,7 @@ class _VerticalErrorCard extends StatelessWidget {
   final String url;
   final bool hasContent;
 
-  const _VerticalErrorCard({
-    required this.url,
-    required this.hasContent,
-  });
+  const _VerticalErrorCard({required this.url, required this.hasContent});
 
   @override
   Widget build(BuildContext context) {
@@ -837,6 +912,7 @@ class _VerticalContentSection extends StatelessWidget {
   final bool isDesktop;
   final String? publishDate;
   final bool isHovered;
+  final bool titleEnabled;
 
   const _VerticalContentSection({
     required this.metadata,
@@ -844,6 +920,7 @@ class _VerticalContentSection extends StatelessWidget {
     this.isDesktop = false,
     this.publishDate,
     this.isHovered = false,
+    required this.titleEnabled,
   });
 
   @override
@@ -921,10 +998,12 @@ class _VerticalContentSection extends StatelessWidget {
 class _HorizontalContentSection extends StatelessWidget {
   final Metadata metadata;
   final String? publishData;
+  final bool titleEnabled;
 
   const _HorizontalContentSection({
     required this.metadata,
     this.publishData,
+    required this.titleEnabled,
   });
 
   @override

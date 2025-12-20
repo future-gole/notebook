@@ -18,7 +18,7 @@ import 'package:pocketmind/util/theme_data.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pocketmind/util/url_helper.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import '../../util/logger_service.dart';
+import 'util/logger_service.dart';
 import 'package:flutter_uri_to_file/flutter_uri_to_file.dart';
 
 late Isar isar; // 这个 Isar 实例专用于分享引擎

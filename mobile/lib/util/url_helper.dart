@@ -65,8 +65,9 @@ class UrlHelper {
   /// 检测是否为本地图片路径（pocket_images目录下的相对路径）
   static bool isLocalImagePath(String? text) {
     if (text == null || text.isEmpty) return false;
-    // 检测是否以 pocket_images/ 开头
-    return text.startsWith('pocket_images/');
+    // 统一使用正斜杠进行检测，确保跨平台兼容性
+    final normalized = text.replaceAll('\\', '/');
+    return normalized.startsWith('pocket_images/');
   }
 
   /// 检测是否为本地图片或HTTP链接

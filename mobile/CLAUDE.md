@@ -71,6 +71,12 @@ Uses **Riverpod 3.0** with code generation:
 - Feature providers use `Notifier` pattern for complex state
 - Run `dart run build_runner build` to generate provider code
 
+### Network & HTTP
+
+- **Rule**: NEVER use `Dio` directly in business logic or utility classes.
+- **HttpClient**: Always use the encapsulated `HttpClient` from `package:pocketmind/api/http_client.dart`.
+- **Usage**: Access the Dio instance via `HttpClient().dio`.
+
 ### Database
 
 **Isar Community Edition** (NoSQL embedded database):

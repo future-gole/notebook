@@ -6,6 +6,7 @@ import 'package:pocketmind/providers/note_providers.dart';
 import 'package:pocketmind/util/url_helper.dart';
 import 'package:any_link_preview/any_link_preview.dart';
 import 'package:pocketmind/util/logger_service.dart';
+import 'package:pocketmind/util/image_storage_helper.dart';
 
 part 'note_detail_provider.freezed.dart';
 part 'note_detail_provider.g.dart';
@@ -151,8 +152,28 @@ class NoteDetail extends _$NoteDetail {
       );
 
       if (data != null) {
+        // 验证数据有效性：至少要有标题或者图片
+        if ((data.title == null || data.title!.isEmpty) &&
+            (data.image == null || data.image!.isEmpty)) {
+          PMlog.w(_tag, '预览数据不完整，跳过保存');
+          state = state.copyWith(isLoadingPreview: false);
+          return;
+        }
+
+        String? finalImageUrl = data.image;
+
+        // 如果有网络图片，尝试本地化
+        if (finalImageUrl != null && finalImageUrl.startsWith('http')) {
+          final localPath = await ImageStorageHelper().downloadAndSaveImage(
+            finalImageUrl,
+          );
+          if (localPath != null) {
+            finalImageUrl = localPath;
+          }
+        }
+
         final updatedNote = state.note.copyWith(
-          previewImageUrl: data.image,
+          previewImageUrl: finalImageUrl,
           previewTitle: data.title,
           previewDescription: data.desc,
         );
@@ -164,7 +185,7 @@ class NoteDetail extends _$NoteDetail {
             .read(noteServiceProvider)
             .updatePreviewData(
               noteId: state.note.id!,
-              previewImageUrl: data.image,
+              previewImageUrl: finalImageUrl,
               previewTitle: data.title,
               previewDescription: data.desc,
             );

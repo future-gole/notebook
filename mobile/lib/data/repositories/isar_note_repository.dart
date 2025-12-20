@@ -132,6 +132,22 @@ class IsarNoteRepository implements NoteRepository {
             }
           }
 
+          // 删除预览图片文件（如果有且是本地的）
+          if (note.previewImageUrl != null &&
+              note.previewImageUrl!.startsWith(
+                AppConstants.localImagePathPrefix,
+              )) {
+            try {
+              await ImageStorageHelper().deleteImage(note.previewImageUrl!);
+              PMlog.d(_tag, 'Deleted preview image: ${note.previewImageUrl}');
+            } catch (e) {
+              PMlog.w(
+                _tag,
+                'Failed to delete preview image ${note.previewImageUrl}: $e',
+              );
+            }
+          }
+
           note.isDeleted = true;
           note.updatedAt = DateTime.now().millisecondsSinceEpoch;
           await _isar.notes.put(note);
@@ -174,10 +190,16 @@ class IsarNoteRepository implements NoteRepository {
         PMlog.d(_tag, '成功软删除了 ${notes.length} 条 categoryId为 $categoryId 的笔记');
       });
     } on IsarError catch (e, stackTrace) {
-      PMlog.e(_tag, 'Isar error while deleting notes by category: $e\n$stackTrace');
+      PMlog.e(
+        _tag,
+        'Isar error while deleting notes by category: $e\n$stackTrace',
+      );
       throw DeleteNoteFailure(categoryId, e);
     } catch (e, stackTrace) {
-      PMlog.e(_tag, 'Unexpected error while deleting notes by category: $e\n$stackTrace');
+      PMlog.e(
+        _tag,
+        'Unexpected error while deleting notes by category: $e\n$stackTrace',
+      );
       throw DeleteNoteFailure(categoryId, e);
     }
   }
@@ -193,7 +215,10 @@ class IsarNoteRepository implements NoteRepository {
       PMlog.e(_tag, 'Isar error while getting note by id: $e\n$stackTrace');
       throw QueryNoteFailure('getById($id)', e);
     } catch (e, stackTrace) {
-      PMlog.e(_tag, 'Unexpected error while getting note by id: $e\n$stackTrace');
+      PMlog.e(
+        _tag,
+        'Unexpected error while getting note by id: $e\n$stackTrace',
+      );
       throw QueryNoteFailure('getById($id)', e);
     }
   }
@@ -211,7 +236,10 @@ class IsarNoteRepository implements NoteRepository {
       PMlog.e(_tag, 'Isar error while getting all notes: $e\n$stackTrace');
       throw QueryNoteFailure('getAll()', e);
     } catch (e, stackTrace) {
-      PMlog.e(_tag, 'Unexpected error while getting all notes: $e\n$stackTrace');
+      PMlog.e(
+        _tag,
+        'Unexpected error while getting all notes: $e\n$stackTrace',
+      );
       throw QueryNoteFailure('getAll()', e);
     }
   }
@@ -255,7 +283,10 @@ class IsarNoteRepository implements NoteRepository {
       PMlog.e(_tag, 'Isar error while finding notes by title: $e\n$stackTrace');
       throw QueryNoteFailure('findByTitle($query)', e);
     } catch (e, stackTrace) {
-      PMlog.e(_tag, 'Unexpected error while finding notes by title: $e\n$stackTrace');
+      PMlog.e(
+        _tag,
+        'Unexpected error while finding notes by title: $e\n$stackTrace',
+      );
       throw QueryNoteFailure('findByTitle($query)', e);
     }
   }
@@ -271,10 +302,16 @@ class IsarNoteRepository implements NoteRepository {
           .findAll();
       return _toDomainList(notes);
     } on IsarError catch (e, stackTrace) {
-      PMlog.e(_tag, 'Isar error while finding notes by content: $e\n$stackTrace');
+      PMlog.e(
+        _tag,
+        'Isar error while finding notes by content: $e\n$stackTrace',
+      );
       throw QueryNoteFailure('findByContent($query)', e);
     } catch (e, stackTrace) {
-      PMlog.e(_tag, 'Unexpected error while finding notes by content: $e\n$stackTrace');
+      PMlog.e(
+        _tag,
+        'Unexpected error while finding notes by content: $e\n$stackTrace',
+      );
       throw QueryNoteFailure('findByContent($query)', e);
     }
   }
@@ -295,10 +332,16 @@ class IsarNoteRepository implements NoteRepository {
           .findAll();
       return _toDomainList(notes);
     } on IsarError catch (e, stackTrace) {
-      PMlog.e(_tag, 'Isar error while finding notes by category: $e\n$stackTrace');
+      PMlog.e(
+        _tag,
+        'Isar error while finding notes by category: $e\n$stackTrace',
+      );
       throw QueryNoteFailure('findByCategoryId($categoryId)', e);
     } catch (e, stackTrace) {
-      PMlog.e(_tag, 'Unexpected error while finding notes by category: $e\n$stackTrace');
+      PMlog.e(
+        _tag,
+        'Unexpected error while finding notes by category: $e\n$stackTrace',
+      );
       throw QueryNoteFailure('findByCategoryId($categoryId)', e);
     }
   }
@@ -317,7 +360,10 @@ class IsarNoteRepository implements NoteRepository {
       PMlog.e(_tag, 'Isar error while finding notes by tag: $e\n$stackTrace');
       throw QueryNoteFailure('findByTag($query)', e);
     } catch (e, stackTrace) {
-      PMlog.e(_tag, 'Unexpected error while finding notes by tag: $e\n$stackTrace');
+      PMlog.e(
+        _tag,
+        'Unexpected error while finding notes by tag: $e\n$stackTrace',
+      );
       throw QueryNoteFailure('findByTag($query)', e);
     }
   }
@@ -350,7 +396,10 @@ class IsarNoteRepository implements NoteRepository {
       PMlog.e(_tag, 'Isar error while finding notes by query: $e\n$stackTrace');
       throw QueryNoteFailure('findByQuery($query)', e);
     } catch (e, stackTrace) {
-      PMlog.e(_tag, 'Unexpected error while finding notes by query: $e\n$stackTrace');
+      PMlog.e(
+        _tag,
+        'Unexpected error while finding notes by query: $e\n$stackTrace',
+      );
       throw QueryNoteFailure('findByQuery($query)', e);
     }
   }
