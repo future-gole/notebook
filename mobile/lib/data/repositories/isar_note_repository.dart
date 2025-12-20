@@ -6,7 +6,6 @@ import '../../domain/repositories/note_repository.dart';
 import '../../model/note.dart';
 import '../../model/category.dart';
 import '../../util/logger_service.dart';
-import '../mappers/note_mapper.dart';
 import '../../util/image_storage_helper.dart';
 
 /// Isar 数据库的笔记仓库实现
@@ -19,6 +18,48 @@ class IsarNoteRepository implements NoteRepository {
 
   IsarNoteRepository(this._isar);
 
+  /// 将 NoteEntity 转换为 Isar Note 模型
+  Note _toModel(NoteEntity entity) {
+    final note = Note()
+      ..title = entity.title
+      ..content = entity.content
+      ..url = entity.url
+      ..time = entity.time
+      ..categoryId = entity.categoryId
+      ..tag = entity.tag
+      ..previewImageUrl = entity.previewImageUrl
+      ..previewTitle = entity.previewTitle
+      ..previewDescription = entity.previewDescription;
+
+    // 如果实体有ID，说明是更新操作，设置ID
+    if (entity.id != null) {
+      note.id = entity.id!;
+    }
+
+    return note;
+  }
+
+  /// 将 Isar Note 模型转换为 NoteEntity
+  NoteEntity _toDomain(Note note) {
+    return NoteEntity(
+      id: note.id,
+      title: note.title,
+      content: note.content,
+      url: note.url,
+      time: note.time,
+      categoryId: note.categoryId,
+      tag: note.tag,
+      previewImageUrl: note.previewImageUrl,
+      previewTitle: note.previewTitle,
+      previewDescription: note.previewDescription,
+    );
+  }
+
+  /// 批量转换为领域实体列表
+  List<NoteEntity> _toDomainList(List<Note> notes) {
+    return notes.map(_toDomain).toList();
+  }
+
   @override
   Future<int> save(NoteEntity note) async {
     PMlog.d(
@@ -30,7 +71,7 @@ class IsarNoteRepository implements NoteRepository {
       int resultId = -1;
 
       // 转换为 Isar 模型
-      final isarNote = note.toModel();
+      final isarNote = _toModel(note);
 
       // 如果没有设置时间，使用当前时间
       isarNote.time ??= DateTime.now();
@@ -136,7 +177,7 @@ class IsarNoteRepository implements NoteRepository {
       final note = await _isar.notes.get(id);
       // 过滤已删除的记录
       if (note == null || note.isDeleted) return null;
-      return note.toDomain();
+      return _toDomain(note);
     } catch (e) {
       PMlog.e(_tag, 'Failed to get note by id: $e');
       return null;
@@ -151,7 +192,7 @@ class IsarNoteRepository implements NoteRepository {
           .isDeletedEqualTo(false)
           .sortByTimeDesc()
           .findAll();
-      return notes.toDomainList();
+      return _toDomainList(notes);
     } catch (e) {
       PMlog.e(_tag, 'Failed to get all notes: $e');
       return [];
@@ -165,7 +206,7 @@ class IsarNoteRepository implements NoteRepository {
         .isDeletedEqualTo(false)
         .sortByTimeDesc() // 添加排序（最新的在前）
         .watch(fireImmediately: true)
-        .map((notes) => notes.toDomainList());
+        .map(_toDomainList);
   }
 
   @override
@@ -180,7 +221,7 @@ class IsarNoteRepository implements NoteRepository {
     return query
         .sortByTimeDesc()
         .watch(fireImmediately: true)
-        .map((notes) => notes.toDomainList());
+        .map(_toDomainList);
   }
 
   @override
@@ -192,7 +233,7 @@ class IsarNoteRepository implements NoteRepository {
           .titleContains(query, caseSensitive: false)
           .sortByTimeDesc() // 添加排序（最新的在前）
           .findAll();
-      return notes.toDomainList();
+      return _toDomainList(notes);
     } catch (e) {
       PMlog.e(_tag, 'Failed to find notes by title: $e');
       return [];
@@ -208,7 +249,7 @@ class IsarNoteRepository implements NoteRepository {
           .contentContains(query, caseSensitive: false)
           .sortByTimeDesc() // 添加排序（最新的在前）
           .findAll();
-      return notes.toDomainList();
+      return _toDomainList(notes);
     } catch (e) {
       PMlog.e(_tag, 'Failed to find notes by content: $e');
       return [];
@@ -229,7 +270,7 @@ class IsarNoteRepository implements NoteRepository {
           .categoryIdEqualTo(categoryId)
           .sortByTimeDesc()
           .findAll();
-      return notes.toDomainList();
+      return _toDomainList(notes);
     } catch (e) {
       PMlog.e(_tag, 'Failed to find notes by category: $e');
       return [];
@@ -245,7 +286,7 @@ class IsarNoteRepository implements NoteRepository {
           .tagContains(query, caseSensitive: false)
           .sortByTimeDesc() // 添加排序（最新的在前）
           .findAll();
-      return notes.toDomainList();
+      return _toDomainList(notes);
     } catch (e) {
       PMlog.e(_tag, 'Failed to find notes by tag: $e');
       return [];
@@ -261,7 +302,7 @@ class IsarNoteRepository implements NoteRepository {
             .isDeletedEqualTo(false)
             .sortByTimeDesc()
             .watch(fireImmediately: true)
-            .map((notes) => notes.toDomainList());
+            .map(_toDomainList);
       }
       return _isar.notes
           .filter()
@@ -275,7 +316,7 @@ class IsarNoteRepository implements NoteRepository {
           )
           .sortByTimeDesc()
           .watch(fireImmediately: true)
-          .map((notes) => notes.toDomainList());
+          .map(_toDomainList);
     } catch (e) {
       PMlog.e(_tag, 'Failed to find notes by query: $e');
       return Stream.value([]);
