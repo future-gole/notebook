@@ -67,8 +67,8 @@ class HttpClient {
     return HttpException(_handleError(err), err.response?.statusCode);
   }
 
-  /// GET 请求(返回 Future<T>)
-  /// 
+  /// GET 请求(返回 `Future<T>`)
+  ///
   /// [path] 请求路径
   /// [queryParameters] 查询参数
   /// [options] 请求选项
@@ -99,8 +99,8 @@ class HttpClient {
     }
   }
 
-  /// POST 请求 (返回 Future<T>)
-  /// 
+  /// POST 请求 (返回 `Future<T>`)
+  ///
   /// [path] 请求路径
   /// [data] 请求体数据
   /// [queryParameters] 查询参数
@@ -282,7 +282,7 @@ class HttpClient {
 }
 
 /// 智能响应转换拦截器
-/// 这个拦截器会自动检测是否是 我们自己 的后端 API 响应 (ApiResponse<T>)
+/// 这个拦截器会自动检测是否是 我们自己 的后端 API 响应 (`ApiResponse<T>`)
 /// 如果是，它会：
 /// 1. 成功 (code == 200): 自动解包，只返回 `data` 部分。
 /// 2. 失败 (code != 200): 抛出一个 `HttpException`，包含来自 API 的 `message`。

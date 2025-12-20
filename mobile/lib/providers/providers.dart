@@ -1,9 +1,12 @@
 /// 统一导出所有 Providers
 ///
 /// 使用方式：
+/// ```dart
 /// import 'package:pocketmind/providers/providers.dart';
+/// ```
 ///
 /// 这样可以一次性导入所有常用的 providers
+library;
 
 // Infrastructure Providers
 export 'infrastructure_providers.dart';

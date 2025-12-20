@@ -21,7 +21,13 @@ linter:
   # `// ignore_for_file: name_of_lint` syntax on the line or in the file
   # producing the lint.
   rules:
-     prefer_single_quotes: true  # Uncomment to enable the `prefer_single_quotes` rule
+    prefer_single_quotes: true  # 强制使用单引号
+    # 额外的推荐规则
+    always_declare_return_types: true  # 总是声明返回类型
+    avoid_print: true  # 避免使用 print
+    prefer_final_fields: true  # 优先使用 final 字段
+    unnecessary_this: true  # 避免不必要的 this
+
 analyzer:
   errors:
     # 将所有 info 和 warning 都视为 error，强制修复
@@ -30,6 +36,8 @@ analyzer:
     # 针对特定规则升级为 error
     avoid_print: error # 禁止使用 print，必须用 log
     prefer_single_quotes: error # 强制单引号
+    # 忽略 PMlog 的命名警告（这是故意的设计）
+    non_constant_identifier_names: ignore
 
   # 或者使用 exclude 排除不想检查的文件（如生成代码）
   exclude:

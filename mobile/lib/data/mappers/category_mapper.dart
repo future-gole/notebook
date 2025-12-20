@@ -1,37 +1,48 @@
 import '../../domain/entities/category_entity.dart';
 import '../../model/category.dart';
 
-/// Category 与 CategoryEntity 之间的映射器
-/// 
+/// Category 与 CategoryEntity 之间的映射扩展
+///
 /// 负责在数据库特定模型（Isar）和纯净领域实体之间转换
-class CategoryMapper {
+
+/// Category 模型的扩展方法
+extension CategoryX on Category {
   /// 将 Isar Category 模型转换为领域实体
-  static CategoryEntity toDomain(Category category) {
+  CategoryEntity toDomain() {
     return CategoryEntity(
-      id: category.id,
-      name: category.name,
-      description: category.description,
-      createdTime: category.createdTime,
+      id: id,
+      name: name,
+      description: description,
+      createdTime: createdTime,
     );
   }
+}
 
+/// CategoryEntity 领域实体的扩展方法
+extension CategoryEntityX on CategoryEntity {
   /// 将领域实体转换为 Isar Category 模型
-  static Category fromDomain(CategoryEntity entity) {
+  Category toModel() {
     final category = Category()
-      ..name = entity.name
-      ..description = entity.description
-      ..createdTime = entity.createdTime;
+      ..name = name
+      ..description = description
+      ..createdTime = createdTime;
 
     return category;
   }
+}
 
+/// Category 列表的扩展方法
+extension CategoryListX on List<Category> {
   /// 批量转换为领域实体列表
-  static List<CategoryEntity> toDomainList(List<Category> categories) {
-    return categories.map((category) => toDomain(category)).toList();
+  List<CategoryEntity> toDomainList() {
+    return map((category) => category.toDomain()).toList();
   }
+}
 
+/// CategoryEntity 列表的扩展方法
+extension CategoryEntityListX on List<CategoryEntity> {
   /// 批量转换为 Isar 模型列表
-  static List<Category> fromDomainList(List<CategoryEntity> entities) {
-    return entities.map((entity) => fromDomain(entity)).toList();
+  List<Category> toModelList() {
+    return map((entity) => entity.toModel()).toList();
   }
 }
