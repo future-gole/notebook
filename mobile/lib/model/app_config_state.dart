@@ -1,4 +1,8 @@
-import 'package:flutter/foundation.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:pocketmind/core/constants.dart';
+
+part 'app_config_state.freezed.dart';
+part 'app_config_state.g.dart';
 
 /// 环境枚举
 enum Environment {
@@ -13,68 +17,28 @@ enum Environment {
 }
 
 /// AppConfig 状态类
-@immutable
-class AppConfigState {
-  final bool proxyEnabled;
-  final String proxyHost;
-  final int proxyPort;
-  final int metaCacheTime;
-  final bool titleEnabled;
-  final bool waterfallLayoutEnabled;
-  final bool syncAutoStart;
-  final List<Map<String, String>> reminderShortcuts;
-  final bool highPrecisionNotification;
-  final int notificationIntensity;
-  final String linkPreviewApiKey;
-  final Environment environment;
+@freezed
+abstract class AppConfigState with _$AppConfigState {
+  const AppConfigState._();
 
-  const AppConfigState({
-    this.proxyEnabled = false,
-    this.proxyHost = '127.0.0.1',
-    this.proxyPort = 7890,
-    this.metaCacheTime = 10,
-    this.titleEnabled = false,
-    this.waterfallLayoutEnabled = true,
-    this.syncAutoStart = false,
-    this.reminderShortcuts = const [],
-    this.highPrecisionNotification = false,
-    this.notificationIntensity = 2,
-    this.linkPreviewApiKey = '',
-    this.environment = Environment.development,
-  });
+  const factory AppConfigState({
+    @Default(false) bool proxyEnabled,
+    @Default(AppConstants.defaultProxyHost) String proxyHost,
+    @Default(AppConstants.defaultProxyPort) int proxyPort,
+    @Default(AppConstants.defaultMetaCacheTimeDays) int metaCacheTime,
+    @Default(false) bool titleEnabled,
+    @Default(true) bool waterfallLayoutEnabled,
+    @Default(false) bool syncAutoStart,
+    @Default([]) List<Map<String, String>> reminderShortcuts,
+    @Default(false) bool highPrecisionNotification,
+    @Default(AppConstants.defaultNotificationIntensity) int notificationIntensity,
+    @Default('') String linkPreviewApiKey,
+    @Default(Environment.development) Environment environment,
+  }) = _AppConfigState;
 
-  AppConfigState copyWith({
-    bool? proxyEnabled,
-    String? proxyHost,
-    int? proxyPort,
-    int? metaCacheTime,
-    bool? titleEnabled,
-    bool? waterfallLayoutEnabled,
-    bool? syncAutoStart,
-    List<Map<String, String>>? reminderShortcuts,
-    bool? highPrecisionNotification,
-    int? notificationIntensity,
-    String? linkPreviewApiKey,
-    Environment? environment,
-  }) {
-    return AppConfigState(
-      proxyEnabled: proxyEnabled ?? this.proxyEnabled,
-      proxyHost: proxyHost ?? this.proxyHost,
-      proxyPort: proxyPort ?? this.proxyPort,
-      metaCacheTime: metaCacheTime ?? this.metaCacheTime,
-      titleEnabled: titleEnabled ?? this.titleEnabled,
-      waterfallLayoutEnabled:
-          waterfallLayoutEnabled ?? this.waterfallLayoutEnabled,
-      syncAutoStart: syncAutoStart ?? this.syncAutoStart,
-      reminderShortcuts: reminderShortcuts ?? this.reminderShortcuts,
-      highPrecisionNotification:
-          highPrecisionNotification ?? this.highPrecisionNotification,
-      notificationIntensity:
-          notificationIntensity ?? this.notificationIntensity,
-      linkPreviewApiKey: linkPreviewApiKey ?? this.linkPreviewApiKey,
-      environment: environment ?? this.environment,
-    );
-  }
+  /// 从 JSON 创建实例
+  factory AppConfigState.fromJson(Map<String, dynamic> json) =>
+      _$AppConfigStateFromJson(json);
 
   /// 获取 API 基础 URL
   String get baseUrl {

@@ -1,3 +1,4 @@
+import 'package:pocketmind/core/constants.dart';
 import 'package:pocketmind/domain/entities/note_entity.dart';
 import 'package:pocketmind/domain/repositories/note_repository.dart';
 import 'package:pocketmind/util/logger_service.dart';
@@ -10,9 +11,6 @@ final String noteServiceTag = 'NoteService';
 /// 这使得服务层与数据库实现完全解耦
 class NoteService {
   final NoteRepository _noteRepository;
-  static const String defaultCategory = 'home';
-  static const String defaultTitle = '默认标题';
-  static const String defaultContent = '默认内容';
 
   NoteService(this._noteRepository);
 
@@ -23,7 +21,7 @@ class NoteService {
     String? content, // 改为可空，即用户没有设置标题
     String? url, // 直接文本插入的话就是为空
     String? category, // 分类名称（用于UI显示和查询）
-    int categoryId = 1, // 分类ID（用于categories数据库关联）
+    int categoryId = AppConstants.homeCategoryId, // 分类ID（用于categories数据库关联）
     String? tag,
     String? previewImageUrl,
   }) async {

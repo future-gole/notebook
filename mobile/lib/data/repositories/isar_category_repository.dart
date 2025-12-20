@@ -1,5 +1,6 @@
 import 'package:isar_community/isar.dart';
 import 'package:uuid/uuid.dart';
+import '../../core/constants.dart';
 import '../../domain/entities/category_entity.dart';
 import '../../domain/repositories/category_repository.dart';
 import '../../model/category.dart';
@@ -28,14 +29,14 @@ class IsarCategoryRepository implements CategoryRepository {
 
     // 创建默认分类实体
     final defaultCategory = CategoryEntity(
-      name: 'home',
-      description: '首页',
+      name: AppConstants.homeCategoryName,
+      description: AppConstants.homeCategoryDescription,
       createdTime: DateTime.now(),
     );
 
     try {
       await _isar.writeTxn(() async {
-        final isarCategory = CategoryMapper.fromDomain(defaultCategory);
+        final isarCategory = defaultCategory.toModel();
         isarCategory.uuid = _uuid.v4();
         isarCategory.updatedAt = DateTime.now().millisecondsSinceEpoch;
         await _isar.categorys.put(isarCategory);
@@ -55,7 +56,7 @@ class IsarCategoryRepository implements CategoryRepository {
           .isDeletedEqualTo(false)
           .sortByCreatedTime()
           .findAll();
-      return CategoryMapper.toDomainList(categories);
+      return categories.toDomainList();
     } catch (e) {
       PMlog.e(_tag, 'Failed to get all categories: $e');
       return [];
@@ -67,7 +68,7 @@ class IsarCategoryRepository implements CategoryRepository {
     try {
       final category = await _isar.categorys.get(id);
       if (category == null || category.isDeleted) return null;
-      return CategoryMapper.toDomain(category);
+      return category.toDomain();
     } catch (e) {
       PMlog.e(_tag, 'Failed to get category by id: $e');
       return null;
@@ -82,7 +83,7 @@ class IsarCategoryRepository implements CategoryRepository {
           .isDeletedEqualTo(false)
           .nameEqualTo(name)
           .findFirst();
-      return category != null ? CategoryMapper.toDomain(category) : null;
+      return category?.toDomain();
     } catch (e) {
       PMlog.e(_tag, 'Failed to get category by name: $e');
       return null;
@@ -94,7 +95,7 @@ class IsarCategoryRepository implements CategoryRepository {
     try {
       int resultId = -1;
 
-      final isarCategory = CategoryMapper.fromDomain(category);
+      final isarCategory = category.toModel();
 
       // 如果没有设置创建时间，使用当前时间
       isarCategory.createdTime ??= DateTime.now();
@@ -145,6 +146,6 @@ class IsarCategoryRepository implements CategoryRepository {
         .filter()
         .isDeletedEqualTo(false)
         .watch(fireImmediately: true)
-        .map((categories) => CategoryMapper.toDomainList(categories));
+        .map((categories) => categories.toDomainList());
   }
 }
