@@ -42,11 +42,7 @@ class CategoryService {
     );
 
     final resultId = await _categoryRepository.save(newCategory);
-    if (resultId != -1) {
-      PMlog.d(categoryServiceTag, '分类添加成功: id: $resultId,name: $name');
-    } else {
-      PMlog.e(categoryServiceTag, '分类添加失败');
-    }
+    PMlog.d(categoryServiceTag, '分类添加成功: id: $resultId,name: $name');
     return resultId;
   }
 

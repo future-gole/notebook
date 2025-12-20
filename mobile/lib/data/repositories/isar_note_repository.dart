@@ -3,6 +3,7 @@ import 'package:uuid/uuid.dart';
 import '../../core/constants.dart';
 import '../../domain/entities/note_entity.dart';
 import '../../domain/repositories/note_repository.dart';
+import '../../domain/failures/repository_failure.dart';
 import '../../model/note.dart';
 import '../../model/category.dart';
 import '../../util/logger_service.dart';
@@ -68,8 +69,6 @@ class IsarNoteRepository implements NoteRepository {
     );
 
     try {
-      int resultId = -1;
-
       // 转换为 Isar 模型
       final isarNote = _toModel(note);
 
@@ -93,6 +92,7 @@ class IsarNoteRepository implements NoteRepository {
         isarNote.uuid = _uuid.v4();
       }
 
+      int resultId = 0;
       await _isar.writeTxn(() async {
         // 建立笔记与分类的关联（保持 IsarLink 用于数据库关系）
         final linkedCategory = await _isar.categorys.get(note.categoryId);
@@ -105,9 +105,12 @@ class IsarNoteRepository implements NoteRepository {
 
       PMlog.d(_tag, 'Note saved successfully with id: $resultId');
       return resultId;
-    } catch (e) {
-      PMlog.e(_tag, 'Failed to save note: $e');
-      return -1;
+    } on IsarError catch (e, stackTrace) {
+      PMlog.e(_tag, 'Isar error while saving note: $e\n$stackTrace');
+      throw SaveNoteFailure(e);
+    } catch (e, stackTrace) {
+      PMlog.e(_tag, 'Unexpected error while saving note: $e\n$stackTrace');
+      throw SaveNoteFailure(e);
     }
   }
 
@@ -119,7 +122,8 @@ class IsarNoteRepository implements NoteRepository {
         final note = await _isar.notes.get(id);
         if (note != null) {
           // 删除对应的图片文件（如果有）
-          if (note.url != null && note.url!.startsWith(AppConstants.localImagePathPrefix)) {
+          if (note.url != null &&
+              note.url!.startsWith(AppConstants.localImagePathPrefix)) {
             try {
               await ImageStorageHelper().deleteImage(note.url!);
               PMlog.d(_tag, 'Deleted image: ${note.url}');
@@ -127,16 +131,19 @@ class IsarNoteRepository implements NoteRepository {
               PMlog.w(_tag, 'Failed to delete image ${note.url}: $e');
             }
           }
-          
+
           note.isDeleted = true;
           note.updatedAt = DateTime.now().millisecondsSinceEpoch;
           await _isar.notes.put(note);
         }
       });
       PMlog.d(_tag, 'Note soft deleted: id=$id');
-    } catch (e) {
-      PMlog.e(_tag, 'Failed to delete note: $e');
-      rethrow;
+    } on IsarError catch (e, stackTrace) {
+      PMlog.e(_tag, 'Isar error while deleting note: $e\n$stackTrace');
+      throw DeleteNoteFailure(id, e);
+    } catch (e, stackTrace) {
+      PMlog.e(_tag, 'Unexpected error while deleting note: $e\n$stackTrace');
+      throw DeleteNoteFailure(id, e);
     }
   }
 
@@ -151,23 +158,27 @@ class IsarNoteRepository implements NoteRepository {
         final now = DateTime.now().millisecondsSinceEpoch;
         for (final note in notes) {
           // 删除对应的图片文件（如果有）
-          if (note.url != null && note.url!.startsWith(AppConstants.localImagePathPrefix)) {
+          if (note.url != null &&
+              note.url!.startsWith(AppConstants.localImagePathPrefix)) {
             try {
               await ImageStorageHelper().deleteImage(note.url!);
             } catch (e) {
               PMlog.w(_tag, 'Failed to delete image ${note.url}: $e');
             }
           }
-          
+
           note.isDeleted = true;
           note.updatedAt = now;
         }
         await _isar.notes.putAll(notes);
         PMlog.d(_tag, '成功软删除了 ${notes.length} 条 categoryId为 $categoryId 的笔记');
       });
-    } catch (e) {
-      PMlog.e(_tag, '笔记删除失败: $e');
-      rethrow;
+    } on IsarError catch (e, stackTrace) {
+      PMlog.e(_tag, 'Isar error while deleting notes by category: $e\n$stackTrace');
+      throw DeleteNoteFailure(categoryId, e);
+    } catch (e, stackTrace) {
+      PMlog.e(_tag, 'Unexpected error while deleting notes by category: $e\n$stackTrace');
+      throw DeleteNoteFailure(categoryId, e);
     }
   }
 
@@ -178,9 +189,12 @@ class IsarNoteRepository implements NoteRepository {
       // 过滤已删除的记录
       if (note == null || note.isDeleted) return null;
       return _toDomain(note);
-    } catch (e) {
-      PMlog.e(_tag, 'Failed to get note by id: $e');
-      return null;
+    } on IsarError catch (e, stackTrace) {
+      PMlog.e(_tag, 'Isar error while getting note by id: $e\n$stackTrace');
+      throw QueryNoteFailure('getById($id)', e);
+    } catch (e, stackTrace) {
+      PMlog.e(_tag, 'Unexpected error while getting note by id: $e\n$stackTrace');
+      throw QueryNoteFailure('getById($id)', e);
     }
   }
 
@@ -193,9 +207,12 @@ class IsarNoteRepository implements NoteRepository {
           .sortByTimeDesc()
           .findAll();
       return _toDomainList(notes);
-    } catch (e) {
-      PMlog.e(_tag, 'Failed to get all notes: $e');
-      return [];
+    } on IsarError catch (e, stackTrace) {
+      PMlog.e(_tag, 'Isar error while getting all notes: $e\n$stackTrace');
+      throw QueryNoteFailure('getAll()', e);
+    } catch (e, stackTrace) {
+      PMlog.e(_tag, 'Unexpected error while getting all notes: $e\n$stackTrace');
+      throw QueryNoteFailure('getAll()', e);
     }
   }
 
@@ -234,9 +251,12 @@ class IsarNoteRepository implements NoteRepository {
           .sortByTimeDesc() // 添加排序（最新的在前）
           .findAll();
       return _toDomainList(notes);
-    } catch (e) {
-      PMlog.e(_tag, 'Failed to find notes by title: $e');
-      return [];
+    } on IsarError catch (e, stackTrace) {
+      PMlog.e(_tag, 'Isar error while finding notes by title: $e\n$stackTrace');
+      throw QueryNoteFailure('findByTitle($query)', e);
+    } catch (e, stackTrace) {
+      PMlog.e(_tag, 'Unexpected error while finding notes by title: $e\n$stackTrace');
+      throw QueryNoteFailure('findByTitle($query)', e);
     }
   }
 
@@ -250,9 +270,12 @@ class IsarNoteRepository implements NoteRepository {
           .sortByTimeDesc() // 添加排序（最新的在前）
           .findAll();
       return _toDomainList(notes);
-    } catch (e) {
-      PMlog.e(_tag, 'Failed to find notes by content: $e');
-      return [];
+    } on IsarError catch (e, stackTrace) {
+      PMlog.e(_tag, 'Isar error while finding notes by content: $e\n$stackTrace');
+      throw QueryNoteFailure('findByContent($query)', e);
+    } catch (e, stackTrace) {
+      PMlog.e(_tag, 'Unexpected error while finding notes by content: $e\n$stackTrace');
+      throw QueryNoteFailure('findByContent($query)', e);
     }
   }
 
@@ -271,9 +294,12 @@ class IsarNoteRepository implements NoteRepository {
           .sortByTimeDesc()
           .findAll();
       return _toDomainList(notes);
-    } catch (e) {
-      PMlog.e(_tag, 'Failed to find notes by category: $e');
-      return [];
+    } on IsarError catch (e, stackTrace) {
+      PMlog.e(_tag, 'Isar error while finding notes by category: $e\n$stackTrace');
+      throw QueryNoteFailure('findByCategoryId($categoryId)', e);
+    } catch (e, stackTrace) {
+      PMlog.e(_tag, 'Unexpected error while finding notes by category: $e\n$stackTrace');
+      throw QueryNoteFailure('findByCategoryId($categoryId)', e);
     }
   }
 
@@ -287,9 +313,12 @@ class IsarNoteRepository implements NoteRepository {
           .sortByTimeDesc() // 添加排序（最新的在前）
           .findAll();
       return _toDomainList(notes);
-    } catch (e) {
-      PMlog.e(_tag, 'Failed to find notes by tag: $e');
-      return [];
+    } on IsarError catch (e, stackTrace) {
+      PMlog.e(_tag, 'Isar error while finding notes by tag: $e\n$stackTrace');
+      throw QueryNoteFailure('findByTag($query)', e);
+    } catch (e, stackTrace) {
+      PMlog.e(_tag, 'Unexpected error while finding notes by tag: $e\n$stackTrace');
+      throw QueryNoteFailure('findByTag($query)', e);
     }
   }
 
@@ -317,9 +346,12 @@ class IsarNoteRepository implements NoteRepository {
           .sortByTimeDesc()
           .watch(fireImmediately: true)
           .map(_toDomainList);
-    } catch (e) {
-      PMlog.e(_tag, 'Failed to find notes by query: $e');
-      return Stream.value([]);
+    } on IsarError catch (e, stackTrace) {
+      PMlog.e(_tag, 'Isar error while finding notes by query: $e\n$stackTrace');
+      throw QueryNoteFailure('findByQuery($query)', e);
+    } catch (e, stackTrace) {
+      PMlog.e(_tag, 'Unexpected error while finding notes by query: $e\n$stackTrace');
+      throw QueryNoteFailure('findByQuery($query)', e);
     }
   }
 }

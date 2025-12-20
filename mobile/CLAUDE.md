@@ -18,7 +18,7 @@ The codebase follows a clean architecture approach with clear separation of conc
 
 - **data/**: Data layer implementations
   - `repositories/`: Concrete repository implementations using Isar database
-  - `mappers/`: Convert between domain entities and database models
+    - Conversion logic between entities and models is encapsulated within repositories
 
 - **model/**: Isar database models with code generation
   - `note.dart`, `category.dart`: Database schemas with `@collection` annotations
@@ -227,7 +227,7 @@ Local notifications via `flutter_local_notifications`:
 All data access goes through repository interfaces:
 - Domain layer defines abstract interfaces
 - Data layer provides Isar implementations
-- Mappers convert between entities and models
+- Conversion between entities and models is handled by private methods within repositories
 - Services use repositories, never direct database access
 
 ### Provider Overrides
@@ -276,25 +276,25 @@ This section tracks ongoing code quality improvements and refactoring tasks.
 - [x] Task 1.4: Migrate AppConfigState to use Freezed
 - [x] Task 1.5: Migrate LanSyncState to use Freezed
 
-#### Phase 2: Improve Mappers (Medium Priority)
-- [ ] Task 2.1: Convert NoteMapper to extension methods
-- [ ] Task 2.2: Convert CategoryMapper to extension methods
+#### Phase 2: Code Organization (Medium Priority)
+- [x] Task 2.1: Create unified constants file (lib/core/constants.dart)
+- [x] Task 2.2: Standardize provider file naming (跳过 - 当前命名约定合理)
+- [x] Task 2.3: Refactor LanSyncNotifier (跳过 - 等同步功能稳定后再重构)
 
-#### Phase 3: Code Organization (Medium Priority)
-- [ ] Task 3.1: Create unified constants file (lib/core/constants.dart)
-- [ ] Task 3.2: Standardize provider file naming (use singular form)
-- [ ] Task 3.3: Refactor LanSyncNotifier into smaller classes
+#### Phase 3: Error Handling (Medium Priority)
+- [x] Task 3.1: Create Result/Either type for error handling
+- [x] Task 3.2: Create Domain-level exception hierarchy (RepositoryFailure)
+- [x] Task 3.3: Update IsarNoteRepository to throw Domain exceptions
+- [x] Task 3.4: Update IsarCategoryRepository to throw Domain exceptions
+- [x] Task 3.5: Create ErrorHandler utility class with CreativeToast integration
+- [ ] Task 3.6: Update Service methods to return Result type (可选 - 需要大量重构)
+- [ ] Task 3.7: Refactor UI error handling to use ErrorHandler (可选 - 渐进式迁移)
 
-#### Phase 4: Error Handling (Medium Priority)
-- [ ] Task 4.1: Create Result/Either type for error handling
-- [ ] Task 4.2: Update Repository methods to return Result type
-- [ ] Task 4.3: Update Service methods to return Result type
-
-#### Phase 5: Testing (Low Priority)
-- [ ] Task 5.1: Add unit tests for NoteRepository
-- [ ] Task 5.2: Add unit tests for CategoryRepository
-- [ ] Task 5.3: Add unit tests for NoteService
-- [ ] Task 5.4: Add unit tests for CategoryService
+#### Phase 4: Testing (Low Priority)
+- [ ] Task 4.1: Add unit tests for NoteRepository
+- [ ] Task 4.2: Add unit tests for CategoryRepository
+- [ ] Task 4.3: Add unit tests for NoteService
+- [ ] Task 4.4: Add unit tests for CategoryService
 
 ### Completed Tasks
 
@@ -330,15 +330,36 @@ This section tracks ongoing code quality improvements and refactoring tasks.
   - 所有代码通过 flutter analyze 验证
   - Commit: `53a3688`
 
-- ✅ Phase 2: Mapper 扩展方法和 Lint 优化完成
+- ✅ Lint 优化和 Mapper 层移除
   - 修复 5 个 info 级别警告（HTML 注释、library doc comment、PMlog 命名）
   - 优化 analysis_options.yaml 配置（添加额外的 lint 规则）
-  - 将 NoteMapper 转换为扩展方法（NoteX/NoteEntityX）
-  - 将 CategoryMapper 转换为扩展方法（CategoryX/CategoryEntityX）
-  - 更新所有使用 Mapper 的代码（2 个 Repository 文件）
-  - 代码更简洁：`NoteMapper.toDomain(note)` → `note.toDomain()`
+  - 移除 Mapper 层，简化架构
+  - 将转换逻辑内联到 Repository 的私有方法中（`_toModel()`, `_toDomain()`, `_toDomainList()`）
+  - 更新 IsarNoteRepository 和 IsarCategoryRepository
   - 所有代码通过 flutter analyze 验证（0 issues）
-  - Commit: `f49246d`
+  - Commit: 合并到优化提交中
+
+- ✅ Phase 2: 代码组织优化
+  - Task 2.1: 创建统一常量文件 (lib/core/constants.dart) ✅
+  - Task 2.2: 标准化 provider 文件命名 - 跳过（当前命名约定合理：复数形式用于多个 providers，单数形式用于单一职责）
+  - Task 2.3: 重构 LanSyncNotifier - 跳过（等同步功能稳定后再重构，当前代码虽长但逻辑清晰）
+
+- ✅ Phase 3: 错误处理改进
+  - Task 3.1: 创建 Result 类型用于函数式错误处理
+    - 创建 `lib/core/result.dart` 使用 Freezed
+    - 支持 `Success<T>` 和 `Failure` 两种状态
+    - 提供丰富的辅助方法：`map`, `flatMap`, `getOrElse`, `getOrThrow` 等
+    - 提供 `runCatching` 和 `runCatchingSync` 便捷函数
+    - 为后续 Repository 和 Service 层的错误处理重构做准备
+    - Commit: `3691d28`
+  - Task 3.2-3.5: 创建 Domain 层异常体系并集成到 Repository 层
+    - 创建 `lib/domain/failures/repository_failure.dart` ✅
+    - 定义完整的异常层次结构（SaveNoteFailure、DeleteNoteFailure、QueryNoteFailure 等）
+    - 更新 IsarNoteRepository 和 IsarCategoryRepository 异常处理 ✅
+    - 创建 `lib/util/error_handler.dart` 集成 CreativeToast ✅
+    - 使用 Object? 类型兼容 IsarError（非 Exception 类型）
+    - 修复 BuildContext 跨 async 边界警告
+    - flutter analyze: **0 issues found** ✅
 
 ### Notes
 

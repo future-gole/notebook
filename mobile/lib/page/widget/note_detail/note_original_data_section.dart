@@ -11,7 +11,7 @@ class NoteOriginalDataSection extends StatelessWidget {
   final NoteEntity note;
   final TextEditingController titleController;
   final TextEditingController contentController;
-  final VoidCallback onCategoryPressed;
+  final void Function(int) onCategoryPressed;
   final String categoryName;
   final String formattedDate;
   final String? previewImageUrl;
@@ -115,7 +115,7 @@ class NoteOriginalDataSection extends StatelessWidget {
                   children: [
                     // 分类胶囊 - 可点击切换分类
                     GestureDetector(
-                      onTap: onCategoryPressed,
+                      onTap: () => onCategoryPressed(note.categoryId),
                       child: Container(
                         padding: EdgeInsets.symmetric(
                           horizontal: 12.w,

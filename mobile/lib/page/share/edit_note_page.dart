@@ -91,7 +91,6 @@ class EditNotePageState extends ConsumerState<EditNotePage> {
       title: _titleEnabled ? _titleController.text : null, // 根据设置决定是否保存标题
       content: _contentController.text,
       url: widget.webUrl,
-      category: _selectedCategory, // 使用选中的分类名称
       categoryId: _selectedCategoryId, // 使用选中的分类ID
       tag: _tagController.text,
     );

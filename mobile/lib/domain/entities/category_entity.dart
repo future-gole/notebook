@@ -1,7 +1,6 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'category_entity.freezed.dart';
-part 'category_entity.g.dart';
 
 /// 分类领域实体 - 不依赖任何具体数据库实现
 ///
@@ -20,7 +19,4 @@ abstract class CategoryEntity with _$CategoryEntity {
     /// 创建时间
     DateTime? createdTime,
   }) = _CategoryEntity;
-
-  factory CategoryEntity.fromJson(Map<String, dynamic> json) =>
-      _$CategoryEntityFromJson(json);
 }

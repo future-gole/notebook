@@ -3,6 +3,7 @@ import 'package:uuid/uuid.dart';
 import '../../core/constants.dart';
 import '../../domain/entities/category_entity.dart';
 import '../../domain/repositories/category_repository.dart';
+import '../../domain/failures/repository_failure.dart';
 import '../../model/category.dart';
 import '../../util/logger_service.dart';
 
@@ -66,9 +67,12 @@ class IsarCategoryRepository implements CategoryRepository {
         await _isar.categorys.put(isarCategory);
       });
       PMlog.d(_tag, 'Default categories initialized successfully');
-    } catch (e) {
-      PMlog.e(_tag, 'Failed to initialize default categories: $e');
-      rethrow;
+    } on IsarError catch (e, stackTrace) {
+      PMlog.e(_tag, 'Isar error while initializing categories: $e\n$stackTrace');
+      throw CategoryOperationFailure('initDefaultCategories', e);
+    } catch (e, stackTrace) {
+      PMlog.e(_tag, 'Unexpected error while initializing categories: $e\n$stackTrace');
+      throw CategoryOperationFailure('initDefaultCategories', e);
     }
   }
 
@@ -81,9 +85,12 @@ class IsarCategoryRepository implements CategoryRepository {
           .sortByCreatedTime()
           .findAll();
       return _toDomainList(categories);
-    } catch (e) {
-      PMlog.e(_tag, 'Failed to get all categories: $e');
-      return [];
+    } on IsarError catch (e, stackTrace) {
+      PMlog.e(_tag, 'Isar error while getting all categories: $e\n$stackTrace');
+      throw CategoryOperationFailure('getAll', e);
+    } catch (e, stackTrace) {
+      PMlog.e(_tag, 'Unexpected error while getting all categories: $e\n$stackTrace');
+      throw CategoryOperationFailure('getAll', e);
     }
   }
 
@@ -93,9 +100,12 @@ class IsarCategoryRepository implements CategoryRepository {
       final category = await _isar.categorys.get(id);
       if (category == null || category.isDeleted) return null;
       return _toDomain(category);
-    } catch (e) {
-      PMlog.e(_tag, 'Failed to get category by id: $e');
-      return null;
+    } on IsarError catch (e, stackTrace) {
+      PMlog.e(_tag, 'Isar error while getting category by id: $e\n$stackTrace');
+      throw CategoryOperationFailure('getById($id)', e);
+    } catch (e, stackTrace) {
+      PMlog.e(_tag, 'Unexpected error while getting category by id: $e\n$stackTrace');
+      throw CategoryOperationFailure('getById($id)', e);
     }
   }
 
@@ -108,17 +118,18 @@ class IsarCategoryRepository implements CategoryRepository {
           .nameEqualTo(name)
           .findFirst();
       return category != null ? _toDomain(category) : null;
-    } catch (e) {
-      PMlog.e(_tag, 'Failed to get category by name: $e');
-      return null;
+    } on IsarError catch (e, stackTrace) {
+      PMlog.e(_tag, 'Isar error while getting category by name: $e\n$stackTrace');
+      throw CategoryOperationFailure('getByName($name)', e);
+    } catch (e, stackTrace) {
+      PMlog.e(_tag, 'Unexpected error while getting category by name: $e\n$stackTrace');
+      throw CategoryOperationFailure('getByName($name)', e);
     }
   }
 
   @override
   Future<int> save(CategoryEntity category) async {
     try {
-      int resultId = -1;
-
       final isarCategory = _toModel(category);
 
       // 如果没有设置创建时间，使用当前时间
@@ -133,15 +144,19 @@ class IsarCategoryRepository implements CategoryRepository {
         isarCategory.uuid = _uuid.v4();
       }
 
+      int resultId = 0;
       await _isar.writeTxn(() async {
         resultId = await _isar.categorys.put(isarCategory);
       });
 
       PMlog.d(_tag, 'Category saved successfully: ${category.name}');
       return resultId;
-    } catch (e) {
-      PMlog.e(_tag, 'Failed to save category: $e');
-      return -1;
+    } on IsarError catch (e, stackTrace) {
+      PMlog.e(_tag, 'Isar error while saving category: $e\n$stackTrace');
+      throw SaveCategoryFailure(e);
+    } catch (e, stackTrace) {
+      PMlog.e(_tag, 'Unexpected error while saving category: $e\n$stackTrace');
+      throw SaveCategoryFailure(e);
     }
   }
 
@@ -158,9 +173,12 @@ class IsarCategoryRepository implements CategoryRepository {
         }
       });
       PMlog.d(_tag, 'Category soft deleted: id=$id');
-    } catch (e) {
-      PMlog.e(_tag, 'Failed to delete category: $e');
-      rethrow;
+    } on IsarError catch (e, stackTrace) {
+      PMlog.e(_tag, 'Isar error while deleting category: $e\n$stackTrace');
+      throw DeleteCategoryFailure(id, e);
+    } catch (e, stackTrace) {
+      PMlog.e(_tag, 'Unexpected error while deleting category: $e\n$stackTrace');
+      throw DeleteCategoryFailure(id, e);
     }
   }
 

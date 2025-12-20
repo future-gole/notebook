@@ -2,6 +2,7 @@ import 'package:pocketmind/core/constants.dart';
 import 'package:pocketmind/domain/entities/note_entity.dart';
 import 'package:pocketmind/domain/repositories/note_repository.dart';
 import 'package:pocketmind/util/logger_service.dart';
+import 'package:pocketmind/util/image_storage_helper.dart';
 
 final String noteServiceTag = 'NoteService';
 
@@ -11,23 +12,25 @@ final String noteServiceTag = 'NoteService';
 /// 这使得服务层与数据库实现完全解耦
 class NoteService {
   final NoteRepository _noteRepository;
+  final ImageStorageHelper _imageHelper = ImageStorageHelper();
 
   NoteService(this._noteRepository);
 
-  // 增添/更新笔记，返回id，-1 为插入失败
+  /// 增添/更新笔记
+  ///
+  /// 如果保存失败，将抛出异常
   Future<int> addOrUpdateNote({
     int? id,
-    String? title, // 改为可空，允许不设置标题
-    String? content, // 改为可空，即用户没有设置标题
-    String? url, // 直接文本插入的话就是为空
-    String? category, // 分类名称（用于UI显示和查询）
-    int categoryId = AppConstants.homeCategoryId, // 分类ID（用于categories数据库关联）
+    String? title,
+    String? content,
+    String? url,
+    int categoryId = AppConstants.homeCategoryId,
     String? tag,
     String? previewImageUrl,
   }) async {
     PMlog.d(
       noteServiceTag,
-      'Note added: title: $title, content: $content, url: $url, category: $category, categoryId: $categoryId',
+      'Saving note: id: $id, title: $title, categoryId: $categoryId',
     );
 
     // 创建领域实体
@@ -42,11 +45,6 @@ class NoteService {
       previewImageUrl: previewImageUrl,
     );
 
-    if (id != null && id != -1) {
-      PMlog.d(noteServiceTag, 'id:$id, 进行更新操作');
-    }
-
-    // 通过仓库保存
     return await _noteRepository.save(noteEntity);
   }
 
@@ -70,12 +68,36 @@ class NoteService {
     return _noteRepository.watchByCategory(category);
   }
 
-  /// 删除笔记
+  /// 删除笔记及其关联资源（如本地图片）
   Future<void> deleteNote(int noteId) async {
-    await _noteRepository.delete(noteId);
+    final note = await _noteRepository.getById(noteId);
+    if (note != null) {
+      await deleteFullNote(note);
+    }
+  }
+
+  /// 删除完整笔记对象及其关联资源
+  Future<void> deleteFullNote(NoteEntity note) async {
+    if (note.id == null) return;
+
+    // 1. 处理关联资源（如本地图片）
+    final url = note.url;
+    if (url != null && url.isNotEmpty && _isLocalImage(url)) {
+      await _imageHelper.deleteImage(url);
+    }
+
+    // 2. 从数据库删除
+    await _noteRepository.delete(note.id!);
+    PMlog.d(noteServiceTag, 'Note deleted: ${note.id}');
+  }
+
+  bool _isLocalImage(String path) {
+    // 简单的本地路径判断逻辑，可以根据实际情况完善
+    return path.contains('pocket_images/');
   }
 
   Future<void> deleteAllNoteByCategoryId(int categoryId) async {
+    // TODO: 如果需要删除分类下所有笔记，也需要循环处理图片删除
     await _noteRepository.deleteAllByCategoryId(categoryId);
   }
 

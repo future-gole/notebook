@@ -2,7 +2,6 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:pocketmind/core/constants.dart';
 
 part 'note_entity.freezed.dart';
-part 'note_entity.g.dart';
 
 /// 笔记领域实体 - 不依赖任何具体数据库实现
 ///
@@ -40,7 +39,4 @@ abstract class NoteEntity with _$NoteEntity {
     /// 链接预览描述（网络链接笔记用）
     String? previewDescription,
   }) = _NoteEntity;
-
-  factory NoteEntity.fromJson(Map<String, dynamic> json) =>
-      _$NoteEntityFromJson(json);
 }

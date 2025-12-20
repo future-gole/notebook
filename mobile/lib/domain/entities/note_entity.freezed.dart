@@ -11,7 +11,6 @@ part of 'note_entity.dart';
 
 // dart format off
 T _$identity<T>(T value) => value;
-
 /// @nodoc
 mixin _$NoteEntity {
 
@@ -32,8 +31,6 @@ mixin _$NoteEntity {
 @pragma('vm:prefer-inline')
 $NoteEntityCopyWith<NoteEntity> get copyWith => _$NoteEntityCopyWithImpl<NoteEntity>(this as NoteEntity, _$identity);
 
-  /// Serializes this NoteEntity to a JSON map.
-  Map<String, dynamic> toJson();
 
 
 @override
@@ -41,7 +38,7 @@ bool operator ==(Object other) {
   return identical(this, other) || (other.runtimeType == runtimeType&&other is NoteEntity&&(identical(other.id, id) || other.id == id)&&(identical(other.title, title) || other.title == title)&&(identical(other.content, content) || other.content == content)&&(identical(other.url, url) || other.url == url)&&(identical(other.time, time) || other.time == time)&&(identical(other.categoryId, categoryId) || other.categoryId == categoryId)&&(identical(other.tag, tag) || other.tag == tag)&&(identical(other.previewImageUrl, previewImageUrl) || other.previewImageUrl == previewImageUrl)&&(identical(other.previewTitle, previewTitle) || other.previewTitle == previewTitle)&&(identical(other.previewDescription, previewDescription) || other.previewDescription == previewDescription));
 }
 
-@JsonKey(includeFromJson: false, includeToJson: false)
+
 @override
 int get hashCode => Object.hash(runtimeType,id,title,content,url,time,categoryId,tag,previewImageUrl,previewTitle,previewDescription);
 
@@ -225,11 +222,11 @@ return $default(_that.id,_that.title,_that.content,_that.url,_that.time,_that.ca
 }
 
 /// @nodoc
-@JsonSerializable()
+
 
 class _NoteEntity implements NoteEntity {
   const _NoteEntity({this.id, this.title, this.content, this.url, this.time, this.categoryId = AppConstants.homeCategoryId, this.tag, this.previewImageUrl, this.previewTitle, this.previewDescription});
-  factory _NoteEntity.fromJson(Map<String, dynamic> json) => _$NoteEntityFromJson(json);
+  
 
 /// 笔记ID，null 表示尚未持久化的新笔记
 @override final  int? id;
@@ -258,17 +255,14 @@ class _NoteEntity implements NoteEntity {
 @pragma('vm:prefer-inline')
 _$NoteEntityCopyWith<_NoteEntity> get copyWith => __$NoteEntityCopyWithImpl<_NoteEntity>(this, _$identity);
 
-@override
-Map<String, dynamic> toJson() {
-  return _$NoteEntityToJson(this, );
-}
+
 
 @override
 bool operator ==(Object other) {
   return identical(this, other) || (other.runtimeType == runtimeType&&other is _NoteEntity&&(identical(other.id, id) || other.id == id)&&(identical(other.title, title) || other.title == title)&&(identical(other.content, content) || other.content == content)&&(identical(other.url, url) || other.url == url)&&(identical(other.time, time) || other.time == time)&&(identical(other.categoryId, categoryId) || other.categoryId == categoryId)&&(identical(other.tag, tag) || other.tag == tag)&&(identical(other.previewImageUrl, previewImageUrl) || other.previewImageUrl == previewImageUrl)&&(identical(other.previewTitle, previewTitle) || other.previewTitle == previewTitle)&&(identical(other.previewDescription, previewDescription) || other.previewDescription == previewDescription));
 }
 
-@JsonKey(includeFromJson: false, includeToJson: false)
+
 @override
 int get hashCode => Object.hash(runtimeType,id,title,content,url,time,categoryId,tag,previewImageUrl,previewTitle,previewDescription);
 
