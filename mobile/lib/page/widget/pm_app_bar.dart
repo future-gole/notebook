@@ -24,8 +24,9 @@ class PMAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDesktop = Platform.isWindows || Platform.isMacOS || Platform.isLinux;
-    
+    final isDesktop =
+        Platform.isWindows || Platform.isMacOS || Platform.isLinux;
+
     // 如果是桌面端，且没有手动指定 leading，且当前路由可以返回
     Widget? effectiveLeading = leading;
     if (isDesktop && leading == null && automaticallyImplyLeading) {

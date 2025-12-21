@@ -1,4 +1,4 @@
- import 'dart:io';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:pocketmind/page/home/home_screen.dart';
@@ -58,7 +58,8 @@ final appRouter = GoRouter(
         // sync
         GoRoute(
           path: RoutePaths.sync,
-          builder: (context,state) => const SyncSettingsPage()),
+          builder: (context, state) => const SyncSettingsPage(),
+        ),
       ],
     ),
   ],
