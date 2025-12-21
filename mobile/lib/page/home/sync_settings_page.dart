@@ -7,6 +7,7 @@ import '../../lan_sync/model/lan_peer.dart';
 import '../../lan_sync/model/device_info.dart';
 import '../../providers/app_config_provider.dart';
 import '../widget/creative_toast.dart';
+import '../widget/pm_app_bar.dart';
 
 /// 同步设置页面
 class SyncSettingsPage extends ConsumerStatefulWidget {
@@ -34,7 +35,7 @@ class _SyncSettingsPageState extends ConsumerState<SyncSettingsPage> {
     final syncNotifier = ref.read(lanSyncProvider.notifier);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('局域网同步')),
+      appBar: const PMAppBar(title: Text('局域网同步')),
       body: ListView(
         padding: EdgeInsets.all(16.r),
         children: [

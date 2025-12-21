@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -8,7 +7,6 @@ import 'package:pocketmind/domain/entities/note_entity.dart';
 import 'package:pocketmind/page/widget/glass_nav_bar.dart';
 import 'package:pocketmind/page/widget/note_item.dart';
 import 'package:pocketmind/page/home/note_add_sheet.dart';
-import 'package:pocketmind/page/home/desktop/desktop_home_screen.dart';
 import 'package:pocketmind/providers/nav_providers.dart';
 import 'package:pocketmind/providers/note_providers.dart';
 import 'package:pocketmind/providers/app_config_provider.dart';
@@ -26,10 +24,6 @@ class HomeScreen extends ConsumerStatefulWidget {
 
 class _HomeScreenState extends ConsumerState<HomeScreen>
     with SingleTickerProviderStateMixin {
-  // 判断是否为桌面端平台
-  bool get _isDesktop =>
-      Platform.isWindows || Platform.isMacOS || Platform.isLinux;
-
   // 滚动控制器，用于保持滚动位置
   final ScrollController _scrollController = ScrollController();
 
@@ -135,12 +129,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     // even if the user never opens the sync settings page.
     ref.watch(lanSyncProvider);
 
-    // 桌面端使用专门的桌面布局
-    if (_isDesktop) {
-      return const DesktopHomeScreen();
-    }
-
-    // 移动端布局
     // 对应 Category 下的 note
     final noteByCategory = ref.watch(noteByCategoryProvider);
     final noteService = ref.watch(noteServiceProvider);
@@ -161,10 +149,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         bottom: false,
         child: Column(
           children: [
-            // 顶部间距
-            SizedBox(height: 8.h),
-
-            // 导航栏 / 搜索栏 切换区域
+            // 顶部导航栏 / 搜索栏 切换区域
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 4.w),
               child: SizedBox(

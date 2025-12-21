@@ -5,10 +5,8 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:pocketmind/domain/entities/note_entity.dart';
 import 'package:pocketmind/page/widget/note_item.dart';
-import 'package:pocketmind/page/widget/desktop/desktop_sidebar.dart';
 import 'package:pocketmind/page/widget/desktop/desktop_header.dart';
 import 'package:pocketmind/page/home/note_add_sheet.dart';
-import 'package:pocketmind/page/home/note_detail_page.dart';
 import 'package:pocketmind/providers/nav_providers.dart';
 import 'package:pocketmind/providers/note_providers.dart';
 import 'package:pocketmind/providers/ui_providers.dart';
@@ -62,81 +60,58 @@ class _DesktopHomeScreenState extends ConsumerState<DesktopHomeScreen> {
     final searchResults = ref.watch(searchResultsProvider);
     final isAddingNote = ref.watch(isAddingNoteProvider);
 
-    // 监听选中的笔记
-    final selectedNote = ref.watch(selectedNoteProvider);
-
     return Scaffold(
       backgroundColor: colorScheme.surface,
-      body: Row(
-        children: [
-          // 左侧固定宽度的侧边栏
-          const DesktopSidebar(),
+      body: isAddingNote
+          ? NoteEditorSheet(
+              onClose: () {
+                ref.read(isAddingNoteProvider.notifier).set(false);
+              },
+            )
+          : Column(
+              children: [
+                // macOS 顶部预留空间 (窗口控制按钮)
+                if (Platform.isMacOS) SizedBox(height: 28.h),
 
-          // 中间内容区（笔记列表或详情页）
-          Expanded(
-            child: isAddingNote
-                ? NoteEditorSheet(
-                    onClose: () {
-                      ref.read(isAddingNoteProvider.notifier).set(false);
-                    },
-                  )
-                : selectedNote != null
-                // 如果有选中笔记，显示详情页
-                ? NoteDetailPage(
-                    note: selectedNote,
-                    onBack: () {
-                      ref.read(selectedNoteProvider.notifier).set(null);
-                    },
-                  )
-                // 否则显示笔记列表
-                : Column(
-                    children: [
-                      // macOS 顶部预留空间 (窗口控制按钮)
-                      if (Platform.isMacOS) SizedBox(height: 28.h),
+                // 顶部导航栏
+                DesktopHeader(
+                  searchController: _searchController,
+                  searchFocusNode: _searchFocusNode,
+                  onSearchSubmit: () {
+                    final query = _searchController.text.trim();
+                    if (query.isNotEmpty) {
+                      ref.read(searchQueryProvider.notifier).set(query);
+                    }
+                  },
+                ),
 
-                      // 顶部导航栏
-                      DesktopHeader(
-                        searchController: _searchController,
-                        searchFocusNode: _searchFocusNode,
-                        onSearchSubmit: () {
-                          final query = _searchController.text.trim();
-                          if (query.isNotEmpty) {
-                            ref.read(searchQueryProvider.notifier).set(query);
-                          }
-                        },
-                      ),
-
-                      // 内容区域
-                      Expanded(
-                        child: searchQuery != null
-                            ? _buildSearchResults(
-                                searchResults,
-                                currentLayout,
-                                noteService,
-                              )
-                            : noteByCategory.when(
-                                skipLoadingOnRefresh: true,
-                                data: (notes) => _buildNotesContent(
-                                  notes,
-                                  currentLayout,
-                                  noteService,
-                                ),
-                                error: (error, stack) {
-                                  PMlog.e(tag, 'stack: $error,stack:$stack');
-                                  return const Center(child: Text('加载笔记失败'));
-                                },
-                                loading: () => const Center(
-                                  child: CircularProgressIndicator(),
-                                ),
-                              ),
-                      ),
-                    ],
-                  ),
-          ),
-        ],
-      ),
-      // FAB - 桌面端放在右下角（只在列表页显示）
-      floatingActionButton: (selectedNote == null && !isAddingNote)
+                // 内容区域
+                Expanded(
+                  child: searchQuery != null
+                      ? _buildSearchResults(
+                          searchResults,
+                          currentLayout,
+                          noteService,
+                        )
+                      : noteByCategory.when(
+                          skipLoadingOnRefresh: true,
+                          data: (notes) => _buildNotesContent(
+                            notes,
+                            currentLayout,
+                            noteService,
+                          ),
+                          error: (error, stack) {
+                            PMlog.e(tag, 'stack: $error,stack:$stack');
+                            return const Center(child: Text('加载笔记失败'));
+                          },
+                          loading: () =>
+                              const Center(child: CircularProgressIndicator()),
+                        ),
+                ),
+              ],
+            ),
+      // FAB - 桌面端放在右下角
+      floatingActionButton: !isAddingNote
           ? FloatingActionButton(
               onPressed: () => _showAddNotePage(context),
               elevation: 8,

@@ -3,14 +3,13 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:isar_community/isar.dart';
-import 'package:pocketmind/page/home/home_screen.dart';
 import 'package:pocketmind/service/notification_service.dart';
-import 'package:pocketmind/page/home/settings_page.dart';
 import 'package:pocketmind/providers/infrastructure_providers.dart';
 import 'package:pocketmind/providers/shared_preferences_provider.dart';
 import 'package:pocketmind/util/image_storage_helper.dart';
 import 'package:pocketmind/util/proxy_config.dart';
 import 'package:pocketmind/util/theme_data.dart';
+import 'package:pocketmind/router/app_router.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -23,7 +22,6 @@ import 'util/logger_service.dart';
 
 // 这会强制构建系统将 main_share.dart 编译到应用中
 // 防止另一个入口没有被引用
-import 'package:pocketmind/main_share.dart';
 late Isar isar;
 
 const _uuid = Uuid();
@@ -143,14 +141,13 @@ class MyApp extends StatelessWidget {
           designSize: Size(designWidth, designHeight),
           minTextAdapt: true,
           splitScreenMode: true,
-          builder: (context, child) => MaterialApp(
+          builder: (context, child) => MaterialApp.router(
             debugShowCheckedModeBanner: false,
             title: 'PocketMind',
             theme: calmBeigeTheme,
             darkTheme: quietNightTheme,
             themeMode: ThemeMode.system,
-            home: HomeScreen(),
-            routes: {'/settings': (context) => const SettingsPage()},
+            routerConfig: appRouter,
           ),
         );
       },

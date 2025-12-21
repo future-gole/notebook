@@ -2,6 +2,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:pocketmind/router/route_paths.dart';
 import 'package:pocketmind/providers/category_providers.dart';
 import 'package:pocketmind/providers/nav_providers.dart';
 import 'package:pocketmind/providers/note_providers.dart';
@@ -113,6 +115,8 @@ class DesktopSidebar extends ConsumerWidget {
                       isActive: activeIndex == index,
                       onTap: () {
                         ref.read(activeNavIndexProvider.notifier).set(index);
+                        // 切换分类时回到首页列表
+                        context.go(RoutePaths.home);
                       },
                       onDelete: canDelete
                           ? () => _onDeletePressed(
@@ -227,7 +231,7 @@ class _SettingsButtonState extends State<_SettingsButton> {
       onExit: (_) => setState(() => _isHovered = false),
       cursor: SystemMouseCursors.click,
       child: GestureDetector(
-        onTap: () => Navigator.of(context).pushNamed('/settings'),
+        onTap: () => context.push(RoutePaths.settings),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 150),
           margin: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.w),

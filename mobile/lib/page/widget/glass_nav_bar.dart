@@ -2,6 +2,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:pocketmind/router/route_paths.dart';
 import 'package:pocketmind/page/widget/categories_bar.dart' show CategoriesBar;
 
 ///
@@ -43,7 +45,7 @@ class GlassNavBar extends ConsumerWidget {
           context,
           icon: Icons.settings,
           onPressed: () {
-            Navigator.of(context).pushNamed('/settings');
+            context.push(RoutePaths.settings);
           },
           isDark: isDark,
         ),

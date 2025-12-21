@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
 import 'package:pocketmind/providers/app_config_provider.dart';
 import 'package:pocketmind/model/app_config_state.dart';
-import 'package:pocketmind/page/home/sync_settings_page.dart';
+import 'package:pocketmind/router/route_paths.dart';
 import 'dart:io';
 import 'package:pocketmind/util/proxy_config.dart';
 import 'package:pocketmind/data/repositories/cleanup_service.dart';
 import 'package:pocketmind/util/logger_service.dart';
 import 'package:pocketmind/providers/infrastructure_providers.dart';
+import 'package:pocketmind/page/widget/pm_app_bar.dart';
 import '../widget/creative_toast.dart';
 
 /// 设置页面
@@ -128,15 +130,15 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
     final theme = Theme.of(context);
 
     if (_isLoading) {
-      return Scaffold(
-        appBar: AppBar(title: const Text('设置')),
-        body: const Center(child: CircularProgressIndicator()),
+      return const Scaffold(
+        appBar: PMAppBar(title: Text('设置')),
+        body: Center(child: CircularProgressIndicator()),
       );
     }
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
-      appBar: AppBar(
+      appBar: PMAppBar(
         title: const Text('设置'),
         actions: [
           TextButton(onPressed: _saveSettings, child: const Text('保存')),
@@ -310,10 +312,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
         subtitle: Text('在多设备间同步笔记数据', style: theme.textTheme.bodySmall),
         trailing: const Icon(Icons.chevron_right),
         onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const SyncSettingsPage()),
-          );
+          context.go(RoutePaths.sync);
         },
       ),
     );

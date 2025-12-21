@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
 import 'package:pocketmind/domain/entities/note_entity.dart';
 import 'package:pocketmind/providers/category_providers.dart';
 import 'package:pocketmind/providers/app_config_provider.dart';
 import 'package:pocketmind/providers/note_detail_provider.dart';
+import 'package:pocketmind/providers/note_providers.dart';
 import 'package:pocketmind/util/responsive_breakpoints.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../widget/creative_toast.dart';
@@ -20,12 +22,17 @@ import '../../util/date_formatter.dart';
 /// 桌面端：左右分栏布局
 /// 移动端：垂直滚动布局
 class NoteDetailPage extends ConsumerStatefulWidget {
-  final NoteEntity note;
+  final NoteEntity? note;
+  final int? noteId;
 
   /// 桌面端返回回调 - 用于清除选中状态
   final VoidCallback? onBack;
 
-  const NoteDetailPage({super.key, required this.note, this.onBack});
+  const NoteDetailPage({super.key, this.note, this.noteId, this.onBack})
+    : assert(
+        note != null || noteId != null,
+        'Either note or noteId must be provided',
+      );
 
   @override
   ConsumerState<NoteDetailPage> createState() => _NoteDetailPageState();
@@ -33,39 +40,48 @@ class NoteDetailPage extends ConsumerStatefulWidget {
 
 class _NoteDetailPageState extends ConsumerState<NoteDetailPage> {
   late final ScrollController _scrollController;
-  late final TextEditingController _titleController;
-  late final TextEditingController _contentController;
+  TextEditingController? _titleController;
+  TextEditingController? _contentController;
+  NoteEntity? _currentNote;
 
   @override
   void initState() {
     super.initState();
     _scrollController = ScrollController();
-    _contentController = TextEditingController(text: widget.note.content ?? '');
-    _titleController = TextEditingController(text: widget.note.title ?? '');
+
+    if (widget.note != null) {
+      _currentNote = widget.note;
+      _initControllers(_currentNote!);
+    }
+  }
+
+  void _initControllers(NoteEntity note) {
+    _contentController = TextEditingController(text: note.content ?? '');
+    _titleController = TextEditingController(text: note.title ?? '');
 
     // 监听输入变化并更新 Notifier (带防抖)
-    _titleController.addListener(() {
+    _titleController!.addListener(() {
       ref
-          .read(noteDetailProvider(widget.note).notifier)
-          .updateNote(title: _titleController.text);
+          .read(noteDetailProvider(note).notifier)
+          .updateNote(title: _titleController!.text);
     });
-    _contentController.addListener(() {
+    _contentController!.addListener(() {
       ref
-          .read(noteDetailProvider(widget.note).notifier)
-          .updateNote(content: _contentController.text);
+          .read(noteDetailProvider(note).notifier)
+          .updateNote(content: _contentController!.text);
     });
 
     // 初始化预览数据
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(noteDetailProvider(widget.note).notifier).loadLinkPreview();
+      ref.read(noteDetailProvider(note).notifier).loadLinkPreview();
     });
   }
 
   @override
   void dispose() {
     _scrollController.dispose();
-    _contentController.dispose();
-    _titleController.dispose();
+    _contentController?.dispose();
+    _titleController?.dispose();
     super.dispose();
   }
 
@@ -78,8 +94,41 @@ class _NoteDetailPageState extends ConsumerState<NoteDetailPage> {
       screenWidth,
     );
 
+    // 确定当前显示的笔记
+    NoteEntity? displayNote = _currentNote ?? widget.note;
+
+    // 如果当前没有笔记且有 ID，则从 Provider 获取
+    if (displayNote == null && widget.noteId != null) {
+      final noteAsync = ref.watch(noteByIdProvider(id: widget.noteId!));
+      displayNote = noteAsync.value;
+
+      // 只有在真正加载中且没有数据时才显示加载器
+      if (noteAsync.isLoading && displayNote == null) {
+        return const Scaffold(body: Center(child: CircularProgressIndicator()));
+      }
+
+      if (noteAsync.hasError && displayNote == null) {
+        return Scaffold(body: Center(child: Text('加载失败: ${noteAsync.error}')));
+      }
+
+      if (!noteAsync.isLoading && displayNote == null) {
+        return const Scaffold(body: Center(child: Text('笔记不存在')));
+      }
+    }
+
+    // 如果获取到了笔记但尚未初始化控制器，则进行初始化
+    if (displayNote != null && _currentNote == null) {
+      // 立即赋值，避免下次 build 再次进入此逻辑
+      _currentNote = displayNote;
+      _initControllers(displayNote);
+    }
+
+    if (_currentNote == null) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+
     // 监听详情状态
-    final detailState = ref.watch(noteDetailProvider(widget.note));
+    final detailState = ref.watch(noteDetailProvider(_currentNote!));
 
     return Scaffold(
       backgroundColor: colorScheme.surface,
@@ -91,8 +140,10 @@ class _NoteDetailPageState extends ConsumerState<NoteDetailPage> {
               onBack: () {
                 if (widget.onBack != null) {
                   widget.onBack!();
+                } else if (context.canPop()) {
+                  context.pop();
                 } else {
-                  Navigator.of(context).pop();
+                  context.go('/');
                 }
               },
               onShare: _onSharePressed,
@@ -129,8 +180,8 @@ class _NoteDetailPageState extends ConsumerState<NoteDetailPage> {
             padding: EdgeInsets.only(bottom: 80.h),
             child: NoteOriginalDataSection(
               note: state.note,
-              titleController: _titleController,
-              contentController: _contentController,
+              titleController: _titleController!,
+              contentController: _contentController!,
               onCategoryPressed: _onCategoryPressed,
               categoryName: _getCategoryName(state.note.categoryId),
               formattedDate: DateFormatter.formatChinese(state.note.time),
@@ -138,8 +189,9 @@ class _NoteDetailPageState extends ConsumerState<NoteDetailPage> {
               previewTitle: state.note.previewTitle,
               previewDescription: state.note.previewDescription,
               isLoadingPreview: state.isLoadingPreview,
-              onSave: () =>
-                  ref.read(noteDetailProvider(widget.note).notifier).saveNote(),
+              onSave: () => ref
+                  .read(noteDetailProvider(_currentNote!).notifier)
+                  .saveNote(),
               onLaunchUrl: _launchUrl,
               isDesktop: true,
               titleEnabled: ref.watch(appConfigProvider).titleEnabled,
@@ -166,7 +218,7 @@ class _NoteDetailPageState extends ConsumerState<NoteDetailPage> {
               tags: state.tags,
               onAddTag: _showAddTagDialog,
               onRemoveTag: (tag) => ref
-                  .read(noteDetailProvider(widget.note).notifier)
+                  .read(noteDetailProvider(_currentNote!).notifier)
                   .removeTag(tag),
               formattedDate: DateFormatter.formatChinese(state.note.time),
             ),
@@ -191,8 +243,8 @@ class _NoteDetailPageState extends ConsumerState<NoteDetailPage> {
           // 1. 原始数据区
           NoteOriginalDataSection(
             note: state.note,
-            titleController: _titleController,
-            contentController: _contentController,
+            titleController: _titleController!,
+            contentController: _contentController!,
             onCategoryPressed: _onCategoryPressed,
             categoryName: _getCategoryName(state.note.categoryId),
             formattedDate: DateFormatter.formatChinese(state.note.time),
@@ -201,7 +253,7 @@ class _NoteDetailPageState extends ConsumerState<NoteDetailPage> {
             previewDescription: state.note.previewDescription,
             isLoadingPreview: state.isLoadingPreview,
             onSave: () =>
-                ref.read(noteDetailProvider(widget.note).notifier).saveNote(),
+                ref.read(noteDetailProvider(_currentNote!).notifier).saveNote(),
             onLaunchUrl: _launchUrl,
             isDesktop: false,
             titleEnabled: ref.watch(appConfigProvider).titleEnabled,
@@ -219,7 +271,7 @@ class _NoteDetailPageState extends ConsumerState<NoteDetailPage> {
             tags: state.tags,
             onAddTag: _showAddTagDialog,
             onRemoveTag: (tag) => ref
-                .read(noteDetailProvider(widget.note).notifier)
+                .read(noteDetailProvider(_currentNote!).notifier)
                 .removeTag(tag),
           ),
 
@@ -231,7 +283,7 @@ class _NoteDetailPageState extends ConsumerState<NoteDetailPage> {
 
   /// 分享笔记
   void _onSharePressed() {
-    ref.read(noteDetailProvider(widget.note).notifier).shareNote(context);
+    ref.read(noteDetailProvider(_currentNote!).notifier).shareNote(context);
   }
 
   /// 删除笔记
@@ -244,9 +296,13 @@ class _NoteDetailPageState extends ConsumerState<NoteDetailPage> {
       confirmText: '确认',
     );
     if (confirmed == true) {
-      await ref.read(noteDetailProvider(widget.note).notifier).deleteNote();
+      await ref.read(noteDetailProvider(_currentNote!).notifier).deleteNote();
       if (mounted) {
-        Navigator.of(context).pop();
+        if (context.canPop()) {
+          context.pop();
+        } else {
+          context.go('/');
+        }
         CreativeToast.success(
           context,
           title: '笔记已删除',
@@ -281,14 +337,16 @@ class _NoteDetailPageState extends ConsumerState<NoteDetailPage> {
       builder: (context) => NoteCategorySelector(
         currentCategoryId: currentCategoryId,
         onCategorySelected: (id) {
-          ref.read(noteDetailProvider(widget.note).notifier).updateCategory(id);
+          ref
+              .read(noteDetailProvider(_currentNote!).notifier)
+              .updateCategory(id);
         },
         onAddCategory: (name) async {
           final categoryId = await ref
               .read(categoryServiceProvider)
               .addCategory(name: name);
           ref
-              .read(noteDetailProvider(widget.note).notifier)
+              .read(noteDetailProvider(_currentNote!).notifier)
               .updateCategory(categoryId);
           ref.invalidate(allCategoriesProvider);
         },
@@ -333,7 +391,7 @@ class _NoteDetailPageState extends ConsumerState<NoteDetailPage> {
                 final tag = textController.text.trim();
                 if (tag.isNotEmpty) {
                   ref
-                      .read(noteDetailProvider(widget.note).notifier)
+                      .read(noteDetailProvider(_currentNote!).notifier)
                       .addTag(tag);
                 }
                 Navigator.of(context).pop();
