@@ -17,7 +17,7 @@ mixin _$NoteEntity {
 /// 笔记ID，null 表示尚未持久化的新笔记
  int? get id;/// 笔记标题，可为空
  String? get title;/// 笔记内容
- String? get content;/// url
+ String? get content;/// 保存网页链接的 url
  String? get url;/// 创建/修改时间
  DateTime? get time;/// 分类ID，用于关联到 CategoryEntity
  int get categoryId;/// 标签
@@ -234,7 +234,7 @@ class _NoteEntity implements NoteEntity {
 @override final  String? title;
 /// 笔记内容
 @override final  String? content;
-/// url
+/// 保存网页链接的 url
 @override final  String? url;
 /// 创建/修改时间
 @override final  DateTime? time;

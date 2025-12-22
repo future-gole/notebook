@@ -77,6 +77,22 @@ Uses **Riverpod 3.0** with code generation:
 - **HttpClient**: Always use the encapsulated `HttpClient` from `package:pocketmind/api/http_client.dart`.
 - **Usage**: Access the Dio instance via `HttpClient().dio`.
 
+## 🏗️ 核心架构准则 (Core Architecture Rules)
+
+### 1. 单一职责原则 (Single Responsibility)
+- **UI 层**: 仅负责展示数据和转发用户交互。严禁包含路径解析、网络请求或复杂的业务逻辑。
+- **Service 层**: 业务逻辑的编排者。负责调度 Manager 和 Repository，处理跨实体的业务流程。
+- **Manager 层**: 专门的数据加工厂（如 `MetadataManager`）。负责具体的协议解析、资源本地化等，不直接操作数据库。
+
+### 2. 持久化驱动展示 (Persistence Driven)
+- UI 必须通过订阅数据库（Isar）的变化来更新。
+- 严禁在 UI 内存中维护复杂的临时状态，所有业务结果必须先落库，再通过流（Stream）反馈给 UI。
+
+### 3. 失败静默与重试机制
+- 元数据抓取或资源本地化失败时，**严禁**向数据库写入错误占位数据（如 "No Title" 或错误提示文字）。
+- 数据库字段应保持为 `null`。UI 层根据字段为 `null` 且非加载状态，显示“预览失败，请检查网络连接”。
+- 这种设计确保了数据的纯净性，并允许用户在下次进入页面时自动或手动触发重试。
+
 ### Database
 
 **Isar Community Edition** (NoSQL embedded database):

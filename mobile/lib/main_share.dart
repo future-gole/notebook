@@ -11,13 +11,16 @@ import 'package:pocketmind/page/share/share_success_page.dart';
 import 'package:pocketmind/page/widget/flowing_background.dart';
 import 'package:pocketmind/providers/infrastructure_providers.dart';
 import 'package:pocketmind/providers/note_providers.dart';
+import 'package:pocketmind/providers/shared_preferences_provider.dart';
 import 'package:pocketmind/service/note_service.dart';
 import 'package:pocketmind/service/notification_service.dart';
 import 'package:pocketmind/util/image_storage_helper.dart';
+import 'package:pocketmind/util/proxy_config.dart';
 import 'package:pocketmind/util/theme_data.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pocketmind/util/url_helper.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'util/logger_service.dart';
 import 'package:flutter_uri_to_file/flutter_uri_to_file.dart';
 
@@ -32,6 +35,21 @@ enum ShareUIState { waiting, success, editing }
 Future<void> mainShare() async {
   // 1. 初始化
   WidgetsFlutterBinding.ensureInitialized();
+
+  // 获取 SharedPreferences 实例
+  final prefs = await SharedPreferences.getInstance();
+
+  // 根据配置设置代理
+  final proxyEnabled = prefs.getBool('proxy_enabled') ?? false;
+  if (proxyEnabled) {
+    final proxyHost = prefs.getString('proxy_host') ?? '127.0.0.1';
+    final proxyPort = prefs.getInt('proxy_port') ?? 7890;
+    HttpOverrides.global = GlobalHttpOverrides(
+      '$proxyHost:$proxyPort',
+      allowBadCertificates: true,
+    );
+  }
+
   final dir = await getApplicationDocumentsDirectory();
 
   // 2. 打开 Isar 实例,和主示例相同，要不然存的地方就不一样了
@@ -40,12 +58,15 @@ Future<void> mainShare() async {
   final notificationSvc = NotificationService();
   await notificationSvc.init();
 
+  await ImageStorageHelper().init();
+
   // 4. 运行一个 只 包含分享 UI 的应用
   runApp(
     ProviderScope(
       overrides: [
         isarProvider.overrideWithValue(isar),
         notificationServiceProvider.overrideWithValue(notificationSvc),
+        sharedPreferencesProvider.overrideWithValue(prefs),
       ],
       child: const MyShareApp(),
     ),

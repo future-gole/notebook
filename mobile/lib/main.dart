@@ -22,6 +22,8 @@ import 'util/logger_service.dart';
 
 // 这会强制构建系统将 main_share.dart 编译到应用中
 // 防止另一个入口没有被引用
+import 'package:pocketmind/main_share.dart';
+
 late Isar isar;
 
 const _uuid = Uuid();

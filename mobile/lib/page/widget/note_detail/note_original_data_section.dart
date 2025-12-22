@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:pocketmind/domain/entities/note_entity.dart';
 import 'package:pocketmind/page/widget/hero_gallery.dart';
-import 'package:pocketmind/util/image_storage_helper.dart';
 import 'package:pocketmind/util/url_helper.dart';
 import 'note_link_content_section.dart';
 import 'note_source_link_card.dart';
@@ -57,25 +56,14 @@ class NoteOriginalDataSection extends StatelessWidget {
 
     // 只有本地图片才使用 getFileByRelativePath
     if (isLocalImage && note.url != null) {
-      final fullPath = ImageStorageHelper()
-          .getFileByRelativePath(note.url!)
-          .path;
-      displayImages.add(fullPath);
+      displayImages.add(note.url!);
     }
 
     // 如果是网络链接且预览图已加载，使用预览图
     if (isHttpsUrl && !isLocalImage) {
       isNetworkImage = true;
       if (previewImageUrl != null && previewImageUrl!.isNotEmpty) {
-        if (UrlHelper.isLocalImagePath(previewImageUrl)) {
-          // 如果预览图是本地路径，转换为绝对路径
-          final fullPath = ImageStorageHelper()
-              .getFileByRelativePath(previewImageUrl!)
-              .path;
-          displayImages.add(fullPath);
-        } else {
-          displayImages.add(previewImageUrl!);
-        }
+        displayImages.add(previewImageUrl!);
       }
     }
 

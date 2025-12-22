@@ -8,6 +8,9 @@ import 'package:pocketmind/service/note_service.dart';
 
 import '../util/logger_service.dart';
 
+import 'package:pocketmind/service/metadata_manager.dart';
+import 'package:pocketmind/api/link_preview_api_service.dart';
+
 part 'note_providers.g.dart';
 
 /// NoteRepository Provider - 数据层
@@ -18,12 +21,21 @@ NoteRepository noteRepository(Ref ref) {
   return IsarNoteRepository(isar);
 }
 
+/// MetadataManager Provider - 业务层
+/// 负责链接元数据解析和图片本地化
+@Riverpod(keepAlive: true)
+MetadataManager metadataManager(Ref ref) {
+  final apiService = ref.watch(linkPreviewServiceProvider);
+  return MetadataManager(apiService: apiService);
+}
+
 /// NoteService Provider - 业务层
 /// 现在依赖抽象的 Repository 接口
 @Riverpod(keepAlive: true)
 NoteService noteService(Ref ref) {
   final repository = ref.watch(noteRepositoryProvider);
-  return NoteService(repository);
+  final metadataManager = ref.watch(metadataManagerProvider);
+  return NoteService(repository, metadataManager);
 }
 
 /// 搜索查询 Provider - 用于管理当前搜索关键词

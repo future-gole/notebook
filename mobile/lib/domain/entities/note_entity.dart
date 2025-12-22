@@ -18,7 +18,7 @@ abstract class NoteEntity with _$NoteEntity {
     /// 笔记内容
     String? content,
 
-    /// url
+    /// 保存网页链接的 url
     String? url,
 
     /// 创建/修改时间

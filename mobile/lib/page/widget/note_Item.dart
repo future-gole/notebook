@@ -7,7 +7,7 @@ import 'package:pocketmind/domain/entities/note_entity.dart';
 import 'package:pocketmind/service/note_service.dart';
 import 'package:pocketmind/util/url_helper.dart';
 import 'link_preview_card.dart';
-import 'load_image_widget.dart';
+import 'pm_image.dart';
 import 'local_text_card.dart';
 
 String tag = 'noteItem';
@@ -138,7 +138,10 @@ class _NoteItemState extends ConsumerState<NoteItem>
                       ),
                       child: AspectRatio(
                         aspectRatio: widget.isGridMode ? 1.0 : 16 / 9,
-                        child: LocalImageWidget(relativePath: widget.note.url!),
+                        child: PMImage(
+                          pathOrUrl: widget.note.url!,
+                          fit: BoxFit.cover,
+                        ),
                       ),
                     ),
                     // 图片下面的文字部分

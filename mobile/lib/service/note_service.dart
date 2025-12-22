@@ -3,6 +3,7 @@ import 'package:pocketmind/domain/entities/note_entity.dart';
 import 'package:pocketmind/domain/repositories/note_repository.dart';
 import 'package:pocketmind/util/logger_service.dart';
 import 'package:pocketmind/util/image_storage_helper.dart';
+import 'package:pocketmind/service/metadata_manager.dart';
 
 final String noteServiceTag = 'NoteService';
 
@@ -12,9 +13,10 @@ final String noteServiceTag = 'NoteService';
 /// 这使得服务层与数据库实现完全解耦
 class NoteService {
   final NoteRepository _noteRepository;
+  final MetadataManager _metadataManager;
   final ImageStorageHelper _imageHelper = ImageStorageHelper();
 
-  NoteService(this._noteRepository);
+  NoteService(this._noteRepository, this._metadataManager);
 
   /// 增添/更新笔记
   ///
@@ -45,7 +47,26 @@ class NoteService {
       previewImageUrl: previewImageUrl,
     );
 
-    return await _noteRepository.save(noteEntity);
+    final savedId = await _noteRepository.save(noteEntity);
+
+    // 如果是新笔记且包含 URL，触发异步元数据抓取
+    if (id == null || id == -1) {
+      if (url != null && url.isNotEmpty) {
+        // 异步执行，不阻塞保存操作
+        Future.microtask(() async {
+          try {
+            final savedNote = await _noteRepository.getById(savedId);
+            if (savedNote != null) {
+              await enrichNoteWithMetadata(savedNote);
+            }
+          } catch (e) {
+            PMlog.e(noteServiceTag, 'Background enrichment failed: $e');
+          }
+        });
+      }
+    }
+
+    return savedId;
   }
 
   /// 根据笔记id获取笔记
@@ -131,6 +152,46 @@ class NoteService {
   /// 全部匹配查询
   Stream<List<NoteEntity>> findNotesWithQuery(String query) {
     return _noteRepository.findByQuery(query);
+  }
+
+  /// 丰富笔记元数据（链接预览）
+  ///
+  /// 自动抓取链接预览信息，本地化图片，并更新数据库
+  /// 如果抓取失败或数据不完整，不会更新数据库
+  Future<void> enrichNoteWithMetadata(NoteEntity note) async {
+    final url = note.url;
+    // 1. 基础校验：必须有 URL，且未处理过（或者强制刷新）
+    // 这里简单判断：如果已经有预览图或标题，就不再处理，避免重复流量
+    if (url == null ||
+        url.isEmpty ||
+        (note.previewImageUrl != null && note.previewImageUrl!.isNotEmpty) ||
+        (note.previewTitle != null && note.previewTitle!.isNotEmpty)) {
+      return;
+    }
+
+    PMlog.d(noteServiceTag, '开始获取链接元数据: $url');
+
+    try {
+      // 2. 调用 MetadataManager 获取并处理数据
+      final metadata = await _metadataManager.fetchAndProcessMetadata(url);
+
+      if (metadata != null) {
+        // 3. 更新数据库
+        // previewImageUrl 存储的是本地化后的路径
+        final updatedNote = note.copyWith(
+          previewImageUrl: metadata.image,
+          previewTitle: metadata.title,
+          previewDescription: metadata.desc,
+        );
+
+        await _noteRepository.save(updatedNote);
+        PMlog.d(noteServiceTag, '元数据已更新: ${note.id}');
+      }
+    } catch (e) {
+      PMlog.e(noteServiceTag, '丰富笔记元数据失败: $e');
+      // 这里可以选择抛出异常供 UI 层展示 Toast
+      rethrow;
+    }
   }
 
   /// 更新笔记的预览数据（链接预览图片、标题、描述）

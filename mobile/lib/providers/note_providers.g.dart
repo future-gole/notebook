@@ -57,6 +57,56 @@ final class NoteRepositoryProvider
 
 String _$noteRepositoryHash() => r'5fa35dc47447d083b69833aae1f1e66d66cef073';
 
+/// MetadataManager Provider - 业务层
+/// 负责链接元数据解析和图片本地化
+
+@ProviderFor(metadataManager)
+const metadataManagerProvider = MetadataManagerProvider._();
+
+/// MetadataManager Provider - 业务层
+/// 负责链接元数据解析和图片本地化
+
+final class MetadataManagerProvider
+    extends
+        $FunctionalProvider<MetadataManager, MetadataManager, MetadataManager>
+    with $Provider<MetadataManager> {
+  /// MetadataManager Provider - 业务层
+  /// 负责链接元数据解析和图片本地化
+  const MetadataManagerProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'metadataManagerProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$metadataManagerHash();
+
+  @$internal
+  @override
+  $ProviderElement<MetadataManager> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  MetadataManager create(Ref ref) {
+    return metadataManager(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(MetadataManager value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<MetadataManager>(value),
+    );
+  }
+}
+
+String _$metadataManagerHash() => r'04f7b0e84f079e1368cafd25e6fcd9db684265ec';
+
 /// NoteService Provider - 业务层
 /// 现在依赖抽象的 Repository 接口
 
@@ -104,7 +154,7 @@ final class NoteServiceProvider
   }
 }
 
-String _$noteServiceHash() => r'e1d56e60271e48942a7f4d8ca94518e4a3e430a6';
+String _$noteServiceHash() => r'b23230fef6b3448e075b2697e96c88d811f8a89c';
 
 /// 搜索查询 Provider - 用于管理当前搜索关键词
 
