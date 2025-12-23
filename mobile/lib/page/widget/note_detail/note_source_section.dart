@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:pocketmind/domain/entities/note_entity.dart';
+import 'package:pocketmind/model/note.dart';
 import 'package:pocketmind/util/url_helper.dart';
 
 class NoteSourceSection extends StatelessWidget {
-  final NoteEntity note;
+  final Note note;
   final Function(String) onLaunchUrl;
 
   const NoteSourceSection({

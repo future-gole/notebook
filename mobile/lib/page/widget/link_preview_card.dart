@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:any_link_preview/any_link_preview.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:pocketmind/domain/entities/note_entity.dart';
+import 'package:pocketmind/model/note.dart';
 import 'package:pocketmind/providers/app_config_provider.dart';
 import 'package:pocketmind/page/widget/pm_image.dart';
 
@@ -14,7 +14,7 @@ import 'source_info.dart';
 final String tag = 'LinkPreviewCard';
 
 class LinkPreviewCard extends ConsumerWidget {
-  final NoteEntity note;
+  final Note note;
   final bool isVertical;
   final bool hasContent;
   final VoidCallback onTap;
@@ -155,17 +155,21 @@ class _VerticalPreviewCard extends StatelessWidget {
         (metadata.desc == null || metadata.desc!.isEmpty) &&
         (metadata.image == null || metadata.image!.isEmpty);
 
+    // 桌面端图片高度增加
+    final imageHeight = isDesktop ? 180.w : _kVerticalImageHeight;
+
     return _BaseCardContainer(
       isVertical: true,
       hasContent: hasContent,
       isDesktop: isDesktop,
       // 只有空内容时才固定高度,正常内容自适应
       height: isEmptyContent
-          ? (_kVerticalImageHeight + _kVerticalPlaceholderContentHeight)
+          ? (imageHeight + _kVerticalPlaceholderContentHeight)
           : null,
       onTap: onTap,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
           _CardImageSection(
             imageUrl: imageUrl,

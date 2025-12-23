@@ -4,7 +4,7 @@ part 'category.g.dart';
 
 @collection
 class Category {
-  Id id = Isar.autoIncrement;
+  Id? id;
 
   /// 全局唯一标识符 (UUID v4)，用于跨设备同步
   @Index(unique: true)
@@ -23,4 +23,23 @@ class Category {
 
   /// 软删除标记，true 表示已删除
   bool isDeleted = false;
+
+  Category copyWith({
+    Id? id,
+    String? uuid,
+    String? name,
+    String? description,
+    DateTime? createdTime,
+    int? updatedAt,
+    bool? isDeleted,
+  }) {
+    return Category()
+      ..id = id ?? this.id
+      ..uuid = uuid ?? this.uuid
+      ..name = name ?? this.name
+      ..description = description ?? this.description
+      ..createdTime = createdTime ?? this.createdTime
+      ..updatedAt = updatedAt ?? this.updatedAt
+      ..isDeleted = isDeleted ?? this.isDeleted;
+  }
 }

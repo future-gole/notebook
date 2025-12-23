@@ -5,7 +5,7 @@ part 'note.g.dart';
 
 @collection
 class Note {
-  Id id = Isar.autoIncrement;
+  Id? id;
 
   /// 全局唯一标识符 (UUID v4)，用于跨设备同步
   @Index(unique: true)
@@ -43,4 +43,35 @@ class Note {
 
   /// 链接预览描述
   String? previewDescription;
+
+  Note copyWith({
+    Id? id,
+    String? uuid,
+    String? title,
+    String? content,
+    String? url,
+    DateTime? time,
+    int? updatedAt,
+    bool? isDeleted,
+    int? categoryId,
+    String? tag,
+    String? previewImageUrl,
+    String? previewTitle,
+    String? previewDescription,
+  }) {
+    return Note()
+      ..id = id ?? this.id
+      ..uuid = uuid ?? this.uuid
+      ..title = title ?? this.title
+      ..content = content ?? this.content
+      ..url = url ?? this.url
+      ..time = time ?? this.time
+      ..updatedAt = updatedAt ?? this.updatedAt
+      ..isDeleted = isDeleted ?? this.isDeleted
+      ..categoryId = categoryId ?? this.categoryId
+      ..tag = tag ?? this.tag
+      ..previewImageUrl = previewImageUrl ?? this.previewImageUrl
+      ..previewTitle = previewTitle ?? this.previewTitle
+      ..previewDescription = previewDescription ?? this.previewDescription;
+  }
 }

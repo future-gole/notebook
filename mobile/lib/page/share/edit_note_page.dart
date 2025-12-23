@@ -366,7 +366,7 @@ class EditNotePageState extends ConsumerState<EditNotePage> {
                 WidgetsBinding.instance.addPostFrameCallback((_) {
                   if (!mounted) return;
                   setState(() {
-                    _selectedCategoryId = matchedCategory.id;
+                    _selectedCategoryId = matchedCategory.id ?? 0;
                     _selectedCategory = matchedCategory.name;
                   });
                 });
@@ -390,7 +390,7 @@ class EditNotePageState extends ConsumerState<EditNotePage> {
                       onChanged: (value) {
                         setState(() {
                           _selectedCategory = value!;
-                          _selectedCategoryId = category.id;
+                          _selectedCategoryId = category.id ?? 0;
                         });
                       },
                       activeColor: colorScheme.primary,

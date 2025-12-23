@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:pocketmind/domain/entities/note_entity.dart';
+import 'package:pocketmind/model/note.dart';
 import 'package:pocketmind/providers/note_providers.dart';
 import 'package:pocketmind/util/url_helper.dart';
 import 'package:pocketmind/util/logger_service.dart';
@@ -12,7 +12,7 @@ part 'note_detail_provider.g.dart';
 @freezed
 abstract class NoteDetailState with _$NoteDetailState {
   const factory NoteDetailState({
-    required NoteEntity note,
+    required Note note,
     @Default(false) bool isLoadingPreview,
     @Default([]) List<String> tags,
     @Default(false) bool isSaving,
@@ -26,7 +26,7 @@ class NoteDetail extends _$NoteDetail {
   static const _tag = 'NoteDetailNotifier';
 
   @override
-  NoteDetailState build(NoteEntity initialNote) {
+  NoteDetailState build(Note initialNote) {
     // 初始化标签
     final tags = initialNote.tag != null && initialNote.tag!.isNotEmpty
         ? initialNote.tag!
@@ -101,7 +101,12 @@ class NoteDetail extends _$NoteDetail {
         categoryId: state.note.categoryId,
         tag: state.note.tag,
         previewImageUrl: state.note.previewImageUrl,
+        previewTitle: state.note.previewTitle,
+        previewDescription: state.note.previewDescription,
+        updatedAt: state.note.updatedAt,
       );
+
+      if (!ref.mounted) return;
 
       if (state.note.id == null) {
         state = state.copyWith(note: state.note.copyWith(id: id));
@@ -110,9 +115,13 @@ class NoteDetail extends _$NoteDetail {
       PMlog.d(_tag, 'Note saved successfully: $id');
     } catch (e) {
       PMlog.e(_tag, 'Failed to save note: $e');
-      state = state.copyWith(error: e);
+      if (ref.mounted) {
+        state = state.copyWith(error: e);
+      }
     } finally {
-      state = state.copyWith(isSaving: false);
+      if (ref.mounted) {
+        state = state.copyWith(isSaving: false);
+      }
     }
   }
 
@@ -139,6 +148,7 @@ class NoteDetail extends _$NoteDetail {
       return;
     }
 
+    if (!ref.mounted) return;
     state = state.copyWith(isLoadingPreview: true);
 
     try {
@@ -147,7 +157,9 @@ class NoteDetail extends _$NoteDetail {
       PMlog.e(_tag, 'Failed to load link preview: $e');
       // 可以在这里设置 error state 供 UI 显示 Toast
     } finally {
-      state = state.copyWith(isLoadingPreview: false);
+      if (ref.mounted) {
+        state = state.copyWith(isLoadingPreview: false);
+      }
     }
   }
 

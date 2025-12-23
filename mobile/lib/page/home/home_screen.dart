@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
-import 'package:pocketmind/domain/entities/note_entity.dart';
+import 'package:pocketmind/model/note.dart';
 import 'package:pocketmind/page/widget/glass_nav_bar.dart';
 import 'package:pocketmind/page/widget/note_item.dart';
 import 'package:pocketmind/page/home/note_add_sheet.dart';
@@ -386,7 +386,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 
   // 构建搜索结果列表
   Widget _buildSearchResults(
-    AsyncValue<List<NoteEntity>> searchResults,
+    AsyncValue<List<Note>> searchResults,
     NoteLayout currentLayout,
     noteService,
   ) {
@@ -429,7 +429,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 
   // 构建笔记列表
   Widget _buildNotesList(
-    List<NoteEntity> notes,
+    List<Note> notes,
     NoteLayout currentLayout,
     noteService,
   ) {

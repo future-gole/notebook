@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
-import 'package:pocketmind/domain/entities/note_entity.dart';
+import 'package:pocketmind/model/note.dart';
 import 'package:pocketmind/providers/category_providers.dart';
 import 'package:pocketmind/providers/app_config_provider.dart';
 import 'package:pocketmind/providers/note_detail_provider.dart';
@@ -22,7 +22,7 @@ import '../../util/date_formatter.dart';
 /// 桌面端：左右分栏布局
 /// 移动端：垂直滚动布局
 class NoteDetailPage extends ConsumerStatefulWidget {
-  final NoteEntity? note;
+  final Note? note;
   final int? noteId;
 
   /// 桌面端返回回调 - 用于清除选中状态
@@ -42,7 +42,7 @@ class _NoteDetailPageState extends ConsumerState<NoteDetailPage> {
   late final ScrollController _scrollController;
   TextEditingController? _titleController;
   TextEditingController? _contentController;
-  NoteEntity? _currentNote;
+  Note? _currentNote;
 
   @override
   void initState() {
@@ -55,7 +55,7 @@ class _NoteDetailPageState extends ConsumerState<NoteDetailPage> {
     }
   }
 
-  void _initControllers(NoteEntity note) {
+  void _initControllers(Note note) {
     _contentController = TextEditingController(text: note.content ?? '');
     _titleController = TextEditingController(text: note.title ?? '');
 
@@ -95,7 +95,7 @@ class _NoteDetailPageState extends ConsumerState<NoteDetailPage> {
     );
 
     // 确定当前显示的笔记
-    NoteEntity? displayNote = _currentNote ?? widget.note;
+    Note? displayNote = _currentNote ?? widget.note;
 
     // 如果当前没有笔记且有 ID，则从 Provider 获取
     if (displayNote == null && widget.noteId != null) {

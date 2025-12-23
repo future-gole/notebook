@@ -3,7 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:pocketmind/router/route_paths.dart';
-import 'package:pocketmind/domain/entities/note_entity.dart';
+import 'package:pocketmind/model/note.dart';
 import 'package:pocketmind/service/note_service.dart';
 import 'package:pocketmind/util/url_helper.dart';
 import 'link_preview_card.dart';
@@ -14,7 +14,7 @@ String tag = 'noteItem';
 
 // 改为 StatefulWidget 以支持 AutomaticKeepAliveClientMixin
 class NoteItem extends ConsumerStatefulWidget {
-  final NoteEntity note;
+  final Note note;
   final bool isGridMode;
   final bool isDesktop;
 

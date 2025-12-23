@@ -27,15 +27,10 @@ class PMAppBar extends StatelessWidget implements PreferredSizeWidget {
     final isDesktop =
         Platform.isWindows || Platform.isMacOS || Platform.isLinux;
 
-    // 如果是桌面端，且没有手动指定 leading，且当前路由可以返回
+    // 统一处理返回按钮：如果当前路由可以返回，且没有手动指定 leading
     Widget? effectiveLeading = leading;
-    if (isDesktop && leading == null && automaticallyImplyLeading) {
-      if (context.canPop()) {
-        effectiveLeading = IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.pop(),
-        );
-      }
+    if (leading == null && automaticallyImplyLeading && context.canPop()) {
+      effectiveLeading = BackButton(onPressed: () => context.pop());
     }
 
     return AppBar(

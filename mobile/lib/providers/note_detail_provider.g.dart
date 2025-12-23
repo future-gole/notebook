@@ -16,7 +16,7 @@ final class NoteDetailProvider
     extends $NotifierProvider<NoteDetail, NoteDetailState> {
   const NoteDetailProvider._({
     required NoteDetailFamily super.from,
-    required NoteEntity super.argument,
+    required Note super.argument,
   }) : super(
          retry: null,
          name: r'noteDetailProvider',
@@ -58,7 +58,7 @@ final class NoteDetailProvider
   }
 }
 
-String _$noteDetailHash() => r'95c81d335d7bcca6090fd3cd2f3d517eeacaf279';
+String _$noteDetailHash() => r'ba458c67bf978ff064bac214cbdac3a67b49d301';
 
 final class NoteDetailFamily extends $Family
     with
@@ -67,7 +67,7 @@ final class NoteDetailFamily extends $Family
           NoteDetailState,
           NoteDetailState,
           NoteDetailState,
-          NoteEntity
+          Note
         > {
   const NoteDetailFamily._()
     : super(
@@ -78,7 +78,7 @@ final class NoteDetailFamily extends $Family
         isAutoDispose: true,
       );
 
-  NoteDetailProvider call(NoteEntity initialNote) =>
+  NoteDetailProvider call(Note initialNote) =>
       NoteDetailProvider._(argument: initialNote, from: this);
 
   @override
@@ -86,10 +86,10 @@ final class NoteDetailFamily extends $Family
 }
 
 abstract class _$NoteDetail extends $Notifier<NoteDetailState> {
-  late final _$args = ref.$arg as NoteEntity;
-  NoteEntity get initialNote => _$args;
+  late final _$args = ref.$arg as Note;
+  Note get initialNote => _$args;
 
-  NoteDetailState build(NoteEntity initialNote);
+  NoteDetailState build(Note initialNote);
   @$mustCallSuper
   @override
   void runBuild() {

@@ -1,15 +1,13 @@
 import 'package:isar_community/isar.dart';
 import 'package:pocketmind/model/nav_item.dart';
 import 'package:pocketmind/model/category.dart';
-import 'package:pocketmind/repository/nav_item_repository.dart';
 
 /// 基于 Isar Category 的导航项仓库实现
-class IsarNavItemRepository implements NavItemRepository {
+class IsarNavItemRepository {
   final Isar isar;
 
   IsarNavItemRepository(this.isar);
 
-  @override
   Stream<List<NavItem>> watchNavItems() {
     return isar.categorys
         .filter()
@@ -17,16 +15,16 @@ class IsarNavItemRepository implements NavItemRepository {
         .sortByCreatedTime() // 2. 排序
         .watch(fireImmediately: true)
         .map((categories) {
-      // 3. 此时 categories 里全是有效数据，直接转换即可
-      return categories.map((category) {
-        return NavItem(
-          svgPath: _getIconForCategory(category.name),
-          text: category.name,
-          category: category.name,
-          categoryId: category.id,
-        );
-      }).toList();
-    });
+          // 3. 此时 categories 里全是有效数据，直接转换即可
+          return categories.map((category) {
+            return NavItem(
+              svgPath: _getIconForCategory(category.name),
+              text: category.name,
+              category: category.name,
+              categoryId: category.id ?? 0,
+            );
+          }).toList();
+        });
   }
 
   /// 根据 category 返回对应的图标路径

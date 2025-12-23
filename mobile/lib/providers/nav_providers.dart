@@ -1,14 +1,14 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:pocketmind/model/nav_item.dart';
 import 'package:pocketmind/repository/isar_nav_item_repository.dart';
-import 'package:pocketmind/repository/nav_item_repository.dart';
 import 'package:pocketmind/providers/infrastructure_providers.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 part 'nav_providers.g.dart';
 
 /// NavItemRepository Provider
 @Riverpod(keepAlive: true)
-NavItemRepository navItemRepository(Ref ref) {
+IsarNavItemRepository navItemRepository(Ref ref) {
   final isar = ref.watch(isarProvider);
   return IsarNavItemRepository(isar);
 }

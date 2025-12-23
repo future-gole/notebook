@@ -1,18 +1,18 @@
 import 'package:pocketmind/core/constants.dart';
-import 'package:pocketmind/domain/entities/note_entity.dart';
-import 'package:pocketmind/domain/repositories/note_repository.dart';
+import 'package:pocketmind/model/note.dart';
+import 'package:pocketmind/data/repositories/isar_note_repository.dart';
 import 'package:pocketmind/util/logger_service.dart';
 import 'package:pocketmind/util/image_storage_helper.dart';
 import 'package:pocketmind/service/metadata_manager.dart';
+import 'package:isar_community/isar.dart';
 
 final String noteServiceTag = 'NoteService';
 
 /// 笔记业务服务层
 ///
-/// 现在依赖抽象的 NoteRepository 接口，而不是具体的 Isar 实现
-/// 这使得服务层与数据库实现完全解耦
+/// 直接使用 IsarNoteRepository 和 Note 模型
 class NoteService {
-  final NoteRepository _noteRepository;
+  final IsarNoteRepository _noteRepository;
   final MetadataManager _metadataManager;
   final ImageStorageHelper _imageHelper = ImageStorageHelper();
 
@@ -29,25 +29,37 @@ class NoteService {
     int categoryId = AppConstants.homeCategoryId,
     String? tag,
     String? previewImageUrl,
+    String? previewTitle,
+    String? previewDescription,
+    int? updatedAt,
+    bool updateTimestamp = true,
   }) async {
     PMlog.d(
       noteServiceTag,
-      'Saving note: id: $id, title: $title, categoryId: $categoryId',
+      'Saving note: id: $id, title: $title, categoryId: $categoryId, updateTimestamp: $updateTimestamp',
     );
 
-    // 创建领域实体
-    final noteEntity = NoteEntity(
-      id: (id != null && id != -1) ? id : null,
-      title: title,
-      content: content,
-      url: url,
-      categoryId: categoryId,
-      time: DateTime.now(),
-      tag: tag,
-      previewImageUrl: previewImageUrl,
-    );
+    // 创建 Note 模型
+    final note = Note()
+      ..title = title
+      ..content = content
+      ..url = url
+      ..categoryId = categoryId
+      ..time = DateTime.now()
+      ..tag = tag
+      ..previewImageUrl = previewImageUrl
+      ..previewTitle = previewTitle
+      ..previewDescription = previewDescription
+      ..updatedAt = updatedAt ?? 0;
 
-    final savedId = await _noteRepository.save(noteEntity);
+    if (id != null && id != -1) {
+      note.id = id;
+    }
+
+    final savedId = await _noteRepository.save(
+      note,
+      updateTimestamp: updateTimestamp,
+    );
 
     // 如果是新笔记且包含 URL，触发异步元数据抓取
     if (id == null || id == -1) {
@@ -70,22 +82,22 @@ class NoteService {
   }
 
   /// 根据笔记id获取笔记
-  Future<NoteEntity?> getNoteById(int noteId) async {
+  Future<Note?> getNoteById(int noteId) async {
     return await _noteRepository.getById(noteId);
   }
 
   /// 获取所有笔记
-  Future<List<NoteEntity>> getAllNotes() async {
+  Future<List<Note>> getAllNotes() async {
     return await _noteRepository.getAll();
   }
 
   /// 监听并且获取所有笔记
-  Stream<List<NoteEntity>> watchAllNotes() {
+  Stream<List<Note>> watchAllNotes() {
     return _noteRepository.watchAll();
   }
 
   /// 监听categories变化并且获取笔记
-  Stream<List<NoteEntity>> watchCategoryNotes(int category) {
+  Stream<List<Note>> watchCategoryNotes(int category) {
     return _noteRepository.watchByCategory(category);
   }
 
@@ -98,9 +110,7 @@ class NoteService {
   }
 
   /// 删除完整笔记对象及其关联资源
-  Future<void> deleteFullNote(NoteEntity note) async {
-    if (note.id == null) return;
-
+  Future<void> deleteFullNote(Note note) async {
     // 1. 处理关联资源（如本地图片）
     final url = note.url;
     if (url != null && url.isNotEmpty && _isLocalImage(url)) {
@@ -115,8 +125,10 @@ class NoteService {
     }
 
     // 2. 从数据库删除
-    await _noteRepository.delete(note.id!);
-    PMlog.d(noteServiceTag, 'Note deleted: ${note.id}');
+    if (note.id != null) {
+      await _noteRepository.delete(note.id!);
+      PMlog.d(noteServiceTag, 'Note deleted: ${note.id}');
+    }
   }
 
   bool _isLocalImage(String path) {
@@ -130,27 +142,27 @@ class NoteService {
   }
 
   /// 根据 title 查询笔记
-  Future<List<NoteEntity>> findNotesWithTitle(String query) async {
+  Future<List<Note>> findNotesWithTitle(String query) async {
     return await _noteRepository.findByTitle(query);
   }
 
   /// 根据 content 查询笔记
-  Future<List<NoteEntity>> findNotesWithContent(String query) async {
+  Future<List<Note>> findNotesWithContent(String query) async {
     return await _noteRepository.findByContent(query);
   }
 
   /// 根据 categoryId 查询笔记
-  Future<List<NoteEntity>> findNotesWithCategory(int categoryId) async {
+  Future<List<Note>> findNotesWithCategory(int categoryId) async {
     return await _noteRepository.findByCategoryId(categoryId);
   }
 
   /// 根据 tag 查询笔记
-  Future<List<NoteEntity>> findNotesWithTag(String query) async {
+  Future<List<Note>> findNotesWithTag(String query) async {
     return await _noteRepository.findByTag(query);
   }
 
   /// 全部匹配查询
-  Stream<List<NoteEntity>> findNotesWithQuery(String query) {
+  Stream<List<Note>> findNotesWithQuery(String query) {
     return _noteRepository.findByQuery(query);
   }
 
@@ -158,7 +170,7 @@ class NoteService {
   ///
   /// 自动抓取链接预览信息，本地化图片，并更新数据库
   /// 如果抓取失败或数据不完整，不会更新数据库
-  Future<void> enrichNoteWithMetadata(NoteEntity note) async {
+  Future<void> enrichNoteWithMetadata(Note note) async {
     final url = note.url;
     // 1. 基础校验：必须有 URL，且未处理过（或者强制刷新）
     // 这里简单判断：如果已经有预览图或标题，就不再处理，避免重复流量
@@ -178,13 +190,11 @@ class NoteService {
       if (metadata != null) {
         // 3. 更新数据库
         // previewImageUrl 存储的是本地化后的路径
-        final updatedNote = note.copyWith(
-          previewImageUrl: metadata.image,
-          previewTitle: metadata.title,
-          previewDescription: metadata.desc,
-        );
+        note.previewImageUrl = metadata.image;
+        note.previewTitle = metadata.title;
+        note.previewDescription = metadata.desc;
 
-        await _noteRepository.save(updatedNote);
+        await _noteRepository.save(note);
         PMlog.d(noteServiceTag, '元数据已更新: ${note.id}');
       }
     } catch (e) {
@@ -204,12 +214,11 @@ class NoteService {
     final note = await _noteRepository.getById(noteId);
     if (note == null) return;
 
-    final updated = note.copyWith(
-      previewImageUrl: previewImageUrl,
-      previewTitle: previewTitle,
-      previewDescription: previewDescription,
-    );
-    await _noteRepository.save(updated);
+    note.previewImageUrl = previewImageUrl;
+    note.previewTitle = previewTitle;
+    note.previewDescription = previewDescription;
+
+    await _noteRepository.save(note);
     PMlog.d(noteServiceTag, '预览数据已保存: noteId=$noteId');
   }
 }

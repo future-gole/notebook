@@ -14,7 +14,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$NoteDetailState {
 
- NoteEntity get note; bool get isLoadingPreview; List<String> get tags; bool get isSaving; Object? get error;
+ Note get note; bool get isLoadingPreview; List<String> get tags; bool get isSaving; Object? get error;
 /// Create a copy of NoteDetailState
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -45,11 +45,11 @@ abstract mixin class $NoteDetailStateCopyWith<$Res>  {
   factory $NoteDetailStateCopyWith(NoteDetailState value, $Res Function(NoteDetailState) _then) = _$NoteDetailStateCopyWithImpl;
 @useResult
 $Res call({
- NoteEntity note, bool isLoadingPreview, List<String> tags, bool isSaving, Object? error
+ Note note, bool isLoadingPreview, List<String> tags, bool isSaving, Object? error
 });
 
 
-$NoteEntityCopyWith<$Res> get note;
+
 
 }
 /// @nodoc
@@ -65,22 +65,13 @@ class _$NoteDetailStateCopyWithImpl<$Res>
 @pragma('vm:prefer-inline') @override $Res call({Object? note = null,Object? isLoadingPreview = null,Object? tags = null,Object? isSaving = null,Object? error = freezed,}) {
   return _then(_self.copyWith(
 note: null == note ? _self.note : note // ignore: cast_nullable_to_non_nullable
-as NoteEntity,isLoadingPreview: null == isLoadingPreview ? _self.isLoadingPreview : isLoadingPreview // ignore: cast_nullable_to_non_nullable
+as Note,isLoadingPreview: null == isLoadingPreview ? _self.isLoadingPreview : isLoadingPreview // ignore: cast_nullable_to_non_nullable
 as bool,tags: null == tags ? _self.tags : tags // ignore: cast_nullable_to_non_nullable
 as List<String>,isSaving: null == isSaving ? _self.isSaving : isSaving // ignore: cast_nullable_to_non_nullable
 as bool,error: freezed == error ? _self.error : error ,
   ));
 }
-/// Create a copy of NoteDetailState
-/// with the given fields replaced by the non-null parameter values.
-@override
-@pragma('vm:prefer-inline')
-$NoteEntityCopyWith<$Res> get note {
-  
-  return $NoteEntityCopyWith<$Res>(_self.note, (value) {
-    return _then(_self.copyWith(note: value));
-  });
-}
+
 }
 
 
@@ -162,7 +153,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( NoteEntity note,  bool isLoadingPreview,  List<String> tags,  bool isSaving,  Object? error)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( Note note,  bool isLoadingPreview,  List<String> tags,  bool isSaving,  Object? error)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _NoteDetailState() when $default != null:
 return $default(_that.note,_that.isLoadingPreview,_that.tags,_that.isSaving,_that.error);case _:
@@ -183,7 +174,7 @@ return $default(_that.note,_that.isLoadingPreview,_that.tags,_that.isSaving,_tha
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( NoteEntity note,  bool isLoadingPreview,  List<String> tags,  bool isSaving,  Object? error)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( Note note,  bool isLoadingPreview,  List<String> tags,  bool isSaving,  Object? error)  $default,) {final _that = this;
 switch (_that) {
 case _NoteDetailState():
 return $default(_that.note,_that.isLoadingPreview,_that.tags,_that.isSaving,_that.error);case _:
@@ -203,7 +194,7 @@ return $default(_that.note,_that.isLoadingPreview,_that.tags,_that.isSaving,_tha
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( NoteEntity note,  bool isLoadingPreview,  List<String> tags,  bool isSaving,  Object? error)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( Note note,  bool isLoadingPreview,  List<String> tags,  bool isSaving,  Object? error)?  $default,) {final _that = this;
 switch (_that) {
 case _NoteDetailState() when $default != null:
 return $default(_that.note,_that.isLoadingPreview,_that.tags,_that.isSaving,_that.error);case _:
@@ -221,7 +212,7 @@ class _NoteDetailState implements NoteDetailState {
   const _NoteDetailState({required this.note, this.isLoadingPreview = false, final  List<String> tags = const [], this.isSaving = false, this.error}): _tags = tags;
   
 
-@override final  NoteEntity note;
+@override final  Note note;
 @override@JsonKey() final  bool isLoadingPreview;
  final  List<String> _tags;
 @override@JsonKey() List<String> get tags {
@@ -263,11 +254,11 @@ abstract mixin class _$NoteDetailStateCopyWith<$Res> implements $NoteDetailState
   factory _$NoteDetailStateCopyWith(_NoteDetailState value, $Res Function(_NoteDetailState) _then) = __$NoteDetailStateCopyWithImpl;
 @override @useResult
 $Res call({
- NoteEntity note, bool isLoadingPreview, List<String> tags, bool isSaving, Object? error
+ Note note, bool isLoadingPreview, List<String> tags, bool isSaving, Object? error
 });
 
 
-@override $NoteEntityCopyWith<$Res> get note;
+
 
 }
 /// @nodoc
@@ -283,23 +274,14 @@ class __$NoteDetailStateCopyWithImpl<$Res>
 @override @pragma('vm:prefer-inline') $Res call({Object? note = null,Object? isLoadingPreview = null,Object? tags = null,Object? isSaving = null,Object? error = freezed,}) {
   return _then(_NoteDetailState(
 note: null == note ? _self.note : note // ignore: cast_nullable_to_non_nullable
-as NoteEntity,isLoadingPreview: null == isLoadingPreview ? _self.isLoadingPreview : isLoadingPreview // ignore: cast_nullable_to_non_nullable
+as Note,isLoadingPreview: null == isLoadingPreview ? _self.isLoadingPreview : isLoadingPreview // ignore: cast_nullable_to_non_nullable
 as bool,tags: null == tags ? _self._tags : tags // ignore: cast_nullable_to_non_nullable
 as List<String>,isSaving: null == isSaving ? _self.isSaving : isSaving // ignore: cast_nullable_to_non_nullable
 as bool,error: freezed == error ? _self.error : error ,
   ));
 }
 
-/// Create a copy of NoteDetailState
-/// with the given fields replaced by the non-null parameter values.
-@override
-@pragma('vm:prefer-inline')
-$NoteEntityCopyWith<$Res> get note {
-  
-  return $NoteEntityCopyWith<$Res>(_self.note, (value) {
-    return _then(_self.copyWith(note: value));
-  });
-}
+
 }
 
 // dart format on

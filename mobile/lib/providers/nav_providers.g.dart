@@ -18,11 +18,11 @@ const navItemRepositoryProvider = NavItemRepositoryProvider._();
 final class NavItemRepositoryProvider
     extends
         $FunctionalProvider<
-          NavItemRepository,
-          NavItemRepository,
-          NavItemRepository
+          IsarNavItemRepository,
+          IsarNavItemRepository,
+          IsarNavItemRepository
         >
-    with $Provider<NavItemRepository> {
+    with $Provider<IsarNavItemRepository> {
   /// NavItemRepository Provider
   const NavItemRepositoryProvider._()
     : super(
@@ -40,25 +40,25 @@ final class NavItemRepositoryProvider
 
   @$internal
   @override
-  $ProviderElement<NavItemRepository> $createElement(
+  $ProviderElement<IsarNavItemRepository> $createElement(
     $ProviderPointer pointer,
   ) => $ProviderElement(pointer);
 
   @override
-  NavItemRepository create(Ref ref) {
+  IsarNavItemRepository create(Ref ref) {
     return navItemRepository(ref);
   }
 
   /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(NavItemRepository value) {
+  Override overrideWithValue(IsarNavItemRepository value) {
     return $ProviderOverride(
       origin: this,
-      providerOverride: $SyncValueProvider<NavItemRepository>(value),
+      providerOverride: $SyncValueProvider<IsarNavItemRepository>(value),
     );
   }
 }
 
-String _$navItemRepositoryHash() => r'80230016db1da86732a5b3dc228186d9d750b62d';
+String _$navItemRepositoryHash() => r'128de12b0c61ad896e9858d9d32785f2ba6b2569';
 
 /// 导航项列表 Provider (Stream)
 

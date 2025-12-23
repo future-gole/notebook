@@ -18,8 +18,13 @@ const noteRepositoryProvider = NoteRepositoryProvider._();
 /// 提供 Isar 的具体实现
 
 final class NoteRepositoryProvider
-    extends $FunctionalProvider<NoteRepository, NoteRepository, NoteRepository>
-    with $Provider<NoteRepository> {
+    extends
+        $FunctionalProvider<
+          IsarNoteRepository,
+          IsarNoteRepository,
+          IsarNoteRepository
+        >
+    with $Provider<IsarNoteRepository> {
   /// NoteRepository Provider - 数据层
   /// 提供 Isar 的具体实现
   const NoteRepositoryProvider._()
@@ -38,24 +43,25 @@ final class NoteRepositoryProvider
 
   @$internal
   @override
-  $ProviderElement<NoteRepository> $createElement($ProviderPointer pointer) =>
-      $ProviderElement(pointer);
+  $ProviderElement<IsarNoteRepository> $createElement(
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
 
   @override
-  NoteRepository create(Ref ref) {
+  IsarNoteRepository create(Ref ref) {
     return noteRepository(ref);
   }
 
   /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(NoteRepository value) {
+  Override overrideWithValue(IsarNoteRepository value) {
     return $ProviderOverride(
       origin: this,
-      providerOverride: $SyncValueProvider<NoteRepository>(value),
+      providerOverride: $SyncValueProvider<IsarNoteRepository>(value),
     );
   }
 }
 
-String _$noteRepositoryHash() => r'5fa35dc47447d083b69833aae1f1e66d66cef073';
+String _$noteRepositoryHash() => r'2230305745bfbe04e0c422da4f823e2d777bb3cb';
 
 /// MetadataManager Provider - 业务层
 /// 负责链接元数据解析和图片本地化
@@ -225,11 +231,11 @@ const searchResultsProvider = SearchResultsProvider._();
 final class SearchResultsProvider
     extends
         $FunctionalProvider<
-          AsyncValue<List<NoteEntity>>,
-          List<NoteEntity>,
-          Stream<List<NoteEntity>>
+          AsyncValue<List<Note>>,
+          List<Note>,
+          Stream<List<Note>>
         >
-    with $FutureModifier<List<NoteEntity>>, $StreamProvider<List<NoteEntity>> {
+    with $FutureModifier<List<Note>>, $StreamProvider<List<Note>> {
   /// 搜索结果 Provider - 根据搜索查询返回结果
   const SearchResultsProvider._()
     : super(
@@ -247,17 +253,16 @@ final class SearchResultsProvider
 
   @$internal
   @override
-  $StreamProviderElement<List<NoteEntity>> $createElement(
-    $ProviderPointer pointer,
-  ) => $StreamProviderElement(pointer);
+  $StreamProviderElement<List<Note>> $createElement($ProviderPointer pointer) =>
+      $StreamProviderElement(pointer);
 
   @override
-  Stream<List<NoteEntity>> create(Ref ref) {
+  Stream<List<Note>> create(Ref ref) {
     return searchResults(ref);
   }
 }
 
-String _$searchResultsHash() => r'ebcc6e9ea28e1d9a8bfa0964af302821321c4567';
+String _$searchResultsHash() => r'850c9dcc518a7ebb0f47a85325ac93481d57f499';
 
 /// 所有笔记的 Stream Provider
 
@@ -269,11 +274,11 @@ const allNotesProvider = AllNotesProvider._();
 final class AllNotesProvider
     extends
         $FunctionalProvider<
-          AsyncValue<List<NoteEntity>>,
-          List<NoteEntity>,
-          Stream<List<NoteEntity>>
+          AsyncValue<List<Note>>,
+          List<Note>,
+          Stream<List<Note>>
         >
-    with $FutureModifier<List<NoteEntity>>, $StreamProvider<List<NoteEntity>> {
+    with $FutureModifier<List<Note>>, $StreamProvider<List<Note>> {
   /// 所有笔记的 Stream Provider
   const AllNotesProvider._()
     : super(
@@ -291,17 +296,16 @@ final class AllNotesProvider
 
   @$internal
   @override
-  $StreamProviderElement<List<NoteEntity>> $createElement(
-    $ProviderPointer pointer,
-  ) => $StreamProviderElement(pointer);
+  $StreamProviderElement<List<Note>> $createElement($ProviderPointer pointer) =>
+      $StreamProviderElement(pointer);
 
   @override
-  Stream<List<NoteEntity>> create(Ref ref) {
+  Stream<List<Note>> create(Ref ref) {
     return allNotes(ref);
   }
 }
 
-String _$allNotesHash() => r'2a341e98bfdc03cc4f5ce2acee5d414fd436d640';
+String _$allNotesHash() => r'b56a84aab596f41c7ffcc4baf7f26f1cbac05f87';
 
 /// 根据 ID 获取笔记的 Provider
 
@@ -311,13 +315,8 @@ const noteByIdProvider = NoteByIdFamily._();
 /// 根据 ID 获取笔记的 Provider
 
 final class NoteByIdProvider
-    extends
-        $FunctionalProvider<
-          AsyncValue<NoteEntity?>,
-          NoteEntity?,
-          FutureOr<NoteEntity?>
-        >
-    with $FutureModifier<NoteEntity?>, $FutureProvider<NoteEntity?> {
+    extends $FunctionalProvider<AsyncValue<Note?>, Note?, FutureOr<Note?>>
+    with $FutureModifier<Note?>, $FutureProvider<Note?> {
   /// 根据 ID 获取笔记的 Provider
   const NoteByIdProvider._({
     required NoteByIdFamily super.from,
@@ -342,12 +341,11 @@ final class NoteByIdProvider
 
   @$internal
   @override
-  $FutureProviderElement<NoteEntity?> $createElement(
-    $ProviderPointer pointer,
-  ) => $FutureProviderElement(pointer);
+  $FutureProviderElement<Note?> $createElement($ProviderPointer pointer) =>
+      $FutureProviderElement(pointer);
 
   @override
-  FutureOr<NoteEntity?> create(Ref ref) {
+  FutureOr<Note?> create(Ref ref) {
     final argument = this.argument as int;
     return noteById(ref, id: argument);
   }
@@ -363,12 +361,12 @@ final class NoteByIdProvider
   }
 }
 
-String _$noteByIdHash() => r'd8b9b6defd5b01092d5417052bf27381a4bd04f3';
+String _$noteByIdHash() => r'c39dc317a25b4f68f402da35e01eb8176e2721d4';
 
 /// 根据 ID 获取笔记的 Provider
 
 final class NoteByIdFamily extends $Family
-    with $FunctionalFamilyOverride<FutureOr<NoteEntity?>, int> {
+    with $FunctionalFamilyOverride<FutureOr<Note?>, int> {
   const NoteByIdFamily._()
     : super(
         retry: null,
@@ -396,7 +394,7 @@ const selectedNoteProvider = SelectedNoteProvider._();
 /// 桌面端当前选中的笔记 Provider
 /// 用于桌面端详情面板显示
 final class SelectedNoteProvider
-    extends $NotifierProvider<SelectedNote, NoteEntity?> {
+    extends $NotifierProvider<SelectedNote, Note?> {
   /// 桌面端当前选中的笔记 Provider
   /// 用于桌面端详情面板显示
   const SelectedNoteProvider._()
@@ -418,31 +416,31 @@ final class SelectedNoteProvider
   SelectedNote create() => SelectedNote();
 
   /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(NoteEntity? value) {
+  Override overrideWithValue(Note? value) {
     return $ProviderOverride(
       origin: this,
-      providerOverride: $SyncValueProvider<NoteEntity?>(value),
+      providerOverride: $SyncValueProvider<Note?>(value),
     );
   }
 }
 
-String _$selectedNoteHash() => r'9d71b3044da7c044a9a9bdc0b61dbf0c95427cd8';
+String _$selectedNoteHash() => r'4eb503b03c287682adcace9ef7a7e331a2fe9209';
 
 /// 桌面端当前选中的笔记 Provider
 /// 用于桌面端详情面板显示
 
-abstract class _$SelectedNote extends $Notifier<NoteEntity?> {
-  NoteEntity? build();
+abstract class _$SelectedNote extends $Notifier<Note?> {
+  Note? build();
   @$mustCallSuper
   @override
   void runBuild() {
     final created = build();
-    final ref = this.ref as $Ref<NoteEntity?, NoteEntity?>;
+    final ref = this.ref as $Ref<Note?, Note?>;
     final element =
         ref.element
             as $ClassProviderElement<
-              AnyNotifier<NoteEntity?, NoteEntity?>,
-              NoteEntity?,
+              AnyNotifier<Note?, Note?>,
+              Note?,
               Object?,
               Object?
             >;
@@ -457,7 +455,7 @@ const noteByCategoryProvider = NoteByCategoryProvider._();
 
 /// 根据分类获取笔记的 StreamNotifier
 final class NoteByCategoryProvider
-    extends $StreamNotifierProvider<NoteByCategory, List<NoteEntity>> {
+    extends $StreamNotifierProvider<NoteByCategory, List<Note>> {
   /// 根据分类获取笔记的 StreamNotifier
   const NoteByCategoryProvider._()
     : super(
@@ -478,23 +476,22 @@ final class NoteByCategoryProvider
   NoteByCategory create() => NoteByCategory();
 }
 
-String _$noteByCategoryHash() => r'507e4ade80ea909ab7053e7bece8469728fbdc7d';
+String _$noteByCategoryHash() => r'ff4f68c901927a9d99304dbb5e632d24191ff235';
 
 /// 根据分类获取笔记的 StreamNotifier
 
-abstract class _$NoteByCategory extends $StreamNotifier<List<NoteEntity>> {
-  Stream<List<NoteEntity>> build();
+abstract class _$NoteByCategory extends $StreamNotifier<List<Note>> {
+  Stream<List<Note>> build();
   @$mustCallSuper
   @override
   void runBuild() {
     final created = build();
-    final ref =
-        this.ref as $Ref<AsyncValue<List<NoteEntity>>, List<NoteEntity>>;
+    final ref = this.ref as $Ref<AsyncValue<List<Note>>, List<Note>>;
     final element =
         ref.element
             as $ClassProviderElement<
-              AnyNotifier<AsyncValue<List<NoteEntity>>, List<NoteEntity>>,
-              AsyncValue<List<NoteEntity>>,
+              AnyNotifier<AsyncValue<List<Note>>, List<Note>>,
+              AsyncValue<List<Note>>,
               Object?,
               Object?
             >;

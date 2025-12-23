@@ -312,7 +312,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
         subtitle: Text('在多设备间同步笔记数据', style: theme.textTheme.bodySmall),
         trailing: const Icon(Icons.chevron_right),
         onTap: () {
-          context.go(RoutePaths.sync);
+          context.push(RoutePaths.sync);
         },
       ),
     );

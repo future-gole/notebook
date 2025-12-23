@@ -20,11 +20,11 @@ const categoryRepositoryProvider = CategoryRepositoryProvider._();
 final class CategoryRepositoryProvider
     extends
         $FunctionalProvider<
-          CategoryRepository,
-          CategoryRepository,
-          CategoryRepository
+          IsarCategoryRepository,
+          IsarCategoryRepository,
+          IsarCategoryRepository
         >
-    with $Provider<CategoryRepository> {
+    with $Provider<IsarCategoryRepository> {
   /// CategoryRepository Provider - 数据层
   /// 提供 Isar 的具体实现
   const CategoryRepositoryProvider._()
@@ -43,42 +43,39 @@ final class CategoryRepositoryProvider
 
   @$internal
   @override
-  $ProviderElement<CategoryRepository> $createElement(
+  $ProviderElement<IsarCategoryRepository> $createElement(
     $ProviderPointer pointer,
   ) => $ProviderElement(pointer);
 
   @override
-  CategoryRepository create(Ref ref) {
+  IsarCategoryRepository create(Ref ref) {
     return categoryRepository(ref);
   }
 
   /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(CategoryRepository value) {
+  Override overrideWithValue(IsarCategoryRepository value) {
     return $ProviderOverride(
       origin: this,
-      providerOverride: $SyncValueProvider<CategoryRepository>(value),
+      providerOverride: $SyncValueProvider<IsarCategoryRepository>(value),
     );
   }
 }
 
 String _$categoryRepositoryHash() =>
-    r'5831ed6868e116f0eac78c1481f79036207e9273';
+    r'b4fc8616d983e738a7baebaa5846e55848f9ef0f';
 
 /// CategoryService Provider - 业务层
-/// 现在依赖抽象的 Repository 接口
 
 @ProviderFor(categoryService)
 const categoryServiceProvider = CategoryServiceProvider._();
 
 /// CategoryService Provider - 业务层
-/// 现在依赖抽象的 Repository 接口
 
 final class CategoryServiceProvider
     extends
         $FunctionalProvider<CategoryService, CategoryService, CategoryService>
     with $Provider<CategoryService> {
   /// CategoryService Provider - 业务层
-  /// 现在依赖抽象的 Repository 接口
   const CategoryServiceProvider._()
     : super(
         from: null,
@@ -124,13 +121,11 @@ const allCategoriesProvider = AllCategoriesProvider._();
 final class AllCategoriesProvider
     extends
         $FunctionalProvider<
-          AsyncValue<List<CategoryEntity>>,
-          List<CategoryEntity>,
-          Stream<List<CategoryEntity>>
+          AsyncValue<List<Category>>,
+          List<Category>,
+          Stream<List<Category>>
         >
-    with
-        $FutureModifier<List<CategoryEntity>>,
-        $StreamProvider<List<CategoryEntity>> {
+    with $FutureModifier<List<Category>>, $StreamProvider<List<Category>> {
   /// 所有分类 Stream Provider - 自动监听数据库变化
   const AllCategoriesProvider._()
     : super(
@@ -148,14 +143,14 @@ final class AllCategoriesProvider
 
   @$internal
   @override
-  $StreamProviderElement<List<CategoryEntity>> $createElement(
+  $StreamProviderElement<List<Category>> $createElement(
     $ProviderPointer pointer,
   ) => $StreamProviderElement(pointer);
 
   @override
-  Stream<List<CategoryEntity>> create(Ref ref) {
+  Stream<List<Category>> create(Ref ref) {
     return allCategories(ref);
   }
 }
 
-String _$allCategoriesHash() => r'9e4dc7f22e7936f613a5a822529e4b3aed752202';
+String _$allCategoriesHash() => r'faae0ff1fbcbbdb146c6a710f42392cb5373f14f';

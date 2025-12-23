@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
-import 'package:pocketmind/domain/entities/note_entity.dart';
+import 'package:pocketmind/model/note.dart';
 import 'package:pocketmind/page/widget/note_item.dart';
 import 'package:pocketmind/page/widget/desktop/desktop_header.dart';
 import 'package:pocketmind/page/home/note_add_sheet.dart';
@@ -150,7 +150,7 @@ class _DesktopHomeScreenState extends ConsumerState<DesktopHomeScreen> {
 
   /// 构建笔记内容区域
   Widget _buildNotesContent(
-    List<NoteEntity> notes,
+    List<Note> notes,
     NoteLayout currentLayout,
     noteService,
   ) {
@@ -193,7 +193,7 @@ class _DesktopHomeScreenState extends ConsumerState<DesktopHomeScreen> {
 
   /// 构建搜索结果
   Widget _buildSearchResults(
-    AsyncValue<List<NoteEntity>> searchResults,
+    AsyncValue<List<Note>> searchResults,
     NoteLayout currentLayout,
     noteService,
   ) {
@@ -246,7 +246,7 @@ class _DesktopHomeScreenState extends ConsumerState<DesktopHomeScreen> {
   /// 构建笔记列表
   /// 复用 NoteItem 组件，支持网格和列表两种布局
   Widget _buildNotesList(
-    List<NoteEntity> notes,
+    List<Note> notes,
     NoteLayout currentLayout,
     noteService,
   ) {

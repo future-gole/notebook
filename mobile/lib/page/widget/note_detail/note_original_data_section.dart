@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:pocketmind/domain/entities/note_entity.dart';
+import 'package:pocketmind/model/note.dart';
 import 'package:pocketmind/page/widget/hero_gallery.dart';
 import 'package:pocketmind/util/url_helper.dart';
 import 'note_link_content_section.dart';
 import 'note_source_link_card.dart';
 
 class NoteOriginalDataSection extends StatelessWidget {
-  final NoteEntity note;
+  final Note note;
   final TextEditingController titleController;
   final TextEditingController contentController;
   final void Function(int) onCategoryPressed;

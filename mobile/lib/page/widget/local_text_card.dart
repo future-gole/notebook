@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:pocketmind/domain/entities/note_entity.dart';
+import 'package:pocketmind/model/note.dart';
 import 'package:pocketmind/providers/app_config_provider.dart';
 
 /// 纯文本卡片变体类型
@@ -20,7 +20,7 @@ String formatDateChinese(DateTime? date) {
 
 /// 本地纯文本笔记卡片组件
 class LocalTextCard extends ConsumerStatefulWidget {
-  final NoteEntity note;
+  final Note note;
   final bool isDesktop;
   final bool isHovered;
 
@@ -108,7 +108,7 @@ class _LocalTextCardState extends ConsumerState<LocalTextCard> {
 // Variant 1: Snippet Card - 无标题的日志/随笔风格
 // =============================================================================
 class _SnippetCard extends StatelessWidget {
-  final NoteEntity note;
+  final Note note;
   final bool isDesktop;
   final String formattedDate;
   final bool isHovered;
@@ -161,7 +161,7 @@ class _SnippetCard extends StatelessWidget {
 // Variant 2: Quote Card - 引用风格
 // =============================================================================
 class _QuoteCard extends StatelessWidget {
-  final NoteEntity note;
+  final Note note;
   final bool isDesktop;
   final bool isHovered;
 
@@ -279,7 +279,7 @@ class _QuoteCard extends StatelessWidget {
 // Variant 3: Headline Card - 大标题风格（强调色背景）
 // =============================================================================
 class _HeadlineCard extends StatelessWidget {
-  final NoteEntity note;
+  final Note note;
   final bool isDesktop;
   final String formattedDate;
 
@@ -410,7 +410,7 @@ class _HeadlineCard extends StatelessWidget {
 // Variant 4: Essay Card - 标准文章风格
 // =============================================================================
 class _EssayCard extends StatelessWidget {
-  final NoteEntity note;
+  final Note note;
   final bool isDesktop;
   final String formattedDate;
   final bool isHovered;

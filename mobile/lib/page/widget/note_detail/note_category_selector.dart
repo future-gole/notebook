@@ -168,7 +168,7 @@ class _NoteCategorySelectorState extends ConsumerState<NoteCategorySelector>
                               )
                             : null,
                         onTap: () {
-                          widget.onCategorySelected(category.id);
+                          widget.onCategorySelected(category.id ?? 0);
                           Navigator.of(context).pop();
                         },
                       );

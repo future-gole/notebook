@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:pocketmind/domain/failures/repository_failure.dart';
 import 'package:pocketmind/page/widget/creative_toast.dart';
 
 /// 错误处理工具类
@@ -8,27 +7,18 @@ import 'package:pocketmind/page/widget/creative_toast.dart';
 class ErrorHandler {
   ErrorHandler._();
 
-  /// 处理 Repository 异常并显示 Toast
+  /// 处理异常并显示 Toast
   ///
   /// [context] Flutter BuildContext
   /// [error] 捕获的异常对象
-  /// [defaultMessage] 默认错误消息（当异常不是 RepositoryFailure 时使用）
+  /// [defaultMessage] 默认错误消息
   static void handleRepositoryError(
     BuildContext context,
     Object error, {
     String defaultMessage = '操作失败',
   }) {
     String title = '错误';
-    String message = defaultMessage;
-
-    if (error is RepositoryFailure) {
-      // Domain 层异常，提取友好消息
-      title = _getFailureTitle(error);
-      message = error.message;
-    } else {
-      // 其他未知异常
-      message = '$defaultMessage: ${error.toString()}';
-    }
+    String message = '$defaultMessage: ${error.toString()}';
 
     CreativeToast.error(
       context,
@@ -59,29 +49,6 @@ class ErrorHandler {
       message: '$action成功',
       direction: ToastDirection.top,
     );
-  }
-
-  /// 根据 Failure 类型返回友好的标题
-  static String _getFailureTitle(RepositoryFailure failure) {
-    if (failure is SaveNoteFailure) {
-      return '保存失败';
-    } else if (failure is DeleteNoteFailure) {
-      return '删除失败';
-    } else if (failure is NoteNotFoundFailure) {
-      return '笔记不存在';
-    } else if (failure is QueryNoteFailure) {
-      return '查询失败';
-    } else if (failure is SaveCategoryFailure) {
-      return '保存分类失败';
-    } else if (failure is DeleteCategoryFailure) {
-      return '删除分类失败';
-    } else if (failure is CategoryNotFoundFailure) {
-      return '分类不存在';
-    } else if (failure is CategoryOperationFailure) {
-      return '分类操作失败';
-    } else {
-      return '操作失败';
-    }
   }
 
   /// 快捷方法：执行异步操作并自动处理错误

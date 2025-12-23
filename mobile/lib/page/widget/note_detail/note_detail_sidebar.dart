@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:pocketmind/domain/entities/note_entity.dart';
+import 'package:pocketmind/model/note.dart';
 import 'note_ai_insight_section.dart';
 import 'note_source_section.dart';
 import 'note_tags_section.dart';
 import 'note_last_edited_info.dart';
 
 class NoteDetailSidebar extends StatelessWidget {
-  final NoteEntity note;
+  final Note note;
   final Function(String) onLaunchUrl;
   final List<String> tags;
   final VoidCallback onAddTag;

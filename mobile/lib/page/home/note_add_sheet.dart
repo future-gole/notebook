@@ -2,7 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:pocketmind/domain/entities/category_entity.dart';
+import 'package:pocketmind/model/category.dart';
 import 'package:pocketmind/providers/category_providers.dart';
 import 'package:pocketmind/providers/note_providers.dart';
 import 'package:pocketmind/providers/nav_providers.dart';
@@ -486,12 +486,14 @@ class _NoteEditorSheetState extends ConsumerState<NoteEditorSheet>
         // 确保 selectedCategoryId 有效
         if (!categories.any((c) => c.id == _selectedCategoryId) &&
             categories.isNotEmpty) {
-          _selectedCategoryId = categories.first.id;
+          _selectedCategoryId = categories.first.id ?? 0;
         }
 
         final selectedCategory = categories.firstWhere(
           (c) => c.id == _selectedCategoryId,
-          orElse: () => CategoryEntity(id: 0, name: 'Uncategorized'),
+          orElse: () => Category()
+            ..id = 0
+            ..name = 'Uncategorized',
         );
 
         return PopupMenuButton<int>(
