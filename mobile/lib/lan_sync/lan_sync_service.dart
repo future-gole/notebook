@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:uuid/uuid.dart';
@@ -19,6 +20,7 @@ import 'lan_sync_engine.dart';
 import 'model/lan_identity.dart';
 import 'model/lan_peer.dart';
 import 'udp/udp_lan_discovery.dart';
+import 'repository/isar_sync_data_repository.dart';
 
 part 'lan_sync_service.freezed.dart';
 
@@ -49,13 +51,13 @@ abstract class LanSyncState with _$LanSyncState {
 
   /// 初始状态
   factory LanSyncState.initial() => LanSyncState(
-        isRunning: false,
-        isSyncing: false,
-        localDevice: null,
-        peers: const [],
-        lastError: null,
-        lastSyncTime: null,
-      );
+    isRunning: false,
+    isSyncing: false,
+    localDevice: null,
+    peers: const [],
+    lastError: null,
+    lastSyncTime: null,
+  );
 
   // 兼容现有 UI (sync_settings_page.dart)
   bool get isServerRunning => isRunning;
@@ -107,7 +109,14 @@ class LanSyncNotifier extends Notifier<LanSyncState> {
 
   @override
   LanSyncState build() {
+    // 监听 App 生命周期
+    final listener = AppLifecycleListener(
+      onResume: _handleResume,
+      onPause: _handlePause,
+    );
+
     ref.onDispose(() {
+      listener.dispose();
       _peerCleanupTimer?.cancel();
       _peerCleanupTimer = null;
 
@@ -179,9 +188,13 @@ class LanSyncNotifier extends Notifier<LanSyncState> {
     try {
       final isar = ref.read(isarProvider);
       final local = await _buildLocalDevice();
+      final repository = IsarSyncDataRepository(isar);
 
       // Start WebSocket server.
-      _wsServer ??= SyncWebSocketServer(isar: isar, localDevice: local);
+      _wsServer ??= SyncWebSocketServer(
+        repository: repository,
+        localDevice: local,
+      );
       if (!(_wsServer!.isRunning)) {
         try {
           await _wsServer!.start();
@@ -194,7 +207,7 @@ class LanSyncNotifier extends Notifier<LanSyncState> {
       }
 
       // Sync engine (reuses existing sync data mapper + apply logic).
-      _engine = LanSyncEngine(isar: isar, localDevice: local);
+      _engine = LanSyncEngine(repository: repository, localDevice: local);
 
       // Server callbacks (inbound channel).
       _wsServer!.onDeviceConnected = (clientIp, remoteDevice) {
@@ -225,16 +238,13 @@ class LanSyncNotifier extends Notifier<LanSyncState> {
         _scheduleFallbackConnect(peerId);
       };
 
-      _wsServer!.onRemoteDataChanged = (clientIp) {
-        final peerId = _peerIdByInboundIp[clientIp];
-        if (peerId == null) return;
-        unawaited(_requestInboundSync(peerId));
+      _wsServer!.onRemoteDataChanged = (clientIp, deviceId) {
+        unawaited(_requestInboundSync(deviceId));
       };
 
-      _wsServer!.onSyncResponseReceived = (clientIp, changes, timestamp) {
-        final peerId = _peerIdByInboundIp[clientIp];
-        if (peerId == null) return;
-        unawaited(_applyInboundSync(peerId, clientIp, changes, timestamp));
+      _wsServer!
+          .onSyncResponseReceived = (clientIp, deviceId, changes, timestamp) {
+        unawaited(_applyInboundSync(deviceId, clientIp, changes, timestamp));
       };
 
       // Start UDP discovery.
@@ -280,6 +290,42 @@ class LanSyncNotifier extends Notifier<LanSyncState> {
       PMlog.e(_tag, '❌ start failed: $e');
     } finally {
       _startingOrStopping = false;
+    }
+  }
+
+  // ---- Lifecycle Handlers ----
+
+  void _handleResume() {
+    PMlog.i(_tag, 'App resumed');
+    if (state.isRunning) {
+      unawaited(_startDiscovery());
+    }
+  }
+
+  void _handlePause() {
+    PMlog.i(_tag, 'App paused');
+    unawaited(_stopDiscovery());
+  }
+
+  Future<void> _startDiscovery() async {
+    if (_discovery == null) return;
+    if (_discovery!.isRunning) return;
+
+    final local = state.localDevice;
+    if (local == null || local.ipAddress == null) return;
+
+    try {
+      await _discovery!.start(bindAddress: InternetAddress(local.ipAddress!));
+      PMlog.i(_tag, '✅ UDP discovery restarted');
+    } catch (e) {
+      PMlog.e(_tag, '❌ UDP discovery restart failed: $e');
+    }
+  }
+
+  Future<void> _stopDiscovery() async {
+    if (_discovery != null && _discovery!.isRunning) {
+      await _discovery!.stop();
+      PMlog.i(_tag, '🛑 UDP discovery stopped');
     }
   }
 
@@ -376,8 +422,9 @@ class LanSyncNotifier extends Notifier<LanSyncState> {
     }
 
     // Fallback (should rarely happen): use legacy SyncManager direct IP sync.
+    final repository = IsarSyncDataRepository(isar);
     final mgr = SyncManager(
-      isar: isar,
+      repository: repository,
       localDevice: local ?? await _buildLocalDevice(),
     );
     return mgr.synchronize(ip, port: port);

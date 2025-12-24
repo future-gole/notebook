@@ -7,7 +7,7 @@ void main() {
   group('Note Model Tests', () {
     test('Note 初始化测试', () {
       final note = Note();
-      expect(note.id, Isar.autoIncrement);
+      expect(note.id, null);
       expect(note.title, null);
       expect(note.content, null);
       expect(note.url, null);
@@ -83,7 +83,7 @@ void main() {
     test('Category 初始化测试', () {
       final category = Category()..name = '日常';
 
-      expect(category.id, Isar.autoIncrement);
+      expect(category.id, null);
       expect(category.name, '日常');
       expect(category.description, null);
       expect(category.createdTime, null);

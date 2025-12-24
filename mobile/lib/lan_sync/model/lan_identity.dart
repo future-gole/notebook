@@ -1,30 +1,25 @@
-class LanIdentity {
-  final String deviceId;
-  final String deviceName;
-  final int wsPort;
+import 'package:freezed_annotation/freezed_annotation.dart';
 
-  const LanIdentity({
-    required this.deviceId,
-    required this.deviceName,
-    required this.wsPort,
-  });
+part 'lan_identity.freezed.dart';
+part 'lan_identity.g.dart';
 
-  Map<String, dynamic> toJson() => {
-    'deviceId': deviceId,
-    'deviceName': deviceName,
-    'wsPort': wsPort,
-    'v': 1,
-  };
+@freezed
+abstract class LanIdentity with _$LanIdentity {
+  const factory LanIdentity({
+    required String deviceId,
+    required String deviceName,
+    required int wsPort,
+    @Default(1) int v,
+  }) = _LanIdentity;
+
+  factory LanIdentity.fromJson(Map<String, dynamic> json) =>
+      _$LanIdentityFromJson(json);
 
   static LanIdentity? tryFromJson(Map<String, dynamic> json) {
-    final deviceId = json['deviceId'] as String?;
-    final deviceName = json['deviceName'] as String?;
-    final wsPort = json['wsPort'] as int?;
-    if (deviceId == null || deviceName == null || wsPort == null) return null;
-    return LanIdentity(
-      deviceId: deviceId,
-      deviceName: deviceName,
-      wsPort: wsPort,
-    );
+    try {
+      return LanIdentity.fromJson(json);
+    } catch (_) {
+      return null;
+    }
   }
 }

@@ -49,14 +49,29 @@ class PMImage extends StatelessWidget {
 
     // 2. 本地相对路径 (pocket_images/...)
     if (UrlHelper.isLocalImagePath(pathOrUrl)) {
-      final file = ImageStorageHelper().getFileByRelativePath(pathOrUrl);
-      return Image.file(
-        file,
-        fit: fit,
-        width: width,
-        height: height,
-        errorBuilder: (context, error, stackTrace) =>
-            _buildErrorWidget(context),
+      return StreamBuilder<String>(
+        stream: ImageStorageHelper().onImageSaved,
+        builder: (context, snapshot) {
+          final file = ImageStorageHelper().getFileByRelativePath(pathOrUrl);
+
+          // 如果收到当前图片的保存通知，清除缓存以强制重新加载
+          if (snapshot.hasData && snapshot.data == pathOrUrl) {
+            PaintingBinding.instance.imageCache.evict(FileImage(file));
+          }
+
+          return Image.file(
+            file,
+            fit: fit,
+            width: width,
+            height: height,
+            // 当收到当前图片的更新通知时，使用 UniqueKey 强制重建 Image 组件
+            key: snapshot.hasData && snapshot.data == pathOrUrl
+                ? UniqueKey()
+                : null,
+            errorBuilder: (context, error, stackTrace) =>
+                _buildErrorWidget(context),
+          );
+        },
       );
     }
 

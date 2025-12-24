@@ -1,56 +1,12 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:io';
 
-import 'package:isar_community/isar.dart';
-
+import '../repository/i_sync_data_repository.dart';
 import '../mapper/sync_data_mapper.dart';
 import '../model/device_info.dart';
-import '../../model/note.dart';
-import '../../model/category.dart';
+import '../model/sync_message.dart';
+import '../protocol/sync_protocol_handler.dart';
 import '../../util/logger_service.dart';
-
-/// WebSocket 消息类型
-class SyncMessageType {
-  static const String hello = 'hello'; // 握手
-  static const String deviceInfo = 'device_info'; // 设备信息
-  static const String dataChanged = 'data_changed'; // 数据变化通知
-  static const String syncRequest = 'sync_request'; // 请求同步
-  static const String syncResponse = 'sync_response'; // 同步响应
-  static const String imageRequest = 'image_request'; // 请求图片
-  static const String imageData = 'image_data'; // 图片数据
-  static const String ping = 'ping';
-  static const String pong = 'pong';
-  static const String serverShutdown = 'server_shutdown'; // 服务器即将关闭
-  static const String discover = 'discover'; // 设备发现请求
-  static const String discoverResponse = 'discover_response'; // 设备发现响应
-}
-
-/// 同步 WebSocket 消息
-class SyncMessage {
-  final String type;
-  final Map<String, dynamic>? data;
-  final int timestamp;
-
-  SyncMessage({required this.type, this.data, int? timestamp})
-    : timestamp = timestamp ?? DateTime.now().millisecondsSinceEpoch;
-
-  factory SyncMessage.fromJson(Map<String, dynamic> json) {
-    return SyncMessage(
-      type: json['type'] as String,
-      data: json['data'] as Map<String, dynamic>?,
-      timestamp: json['timestamp'] as int?,
-    );
-  }
-
-  Map<String, dynamic> toJson() => {
-    'type': type,
-    'data': data,
-    'timestamp': timestamp,
-  };
-
-  String toJsonString() => jsonEncode(toJson());
-}
 
 /// 已连接的客户端信息
 class ConnectedClient {
@@ -75,15 +31,20 @@ class SyncWebSocketServer {
   static const String _tag = 'SyncWebSocketServer';
   static const int defaultPort = 54322; // WebSocket 端口，与 HTTP 端口分开
 
-  final Isar _isar;
+  static const int protocolVersion = 1;
+  static const int schemaVersion = 20231224;
+
+  final ISyncDataRepository _repository;
   final DeviceInfo _localDevice;
   final int _port;
+  final SyncProtocolHandler _protocolHandler = SyncProtocolHandler();
 
   HttpServer? _server;
   bool _isRunning = false;
 
   /// 已连接的客户端
   final Map<String, ConnectedClient> _clients = {};
+  final Map<WebSocket, String> _socketIps = {};
 
   /// 数据库监听订阅
   StreamSubscription? _notesSubscription;
@@ -96,23 +57,26 @@ class SyncWebSocketServer {
   void Function(String clientIp, DeviceInfo device)? onDeviceDisconnected;
 
   /// 当收到远程数据变化时的回调
-  void Function(String clientIp)? onRemoteDataChanged;
+  void Function(String clientIp, String deviceId)? onRemoteDataChanged;
 
   /// 当收到同步响应时的回调（包含变更数据）
   void Function(
     String clientIp,
+    String deviceId,
     List<Map<String, dynamic>> changes,
     int timestamp,
   )?
   onSyncResponseReceived;
 
   SyncWebSocketServer({
-    required Isar isar,
+    required ISyncDataRepository repository,
     required DeviceInfo localDevice,
     int port = defaultPort,
-  }) : _isar = isar,
+  }) : _repository = repository,
        _localDevice = localDevice,
-       _port = port;
+       _port = port {
+    _registerHandlers();
+  }
 
   bool get isRunning => _isRunning;
   int get port => _port;
@@ -120,6 +84,52 @@ class SyncWebSocketServer {
   /// 获取已连接的设备列表
   List<DeviceInfo> get connectedDevices =>
       _clients.values.map((c) => c.deviceInfo).toList();
+
+  void _registerHandlers() {
+    _protocolHandler.registerHandler(
+      SyncMessageType.hello,
+      (msg, socket) => _handleHello(socket, _getIp(socket), msg),
+    );
+    _protocolHandler.registerHandler(
+      SyncMessageType.deviceInfo,
+      (msg, socket) => _handleDeviceInfo(socket, _getIp(socket), msg),
+    );
+    _protocolHandler.registerHandler(
+      SyncMessageType.discover,
+      (msg, socket) => _handleDiscover(socket, _getIp(socket), msg),
+    );
+    _protocolHandler.registerHandler(
+      SyncMessageType.dataChanged,
+      (msg, socket) => _handleDataChanged(_getIp(socket), msg),
+    );
+    _protocolHandler.registerHandler(
+      SyncMessageType.ping,
+      (msg, socket) => SyncProtocolHandler.send(
+        socket,
+        const SyncMessage(type: SyncMessageType.pong),
+      ),
+    );
+    _protocolHandler.registerHandler(
+      SyncMessageType.syncRequest,
+      (msg, socket) => _handleSyncRequest(socket, msg),
+    );
+    _protocolHandler.registerHandler(
+      SyncMessageType.syncResponse,
+      (msg, socket) => _handleSyncResponse(_getIp(socket), msg),
+    );
+    _protocolHandler.registerHandler(
+      SyncMessageType.imageRequest,
+      (msg, socket) => _handleImageRequest(socket, _getIp(socket), msg),
+    );
+    _protocolHandler.registerHandler(
+      SyncMessageType.imageData,
+      (msg, socket) => _handleImageData(_getIp(socket), msg),
+    );
+  }
+
+  String _getIp(WebSocket socket) {
+    return _socketIps[socket] ?? 'unknown';
+  }
 
   /// 启动 WebSocket 服务器
   Future<void> start() async {
@@ -168,7 +178,7 @@ class SyncWebSocketServer {
 
     for (final client in _clients.values) {
       try {
-        _sendMessage(client.socket, shutdownMessage);
+        SyncProtocolHandler.send(client.socket, shutdownMessage);
       } catch (e) {
         PMlog.w(_tag, '发送关闭通知失败: $e');
       }
@@ -203,18 +213,27 @@ class SyncWebSocketServer {
       final socket = await WebSocketTransformer.upgrade(request);
       final clientIp =
           request.connectionInfo?.remoteAddress.address ?? 'unknown';
+      _socketIps[socket] = clientIp;
 
       PMlog.i(_tag, '来自 $clientIp 的新 WebSocket 连接');
 
-      // 发送欢迎消息（包含本机设备信息）
-      _sendMessage(
+      // 发送欢迎消息（包含本机设备信息和版本）
+      SyncProtocolHandler.send(
         socket,
-        SyncMessage(type: SyncMessageType.hello, data: _localDevice.toJson()),
+        SyncMessage(
+          type: SyncMessageType.hello,
+          data: {
+            ..._localDevice.toJson(),
+            'protocolVersion': protocolVersion,
+            'schemaVersion': schemaVersion,
+          },
+        ),
       );
 
       // 监听客户端消息
       socket.listen(
-        (data) => _handleMessage(socket, clientIp, data),
+        (data) =>
+            _protocolHandler.handleMessage(socket, data, sourceInfo: clientIp),
         onDone: () => _handleDisconnect(clientIp),
         onError: (e) {
           PMlog.e(_tag, '来自 $clientIp 的 WebSocket 错误: $e');
@@ -223,45 +242,6 @@ class SyncWebSocketServer {
       );
     } catch (e) {
       PMlog.e(_tag, '升级 WebSocket 失败: $e');
-    }
-  }
-
-  /// 处理客户端消息
-  void _handleMessage(WebSocket socket, String clientIp, dynamic data) {
-    try {
-      final json = jsonDecode(data as String) as Map<String, dynamic>;
-      final message = SyncMessage.fromJson(json);
-
-      PMlog.d(_tag, '从 $clientIp 收到消息: ${message.type}');
-
-      switch (message.type) {
-        case SyncMessageType.deviceInfo:
-          _handleDeviceInfo(socket, clientIp, message);
-          break;
-        case SyncMessageType.discover:
-          _handleDiscover(socket, clientIp, message);
-          break;
-        case SyncMessageType.dataChanged:
-          _handleDataChanged(clientIp, message);
-          break;
-        case SyncMessageType.ping:
-          _sendMessage(socket, SyncMessage(type: SyncMessageType.pong));
-          break;
-        case SyncMessageType.syncRequest:
-          _handleSyncRequest(socket, message);
-          break;
-        case SyncMessageType.syncResponse:
-          _handleSyncResponse(clientIp, message);
-          break;
-        case SyncMessageType.imageRequest:
-          _handleImageRequest(socket, clientIp, message);
-          break;
-        case SyncMessageType.imageData:
-          _handleImageData(clientIp, message);
-          break;
-      }
-    } catch (e) {
-      PMlog.e(_tag, '处理消息失败: $e');
     }
   }
 
@@ -284,13 +264,36 @@ class SyncWebSocketServer {
 
     // 直接返回本机设备信息，不注册客户端
     PMlog.d(_tag, '向 $clientIp 发送发现响应: ${_localDevice.deviceName}');
-    _sendMessage(
+    SyncProtocolHandler.send(
       socket,
       SyncMessage(
         type: SyncMessageType.discoverResponse,
         data: _localDevice.toJson(),
       ),
     );
+  }
+
+  /// 处理 Hello 握手消息
+  void _handleHello(WebSocket socket, String clientIp, SyncMessage message) {
+    if (message.data == null) return;
+
+    final remoteProtocol = message.data!['protocolVersion'] as int? ?? 0;
+    final remoteSchema = message.data!['schemaVersion'] as int? ?? 0;
+
+    if (remoteProtocol != protocolVersion) {
+      PMlog.w(_tag, '协议版本不兼容: $remoteProtocol != $protocolVersion');
+      socket.close(4000, 'Protocol version mismatch');
+      return;
+    }
+
+    if (remoteSchema != schemaVersion) {
+      PMlog.w(_tag, 'Schema 版本不兼容: $remoteSchema != $schemaVersion');
+      socket.close(4001, 'Schema version mismatch');
+      return;
+    }
+
+    // 握手成功，注册设备
+    _handleDeviceInfo(socket, clientIp, message);
   }
 
   /// 处理设备信息
@@ -324,8 +327,11 @@ class SyncWebSocketServer {
   void _handleDataChanged(String clientIp, SyncMessage message) {
     PMlog.i(_tag, '📥 来自 $clientIp 的数据更改通知');
 
-    // 通知上层进行同步
-    onRemoteDataChanged?.call(clientIp);
+    final client = _clients[clientIp];
+    if (client != null) {
+      // 通知上层进行同步
+      onRemoteDataChanged?.call(clientIp, client.deviceInfo.deviceId);
+    }
   }
 
   /// 处理同步请求
@@ -336,22 +342,15 @@ class SyncWebSocketServer {
 
     try {
       // 获取变更数据
-      final notes = await _isar.notes
-          .filter()
-          .updatedAtGreaterThan(since)
-          .findAll();
-
-      final categories = await _isar.categorys
-          .filter()
-          .updatedAtGreaterThan(since)
-          .findAll();
+      final notes = await _repository.getNoteChanges(since);
+      final categories = await _repository.getCategoryChanges(since);
 
       final changes = SyncDataMapper.combineChanges(
         notes: notes,
         categories: categories,
       );
 
-      _sendMessage(
+      SyncProtocolHandler.send(
         socket,
         SyncMessage(
           type: SyncMessageType.syncResponse,
@@ -368,6 +367,7 @@ class SyncWebSocketServer {
 
   /// 处理断开连接
   void _handleDisconnect(String clientIp) {
+    _socketIps.removeWhere((k, v) => v == clientIp);
     final client = _clients.remove(clientIp);
     if (client != null) {
       PMlog.i(_tag, '❌ 设备断开连接: ${client.deviceInfo.deviceName}');
@@ -379,6 +379,12 @@ class SyncWebSocketServer {
   void _handleSyncResponse(String clientIp, SyncMessage message) {
     PMlog.d(_tag, 'Received sync response from $clientIp');
 
+    final client = _clients[clientIp];
+    if (client == null) {
+      PMlog.w(_tag, 'Received sync response from unknown client: $clientIp');
+      return;
+    }
+
     final changes = message.data?['changes'] as List<dynamic>? ?? [];
     final typedChanges = changes.cast<Map<String, dynamic>>();
 
@@ -386,7 +392,12 @@ class SyncWebSocketServer {
         (message.data?['timestamp'] as int?) ??
         DateTime.now().millisecondsSinceEpoch;
 
-    onSyncResponseReceived?.call(clientIp, typedChanges, timestamp);
+    onSyncResponseReceived?.call(
+      clientIp,
+      client.deviceInfo.deviceId,
+      typedChanges,
+      timestamp,
+    );
   }
 
   /// 处理图片请求
@@ -413,7 +424,7 @@ class SyncWebSocketServer {
       }
 
       // 发送图片数据
-      _sendMessage(
+      SyncProtocolHandler.send(
         socket,
         SyncMessage(
           type: SyncMessageType.imageData,
@@ -473,7 +484,7 @@ class SyncWebSocketServer {
 
     PMlog.i(_tag, '📤 Requesting sync from $clientIp since $since');
 
-    _sendMessage(
+    SyncProtocolHandler.send(
       client.socket,
       SyncMessage(type: SyncMessageType.syncRequest, data: {'since': since}),
     );
@@ -495,7 +506,7 @@ class SyncWebSocketServer {
     }
 
     PMlog.i(_tag, '📷 Requesting image from $clientIp: $relativePath');
-    _sendMessage(
+    SyncProtocolHandler.send(
       client.socket,
       SyncMessage(
         type: SyncMessageType.imageRequest,
@@ -507,16 +518,21 @@ class SyncWebSocketServer {
   /// 开始监听数据库变化
   void _startDatabaseWatchers() {
     // 监听 Notes 变化
-    _notesSubscription = _isar.notes.watchLazy().listen((_) {
+    _notesSubscription = _repository.watchNotes().listen((_) {
       PMlog.d(_tag, '📤 Notes changed, notifying clients');
       _broadcastDataChanged();
     });
 
     // 监听 Categories 变化
-    _categoriesSubscription = _isar.categorys.watchLazy().listen((_) {
+    _categoriesSubscription = _repository.watchCategories().listen((_) {
       PMlog.d(_tag, '📤 Categories changed, notifying clients');
       _broadcastDataChanged();
     });
+  }
+
+  /// 广播数据变化通知给所有客户端
+  void broadcastDataChanged() {
+    _broadcastDataChanged();
   }
 
   /// 广播数据变化通知给所有客户端
@@ -527,18 +543,9 @@ class SyncWebSocketServer {
     );
 
     for (final client in _clients.values) {
-      _sendMessage(client.socket, message);
+      SyncProtocolHandler.send(client.socket, message);
     }
 
     PMlog.d(_tag, 'Broadcast data_changed to ${_clients.length} clients');
-  }
-
-  /// 发送消息
-  void _sendMessage(WebSocket socket, SyncMessage message) {
-    try {
-      socket.add(message.toJsonString());
-    } catch (e) {
-      PMlog.e(_tag, '发送消息失败: $e');
-    }
   }
 }

@@ -19,6 +19,7 @@ import 'model/note.dart';
 import 'lan_sync/model/sync_log.dart';
 import 'data/repositories/isar_category_repository.dart';
 import 'util/logger_service.dart';
+import 'lan_sync/lan_sync_service.dart';
 
 // 这会强制构建系统将 main_share.dart 编译到应用中
 // 防止另一个入口没有被引用
@@ -128,11 +129,14 @@ Future<void> main() async {
   );
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends ConsumerWidget {
   const MyApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    // 触发 LanSyncService 初始化
+    ref.read(lanSyncProvider);
+
     return LayoutBuilder(
       builder: (context, constraints) {
         final isDesktop = constraints.maxWidth > 600;

@@ -114,19 +114,16 @@ final class MetadataManagerProvider
 String _$metadataManagerHash() => r'04f7b0e84f079e1368cafd25e6fcd9db684265ec';
 
 /// NoteService Provider - 业务层
-/// 现在依赖抽象的 Repository 接口
 
 @ProviderFor(noteService)
 const noteServiceProvider = NoteServiceProvider._();
 
 /// NoteService Provider - 业务层
-/// 现在依赖抽象的 Repository 接口
 
 final class NoteServiceProvider
     extends $FunctionalProvider<NoteService, NoteService, NoteService>
     with $Provider<NoteService> {
   /// NoteService Provider - 业务层
-  /// 现在依赖抽象的 Repository 接口
   const NoteServiceProvider._()
     : super(
         from: null,

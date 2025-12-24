@@ -1,12 +1,11 @@
-import 'package:isar_community/isar.dart';
+import 'repository/i_sync_data_repository.dart';
+import 'model/sync_log.dart';
 
 import 'model/device_info.dart';
 import 'realtime/sync_websocket_client.dart';
 import 'realtime/sync_websocket_server.dart';
 import 'sync_manager.dart';
 import '../util/logger_service.dart';
-
-import 'storage/lan_sync_log_store.dart';
 
 /// 局域网同步引擎
 ///
@@ -16,19 +15,21 @@ class LanSyncEngine {
 
   final DeviceInfo _localDevice;
   final SyncManager _syncManager;
-  final LanSyncLogStore _logStore;
+  final ISyncDataRepository _repository;
 
   LanSyncEngine({
-    required Isar isar,
+    required ISyncDataRepository repository,
     required DeviceInfo localDevice,
-    LanSyncLogStore? logStore,
   }) : _localDevice = localDevice,
-       _syncManager = SyncManager(isar: isar, localDevice: localDevice),
-       _logStore = logStore ?? LanSyncLogStore();
+       _syncManager = SyncManager(
+         repository: repository,
+         localDevice: localDevice,
+       ),
+       _repository = repository;
 
   /// 获取与指定设备的最后同步时间戳
-  Future<int> getLastSync(String peerDeviceId) =>
-      _logStore.getLastSync(peerDeviceId);
+  Future<int> getLastSync(String deviceId) =>
+      _repository.getLastSyncTimestamp(deviceId);
 
   /// 处理远程同步请求，返回自指定时间戳以来的本地变更
   Future<List<Map<String, dynamic>>> handleRemoteSyncRequest(int since) async {
@@ -44,8 +45,10 @@ class LanSyncEngine {
       return const SyncResult(success: false, error: '未连接');
     }
 
-    final lastSync = await _logStore.getLastSync(peerDeviceId);
-    PMlog.i(_tag, '📥 从 $peerDeviceId 拉取数据，起始时间戳: $lastSync');
+    final ip = client.remoteDevice?.ipAddress ?? 'unknown';
+
+    final lastSync = await _repository.getLastSyncTimestamp(peerDeviceId);
+    PMlog.i(_tag, '📥 从 $peerDeviceId ($ip) 拉取数据，起始时间戳: $lastSync');
 
     final response = await client.requestSyncAndWait(since: lastSync);
     if (response == null) {
@@ -57,7 +60,13 @@ class LanSyncEngine {
       wsClient: client,
     );
 
-    await _logStore.setLastSync(peerDeviceId, response.timestamp);
+    await _repository.updateSyncStatus(
+      peerDeviceId,
+      SyncStatus.success,
+      timestamp: response.timestamp,
+      ip: ip,
+      deviceName: client.remoteDevice?.deviceName,
+    );
 
     return result;
   }
@@ -75,7 +84,14 @@ class LanSyncEngine {
       wsServer: wsServer,
       clientIp: clientIp,
     );
-    await _logStore.setLastSync(peerDeviceId, timestamp);
+
+    await _repository.updateSyncStatus(
+      peerDeviceId,
+      SyncStatus.success,
+      timestamp: timestamp,
+      ip: clientIp,
+    );
+
     return result;
   }
 

@@ -9,12 +9,12 @@ part 'sync_log.g.dart';
 class SyncLog {
   Id id = Isar.autoIncrement;
 
-  /// 远程设备的 IP 地址
-  @Index(unique: true)
-  late String remoteIp;
-
   /// 远程设备的唯一标识符
-  String? remoteDeviceId;
+  @Index(unique: true)
+  late String remoteDeviceId;
+
+  /// 远程设备的 IP 地址
+  String? remoteIp;
 
   /// 远程设备的名称
   String? remoteDeviceName;

@@ -56,6 +56,12 @@ class UdpLanDiscovery {
       try {
         final payload = utf8.decode(datagram.data);
         final json = jsonDecode(payload) as Map<String, dynamic>;
+
+        if (json['type'] == 'pocketmind_lan_query') {
+          _announce();
+          return;
+        }
+
         if (json['type'] != 'pocketmind_lan_announce') return;
         final data = json['data'] as Map<String, dynamic>?;
         if (data == null) return;
@@ -64,20 +70,21 @@ class UdpLanDiscovery {
         if (remote == null) return;
 
         final remoteIp = datagram.address.address;
-        // PMlog.d(
-        //   _tag,
-        //   '📥 收到来自 $remoteIp 的宣告 id=${remote.deviceId} port=${remote.wsPort}',
-        // );
+        PMlog.d(
+          _tag,
+          '📥 收到来自 $remoteIp 的消息 id=${remote.deviceId} port=${remote.wsPort}',
+        );
         onPeerAnnouncement?.call(remote, remoteIp);
       } catch (e) {
         // 忽略格式错误的包
       }
     });
 
-    // 立即宣告 + 定期宣告
+    // 立即宣告 + 查询 + 定期宣告 (心跳)
     _announce();
+    _query();
     _announceTimer = Timer.periodic(
-      const Duration(seconds: 2),
+      const Duration(seconds: 30),
       (_) => _announce(),
     );
 
@@ -126,7 +133,30 @@ class UdpLanDiscovery {
       }
     }
 
-    // PMlog.d(_tag, '📤 已向 ${targets.length} 个目标发送宣告');
+    PMlog.d(_tag, '📤 已向 ${targets.length} 个目标发送消息');
+  }
+
+  /// 发送查询请求（新节点加入时触发）
+  void _query() {
+    final socket = _socket;
+    if (socket == null) return;
+
+    final msg = {'type': 'pocketmind_lan_query'};
+    final bytes = utf8.encode(jsonEncode(msg));
+
+    final targets = <InternetAddress>{
+      InternetAddress('255.255.255.255'),
+      ..._computeBroadcastTargets(),
+    };
+
+    for (final target in targets) {
+      try {
+        socket.send(bytes, target, discoveryPort);
+      } catch (_) {
+        // 忽略发送失败
+      }
+    }
+    PMlog.d(_tag, '🔍 发送查询请求...');
   }
 
   /// 计算广播目标地址

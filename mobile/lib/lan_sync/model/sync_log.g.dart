@@ -65,14 +65,14 @@ const SyncLogSchema = CollectionSchema(
   deserializeProp: _syncLogDeserializeProp,
   idName: r'id',
   indexes: {
-    r'remoteIp': IndexSchema(
-      id: -7322182204781518405,
-      name: r'remoteIp',
+    r'remoteDeviceId': IndexSchema(
+      id: 706327905002303788,
+      name: r'remoteDeviceId',
       unique: true,
       replace: false,
       properties: [
         IndexPropertySchema(
-          name: r'remoteIp',
+          name: r'remoteDeviceId',
           type: IndexType.hash,
           caseSensitive: true,
         ),
@@ -100,19 +100,19 @@ int _syncLogEstimateSize(
       bytesCount += 3 + value.length * 3;
     }
   }
-  {
-    final value = object.remoteDeviceId;
-    if (value != null) {
-      bytesCount += 3 + value.length * 3;
-    }
-  }
+  bytesCount += 3 + object.remoteDeviceId.length * 3;
   {
     final value = object.remoteDeviceName;
     if (value != null) {
       bytesCount += 3 + value.length * 3;
     }
   }
-  bytesCount += 3 + object.remoteIp.length * 3;
+  {
+    final value = object.remoteIp;
+    if (value != null) {
+      bytesCount += 3 + value.length * 3;
+    }
+  }
   return bytesCount;
 }
 
@@ -144,9 +144,9 @@ SyncLog _syncLogDeserialize(
   object.lastError = reader.readStringOrNull(offsets[1]);
   object.lastSyncTime = reader.readDateTimeOrNull(offsets[2]);
   object.lastSyncTimestamp = reader.readLong(offsets[3]);
-  object.remoteDeviceId = reader.readStringOrNull(offsets[4]);
+  object.remoteDeviceId = reader.readString(offsets[4]);
   object.remoteDeviceName = reader.readStringOrNull(offsets[5]);
-  object.remoteIp = reader.readString(offsets[6]);
+  object.remoteIp = reader.readStringOrNull(offsets[6]);
   object.syncStatus = reader.readLong(offsets[7]);
   return object;
 }
@@ -167,11 +167,11 @@ P _syncLogDeserializeProp<P>(
     case 3:
       return (reader.readLong(offset)) as P;
     case 4:
-      return (reader.readStringOrNull(offset)) as P;
+      return (reader.readString(offset)) as P;
     case 5:
       return (reader.readStringOrNull(offset)) as P;
     case 6:
-      return (reader.readString(offset)) as P;
+      return (reader.readStringOrNull(offset)) as P;
     case 7:
       return (reader.readLong(offset)) as P;
     default:
@@ -192,59 +192,61 @@ void _syncLogAttach(IsarCollection<dynamic> col, Id id, SyncLog object) {
 }
 
 extension SyncLogByIndex on IsarCollection<SyncLog> {
-  Future<SyncLog?> getByRemoteIp(String remoteIp) {
-    return getByIndex(r'remoteIp', [remoteIp]);
+  Future<SyncLog?> getByRemoteDeviceId(String remoteDeviceId) {
+    return getByIndex(r'remoteDeviceId', [remoteDeviceId]);
   }
 
-  SyncLog? getByRemoteIpSync(String remoteIp) {
-    return getByIndexSync(r'remoteIp', [remoteIp]);
+  SyncLog? getByRemoteDeviceIdSync(String remoteDeviceId) {
+    return getByIndexSync(r'remoteDeviceId', [remoteDeviceId]);
   }
 
-  Future<bool> deleteByRemoteIp(String remoteIp) {
-    return deleteByIndex(r'remoteIp', [remoteIp]);
+  Future<bool> deleteByRemoteDeviceId(String remoteDeviceId) {
+    return deleteByIndex(r'remoteDeviceId', [remoteDeviceId]);
   }
 
-  bool deleteByRemoteIpSync(String remoteIp) {
-    return deleteByIndexSync(r'remoteIp', [remoteIp]);
+  bool deleteByRemoteDeviceIdSync(String remoteDeviceId) {
+    return deleteByIndexSync(r'remoteDeviceId', [remoteDeviceId]);
   }
 
-  Future<List<SyncLog?>> getAllByRemoteIp(List<String> remoteIpValues) {
-    final values = remoteIpValues.map((e) => [e]).toList();
-    return getAllByIndex(r'remoteIp', values);
+  Future<List<SyncLog?>> getAllByRemoteDeviceId(
+    List<String> remoteDeviceIdValues,
+  ) {
+    final values = remoteDeviceIdValues.map((e) => [e]).toList();
+    return getAllByIndex(r'remoteDeviceId', values);
   }
 
-  List<SyncLog?> getAllByRemoteIpSync(List<String> remoteIpValues) {
-    final values = remoteIpValues.map((e) => [e]).toList();
-    return getAllByIndexSync(r'remoteIp', values);
+  List<SyncLog?> getAllByRemoteDeviceIdSync(List<String> remoteDeviceIdValues) {
+    final values = remoteDeviceIdValues.map((e) => [e]).toList();
+    return getAllByIndexSync(r'remoteDeviceId', values);
   }
 
-  Future<int> deleteAllByRemoteIp(List<String> remoteIpValues) {
-    final values = remoteIpValues.map((e) => [e]).toList();
-    return deleteAllByIndex(r'remoteIp', values);
+  Future<int> deleteAllByRemoteDeviceId(List<String> remoteDeviceIdValues) {
+    final values = remoteDeviceIdValues.map((e) => [e]).toList();
+    return deleteAllByIndex(r'remoteDeviceId', values);
   }
 
-  int deleteAllByRemoteIpSync(List<String> remoteIpValues) {
-    final values = remoteIpValues.map((e) => [e]).toList();
-    return deleteAllByIndexSync(r'remoteIp', values);
+  int deleteAllByRemoteDeviceIdSync(List<String> remoteDeviceIdValues) {
+    final values = remoteDeviceIdValues.map((e) => [e]).toList();
+    return deleteAllByIndexSync(r'remoteDeviceId', values);
   }
 
-  Future<Id> putByRemoteIp(SyncLog object) {
-    return putByIndex(r'remoteIp', object);
+  Future<Id> putByRemoteDeviceId(SyncLog object) {
+    return putByIndex(r'remoteDeviceId', object);
   }
 
-  Id putByRemoteIpSync(SyncLog object, {bool saveLinks = true}) {
-    return putByIndexSync(r'remoteIp', object, saveLinks: saveLinks);
+  Id putByRemoteDeviceIdSync(SyncLog object, {bool saveLinks = true}) {
+    return putByIndexSync(r'remoteDeviceId', object, saveLinks: saveLinks);
   }
 
-  Future<List<Id>> putAllByRemoteIp(List<SyncLog> objects) {
-    return putAllByIndex(r'remoteIp', objects);
+  Future<List<Id>> putAllByRemoteDeviceId(List<SyncLog> objects) {
+    return putAllByIndex(r'remoteDeviceId', objects);
   }
 
-  List<Id> putAllByRemoteIpSync(
+  List<Id> putAllByRemoteDeviceIdSync(
     List<SyncLog> objects, {
     bool saveLinks = true,
   }) {
-    return putAllByIndexSync(r'remoteIp', objects, saveLinks: saveLinks);
+    return putAllByIndexSync(r'remoteDeviceId', objects, saveLinks: saveLinks);
   }
 }
 
@@ -325,34 +327,37 @@ extension SyncLogQueryWhere on QueryBuilder<SyncLog, SyncLog, QWhereClause> {
     });
   }
 
-  QueryBuilder<SyncLog, SyncLog, QAfterWhereClause> remoteIpEqualTo(
-    String remoteIp,
+  QueryBuilder<SyncLog, SyncLog, QAfterWhereClause> remoteDeviceIdEqualTo(
+    String remoteDeviceId,
   ) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
-        IndexWhereClause.equalTo(indexName: r'remoteIp', value: [remoteIp]),
+        IndexWhereClause.equalTo(
+          indexName: r'remoteDeviceId',
+          value: [remoteDeviceId],
+        ),
       );
     });
   }
 
-  QueryBuilder<SyncLog, SyncLog, QAfterWhereClause> remoteIpNotEqualTo(
-    String remoteIp,
+  QueryBuilder<SyncLog, SyncLog, QAfterWhereClause> remoteDeviceIdNotEqualTo(
+    String remoteDeviceId,
   ) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
             .addWhereClause(
               IndexWhereClause.between(
-                indexName: r'remoteIp',
+                indexName: r'remoteDeviceId',
                 lower: [],
-                upper: [remoteIp],
+                upper: [remoteDeviceId],
                 includeUpper: false,
               ),
             )
             .addWhereClause(
               IndexWhereClause.between(
-                indexName: r'remoteIp',
-                lower: [remoteIp],
+                indexName: r'remoteDeviceId',
+                lower: [remoteDeviceId],
                 includeLower: false,
                 upper: [],
               ),
@@ -361,17 +366,17 @@ extension SyncLogQueryWhere on QueryBuilder<SyncLog, SyncLog, QWhereClause> {
         return query
             .addWhereClause(
               IndexWhereClause.between(
-                indexName: r'remoteIp',
-                lower: [remoteIp],
+                indexName: r'remoteDeviceId',
+                lower: [remoteDeviceId],
                 includeLower: false,
                 upper: [],
               ),
             )
             .addWhereClause(
               IndexWhereClause.between(
-                indexName: r'remoteIp',
+                indexName: r'remoteDeviceId',
                 lower: [],
-                upper: [remoteIp],
+                upper: [remoteDeviceId],
                 includeUpper: false,
               ),
             );
@@ -807,25 +812,8 @@ extension SyncLogQueryFilter
     });
   }
 
-  QueryBuilder<SyncLog, SyncLog, QAfterFilterCondition> remoteDeviceIdIsNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        const FilterCondition.isNull(property: r'remoteDeviceId'),
-      );
-    });
-  }
-
-  QueryBuilder<SyncLog, SyncLog, QAfterFilterCondition>
-  remoteDeviceIdIsNotNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        const FilterCondition.isNotNull(property: r'remoteDeviceId'),
-      );
-    });
-  }
-
   QueryBuilder<SyncLog, SyncLog, QAfterFilterCondition> remoteDeviceIdEqualTo(
-    String? value, {
+    String value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
@@ -841,7 +829,7 @@ extension SyncLogQueryFilter
 
   QueryBuilder<SyncLog, SyncLog, QAfterFilterCondition>
   remoteDeviceIdGreaterThan(
-    String? value, {
+    String value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
@@ -858,7 +846,7 @@ extension SyncLogQueryFilter
   }
 
   QueryBuilder<SyncLog, SyncLog, QAfterFilterCondition> remoteDeviceIdLessThan(
-    String? value, {
+    String value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
@@ -875,8 +863,8 @@ extension SyncLogQueryFilter
   }
 
   QueryBuilder<SyncLog, SyncLog, QAfterFilterCondition> remoteDeviceIdBetween(
-    String? lower,
-    String? upper, {
+    String lower,
+    String upper, {
     bool includeLower = true,
     bool includeUpper = true,
     bool caseSensitive = true,
@@ -1133,8 +1121,24 @@ extension SyncLogQueryFilter
     });
   }
 
+  QueryBuilder<SyncLog, SyncLog, QAfterFilterCondition> remoteIpIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'remoteIp'),
+      );
+    });
+  }
+
+  QueryBuilder<SyncLog, SyncLog, QAfterFilterCondition> remoteIpIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'remoteIp'),
+      );
+    });
+  }
+
   QueryBuilder<SyncLog, SyncLog, QAfterFilterCondition> remoteIpEqualTo(
-    String value, {
+    String? value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
@@ -1149,7 +1153,7 @@ extension SyncLogQueryFilter
   }
 
   QueryBuilder<SyncLog, SyncLog, QAfterFilterCondition> remoteIpGreaterThan(
-    String value, {
+    String? value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
@@ -1166,7 +1170,7 @@ extension SyncLogQueryFilter
   }
 
   QueryBuilder<SyncLog, SyncLog, QAfterFilterCondition> remoteIpLessThan(
-    String value, {
+    String? value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
@@ -1183,8 +1187,8 @@ extension SyncLogQueryFilter
   }
 
   QueryBuilder<SyncLog, SyncLog, QAfterFilterCondition> remoteIpBetween(
-    String lower,
-    String upper, {
+    String? lower,
+    String? upper, {
     bool includeLower = true,
     bool includeUpper = true,
     bool caseSensitive = true,
@@ -1651,7 +1655,7 @@ extension SyncLogQueryProperty
     });
   }
 
-  QueryBuilder<SyncLog, String?, QQueryOperations> remoteDeviceIdProperty() {
+  QueryBuilder<SyncLog, String, QQueryOperations> remoteDeviceIdProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'remoteDeviceId');
     });
@@ -1663,7 +1667,7 @@ extension SyncLogQueryProperty
     });
   }
 
-  QueryBuilder<SyncLog, String, QQueryOperations> remoteIpProperty() {
+  QueryBuilder<SyncLog, String?, QQueryOperations> remoteIpProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'remoteIp');
     });

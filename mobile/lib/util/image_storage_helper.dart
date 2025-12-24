@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:async';
 import 'dart:convert';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
@@ -22,6 +23,11 @@ class ImageStorageHelper {
 
   // 图片存放的子文件夹名称
   static const String _folderName = 'pocket_images';
+
+  final _imageSavedController = StreamController<String>.broadcast();
+
+  /// 图片保存事件流（发射相对路径）
+  Stream<String> get onImageSaved => _imageSavedController.stream;
 
   /// 初始化服务
   Future<void> init() async {
@@ -165,6 +171,11 @@ class ImageStorageHelper {
     final fileName = normalizedPath.replaceFirst('$_folderName/', '');
     final fullPath = p.join(_rootDir ?? '', _folderName, fileName);
     return File(fullPath);
+  }
+
+  /// 通知图片已保存（用于外部直接写入文件后触发 UI 更新）
+  void notifyImageSaved(String relativePath) {
+    _imageSavedController.add(relativePath);
   }
 
   /// 根据相对路径删除本地图片文件

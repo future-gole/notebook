@@ -1,9 +1,10 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:io';
 
 import '../model/device_info.dart';
 import '../model/sync_response.dart';
+import '../model/sync_message.dart';
+import '../protocol/sync_protocol_handler.dart';
 import '../mapper/sync_data_mapper.dart';
 import '../../util/logger_service.dart';
 import 'sync_websocket_server.dart';
@@ -19,6 +20,7 @@ class SyncWebSocketClient {
   static const String _tag = 'SyncWebSocketClient';
 
   final DeviceInfo _localDevice;
+  final SyncProtocolHandler _protocolHandler = SyncProtocolHandler();
 
   WebSocket? _socket;
   String? _remoteIp;
@@ -55,10 +57,47 @@ class SyncWebSocketClient {
   void Function(List<Map<String, dynamic>> changes)? onSyncResponse;
 
   SyncWebSocketClient({required DeviceInfo localDevice})
-    : _localDevice = localDevice;
+    : _localDevice = localDevice {
+    _registerHandlers();
+  }
 
   bool get isConnected => _isConnected;
   DeviceInfo? get remoteDevice => _remoteDevice;
+
+  void _registerHandlers() {
+    _protocolHandler.registerHandler(
+      SyncMessageType.hello,
+      (msg, _) => _handleHello(msg),
+    );
+    _protocolHandler.registerHandler(SyncMessageType.dataChanged, (msg, _) {
+      PMlog.i(_tag, '📥 远程数据已更改！');
+      onRemoteDataChanged?.call();
+    });
+    _protocolHandler.registerHandler(
+      SyncMessageType.pong,
+      (msg, _) {},
+    ); // No-op
+    _protocolHandler.registerHandler(
+      SyncMessageType.syncRequest,
+      (msg, _) => _handleSyncRequest(msg),
+    );
+    _protocolHandler.registerHandler(
+      SyncMessageType.syncResponse,
+      (msg, _) => _handleSyncResponse(msg),
+    );
+    _protocolHandler.registerHandler(
+      SyncMessageType.imageRequest,
+      (msg, _) => _handleImageRequest(msg),
+    );
+    _protocolHandler.registerHandler(
+      SyncMessageType.imageData,
+      (msg, _) => _handleImageData(msg),
+    );
+    _protocolHandler.registerHandler(
+      SyncMessageType.serverShutdown,
+      (msg, _) => _handleServerShutdown(msg),
+    );
+  }
 
   /// 连接到远程设备
   Future<bool> connect(
@@ -92,17 +131,22 @@ class SyncWebSocketClient {
 
       _isConnected = true;
 
-      // 发送设备信息
-      _sendMessage(
+      // 发送握手消息
+      SyncProtocolHandler.send(
+        _socket!,
         SyncMessage(
-          type: SyncMessageType.deviceInfo,
-          data: _localDevice.toJson(),
+          type: SyncMessageType.hello,
+          data: {
+            ..._localDevice.toJson(),
+            'protocolVersion': SyncWebSocketServer.protocolVersion,
+            'schemaVersion': SyncWebSocketServer.schemaVersion,
+          },
         ),
       );
 
       // 监听消息
       _socket!.listen(
-        _handleMessage,
+        (data) => _protocolHandler.handleMessage(_socket!, data),
         onDone: _handleDisconnect,
         onError: (e) {
           PMlog.e(_tag, 'WebSocket 错误: $e');
@@ -170,9 +214,10 @@ class SyncWebSocketClient {
 
   /// 通知远程设备数据已变化
   void notifyDataChanged() {
-    if (!_isConnected) return;
+    if (!_isConnected || _socket == null) return;
 
-    _sendMessage(
+    SyncProtocolHandler.send(
+      _socket!,
       SyncMessage(
         type: SyncMessageType.dataChanged,
         data: {'timestamp': DateTime.now().millisecondsSinceEpoch},
@@ -187,13 +232,14 @@ class SyncWebSocketClient {
     int since = 0,
     Duration timeout = const Duration(seconds: 30),
   }) async {
-    if (!_isConnected) return null;
+    if (!_isConnected || _socket == null) return null;
 
     // 创建 Completer 等待响应
     _syncCompleter = Completer<SyncResponse?>();
 
     // 发送同步请求
-    _sendMessage(
+    SyncProtocolHandler.send(
+      _socket!,
       SyncMessage(type: SyncMessageType.syncRequest, data: {'since': since}),
     );
 
@@ -213,51 +259,12 @@ class SyncWebSocketClient {
 
   /// 请求同步数据（仅发送请求，不等待）
   void requestSync({int since = 0}) {
-    if (!_isConnected) return;
+    if (!_isConnected || _socket == null) return;
 
-    _sendMessage(
+    SyncProtocolHandler.send(
+      _socket!,
       SyncMessage(type: SyncMessageType.syncRequest, data: {'since': since}),
     );
-  }
-
-  /// 处理收到的消息
-  void _handleMessage(dynamic data) {
-    try {
-      final json = jsonDecode(data as String) as Map<String, dynamic>;
-      final message = SyncMessage.fromJson(json);
-
-      PMlog.d(_tag, '收到: ${message.type}');
-
-      switch (message.type) {
-        case SyncMessageType.hello:
-          _handleHello(message);
-          break;
-        case SyncMessageType.dataChanged:
-          PMlog.i(_tag, '📥 远程数据已更改！');
-          onRemoteDataChanged?.call();
-          break;
-        case SyncMessageType.pong:
-          // Ping 响应，连接正常
-          break;
-        case SyncMessageType.syncRequest:
-          _handleSyncRequest(message);
-          break;
-        case SyncMessageType.syncResponse:
-          _handleSyncResponse(message);
-          break;
-        case SyncMessageType.imageRequest:
-          _handleImageRequest(message);
-          break;
-        case SyncMessageType.imageData:
-          _handleImageData(message);
-          break;
-        case SyncMessageType.serverShutdown:
-          _handleServerShutdown(message);
-          break;
-      }
-    } catch (e) {
-      PMlog.e(_tag, '处理消息失败: $e');
-    }
   }
 
   /// 处理欢迎消息
@@ -280,30 +287,36 @@ class SyncWebSocketClient {
         final changes = await onSyncRequestReceived!(since);
 
         // 发送同步响应
-        _sendMessage(
-          SyncMessage(
-            type: SyncMessageType.syncResponse,
-            data: {
-              'changes': changes,
-              'timestamp': DateTime.now().millisecondsSinceEpoch,
-            },
-          ),
-        );
+        if (_socket != null) {
+          SyncProtocolHandler.send(
+            _socket!,
+            SyncMessage(
+              type: SyncMessageType.syncResponse,
+              data: {
+                'changes': changes,
+                'timestamp': DateTime.now().millisecondsSinceEpoch,
+              },
+            ),
+          );
+        }
         PMlog.i(_tag, '📤 已发送包含 ${changes.length} 个更改的同步响应');
       } catch (e) {
         PMlog.e(_tag, '处理同步请求失败: $e');
       }
     } else {
       PMlog.w(_tag, '未注册同步请求处理器，发送空响应');
-      _sendMessage(
-        SyncMessage(
-          type: SyncMessageType.syncResponse,
-          data: {
-            'changes': <Map<String, dynamic>>[],
-            'timestamp': DateTime.now().millisecondsSinceEpoch,
-          },
-        ),
-      );
+      if (_socket != null) {
+        SyncProtocolHandler.send(
+          _socket!,
+          SyncMessage(
+            type: SyncMessageType.syncResponse,
+            data: {
+              'changes': <Map<String, dynamic>>[],
+              'timestamp': DateTime.now().millisecondsSinceEpoch,
+            },
+          ),
+        );
+      }
     }
   }
 
@@ -348,15 +361,18 @@ class SyncWebSocketClient {
       }
 
       // 发送图片数据
-      _sendMessage(
-        SyncMessage(
-          type: SyncMessageType.imageData,
-          data: SyncDataMapper.buildImageDataMessage(
-            relativePath: relativePath,
-            base64Data: base64Data,
+      if (_socket != null) {
+        SyncProtocolHandler.send(
+          _socket!,
+          SyncMessage(
+            type: SyncMessageType.imageData,
+            data: SyncDataMapper.buildImageDataMessage(
+              relativePath: relativePath,
+              base64Data: base64Data,
+            ),
           ),
-        ),
-      );
+        );
+      }
 
       PMlog.d(_tag, '✅ 已发送图片: $relativePath');
     } catch (e) {
@@ -395,13 +411,14 @@ class SyncWebSocketClient {
 
   /// 请求图片数据
   void requestImage(String relativePath) {
-    if (!isConnected) {
+    if (!isConnected || _socket == null) {
       PMlog.w(_tag, 'Cannot request image: not connected');
       return;
     }
 
     PMlog.i(_tag, '📤 请求图片: $relativePath');
-    _sendMessage(
+    SyncProtocolHandler.send(
+      _socket!,
       SyncMessage(
         type: SyncMessageType.imageRequest,
         data: {'path': relativePath},
@@ -450,8 +467,11 @@ class SyncWebSocketClient {
   void _startPingTimer() {
     _pingTimer?.cancel();
     _pingTimer = Timer.periodic(const Duration(seconds: 60), (_) {
-      if (_isConnected) {
-        _sendMessage(SyncMessage(type: SyncMessageType.ping));
+      if (_isConnected && _socket != null) {
+        SyncProtocolHandler.send(
+          _socket!,
+          const SyncMessage(type: SyncMessageType.ping),
+        );
       }
     });
   }
@@ -479,15 +499,6 @@ class SyncWebSocketClient {
         );
       }
     });
-  }
-
-  /// 发送消息
-  void _sendMessage(SyncMessage message) {
-    try {
-      _socket?.add(message.toJsonString());
-    } catch (e) {
-      PMlog.e(_tag, '发送消息失败: $e');
-    }
   }
 
   /// 关闭客户端（完全销毁，不再重连）

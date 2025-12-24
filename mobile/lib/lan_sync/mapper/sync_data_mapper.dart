@@ -28,6 +28,9 @@ class SyncDataMapper {
       'isDeleted': note.isDeleted,
       'categoryId': note.categoryId,
       'tag': note.tag,
+      'previewImageUrl': note.previewImageUrl,
+      'previewTitle': note.previewTitle,
+      'previewDescription': note.previewDescription,
     };
   }
 
@@ -45,6 +48,9 @@ class SyncDataMapper {
       ..url = json['url'] as String?
       ..categoryId = json['categoryId'] as int? ?? 1
       ..tag = json['tag'] as String?
+      ..previewImageUrl = json['previewImageUrl'] as String?
+      ..previewTitle = json['previewTitle'] as String?
+      ..previewDescription = json['previewDescription'] as String?
       ..updatedAt = json['updatedAt'] as int? ?? 0
       ..isDeleted = json['isDeleted'] as bool? ?? false;
 
@@ -183,6 +189,9 @@ class SyncDataMapper {
       final exists = await file.exists();
       final size = exists ? await file.length() : 0;
       PMlog.d(tag, '✅ 图片已保存: $relativePath ($size 字节)');
+
+      // 通知 UI 更新
+      ImageStorageHelper().notifyImageSaved(relativePath);
 
       return relativePath;
     } catch (e) {

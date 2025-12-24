@@ -13,26 +13,29 @@ class SyncLogRepository {
 
   SyncLogRepository(this._isar);
 
-  /// 获取指定 IP 的同步日志
-  Future<SyncLog?> getByIp(String ip) async {
+  /// 获取指定 DeviceID 的同步日志
+  Future<SyncLog?> getByDeviceId(String deviceId) async {
     try {
-      return await _isar.syncLogs.filter().remoteIpEqualTo(ip).findFirst();
+      return await _isar.syncLogs
+          .filter()
+          .remoteDeviceIdEqualTo(deviceId)
+          .findFirst();
     } catch (e) {
-      PMlog.e(_tag, '获取 $ip 的同步日志失败: $e');
+      PMlog.e(_tag, '获取 $deviceId 的同步日志失败: $e');
       return null;
     }
   }
 
   /// 获取上次同步时间戳
-  Future<int> getLastSyncTimestamp(String ip) async {
-    final syncLog = await getByIp(ip);
+  Future<int> getLastSyncTimestamp(String deviceId) async {
+    final syncLog = await getByDeviceId(deviceId);
     return syncLog?.lastSyncTimestamp ?? 0;
   }
 
   /// 更新同步日志
   Future<void> updateSyncLog({
-    required String ip,
-    String? deviceId,
+    required String deviceId,
+    String? ip,
     String? deviceName,
     required int timestamp,
     required SyncStatus status,
@@ -42,15 +45,15 @@ class SyncLogRepository {
       await _isar.writeTxn(() async {
         var syncLog = await _isar.syncLogs
             .filter()
-            .remoteIpEqualTo(ip)
+            .remoteDeviceIdEqualTo(deviceId)
             .findFirst();
 
         syncLog ??= SyncLog()
-          ..remoteIp = ip
+          ..remoteDeviceId = deviceId
           ..createdTime = DateTime.now();
 
         syncLog
-          ..remoteDeviceId = deviceId ?? syncLog.remoteDeviceId
+          ..remoteIp = ip ?? syncLog.remoteIp
           ..remoteDeviceName = deviceName ?? syncLog.remoteDeviceName
           ..lastSyncTimestamp = timestamp
           ..lastSyncTime = DateTime.now()
@@ -60,48 +63,52 @@ class SyncLogRepository {
         await _isar.syncLogs.put(syncLog);
       });
 
-      PMlog.d(_tag, '更新 $ip 的同步日志: 时间戳=$timestamp, 状态=$status');
+      PMlog.d(_tag, '更新 $deviceId 的同步日志: 时间戳=$timestamp, 状态=$status');
     } catch (e) {
-      PMlog.e(_tag, '更新 $ip 的同步日志失败: $e');
+      PMlog.e(_tag, '更新 $deviceId 的同步日志失败: $e');
       rethrow;
     }
   }
 
   /// 标记同步开始
-  Future<void> markSyncing(String ip) async {
+  Future<void> markSyncing(String deviceId, {String? ip}) async {
     try {
       await _isar.writeTxn(() async {
         var syncLog = await _isar.syncLogs
             .filter()
-            .remoteIpEqualTo(ip)
+            .remoteDeviceIdEqualTo(deviceId)
             .findFirst();
 
         syncLog ??= SyncLog()
-          ..remoteIp = ip
+          ..remoteDeviceId = deviceId
           ..createdTime = DateTime.now();
+
+        if (ip != null) {
+          syncLog.remoteIp = ip;
+        }
 
         syncLog.syncStatus = SyncStatus.syncing.value;
         await _isar.syncLogs.put(syncLog);
       });
     } catch (e) {
-      PMlog.e(_tag, '标记 $ip 同步中失败: $e');
+      PMlog.e(_tag, '标记 $deviceId 同步中失败: $e');
     }
   }
 
   /// 标记同步成功
-  Future<void> markSuccess(String ip, int timestamp) async {
+  Future<void> markSuccess(String deviceId, int timestamp) async {
     await updateSyncLog(
-      ip: ip,
+      deviceId: deviceId,
       timestamp: timestamp,
       status: SyncStatus.success,
     );
   }
 
   /// 标记同步失败
-  Future<void> markFailed(String ip, String error) async {
-    final syncLog = await getByIp(ip);
+  Future<void> markFailed(String deviceId, String error) async {
+    final syncLog = await getByDeviceId(deviceId);
     await updateSyncLog(
-      ip: ip,
+      deviceId: deviceId,
       timestamp: syncLog?.lastSyncTimestamp ?? 0,
       status: SyncStatus.failed,
       error: error,
@@ -119,13 +126,16 @@ class SyncLogRepository {
   }
 
   /// 删除同步日志
-  Future<void> delete(String ip) async {
+  Future<void> delete(String deviceId) async {
     try {
       await _isar.writeTxn(() async {
-        await _isar.syncLogs.filter().remoteIpEqualTo(ip).deleteAll();
+        await _isar.syncLogs
+            .filter()
+            .remoteDeviceIdEqualTo(deviceId)
+            .deleteAll();
       });
     } catch (e) {
-      PMlog.e(_tag, '删除 $ip 的同步日志失败: $e');
+      PMlog.e(_tag, '删除 $deviceId 的同步日志失败: $e');
     }
   }
 

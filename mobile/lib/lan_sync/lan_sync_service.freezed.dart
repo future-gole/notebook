@@ -55,7 +55,7 @@ $Res call({
 });
 
 
-
+$DeviceInfoCopyWith<$Res>? get localDevice;
 
 }
 /// @nodoc
@@ -79,7 +79,19 @@ as String?,lastSyncTime: freezed == lastSyncTime ? _self.lastSyncTime : lastSync
 as DateTime?,
   ));
 }
+/// Create a copy of LanSyncState
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$DeviceInfoCopyWith<$Res>? get localDevice {
+    if (_self.localDevice == null) {
+    return null;
+  }
 
+  return $DeviceInfoCopyWith<$Res>(_self.localDevice!, (value) {
+    return _then(_self.copyWith(localDevice: value));
+  });
+}
 }
 
 
@@ -274,7 +286,7 @@ $Res call({
 });
 
 
-
+@override $DeviceInfoCopyWith<$Res>? get localDevice;
 
 }
 /// @nodoc
@@ -299,7 +311,19 @@ as DateTime?,
   ));
 }
 
+/// Create a copy of LanSyncState
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$DeviceInfoCopyWith<$Res>? get localDevice {
+    if (_self.localDevice == null) {
+    return null;
+  }
 
+  return $DeviceInfoCopyWith<$Res>(_self.localDevice!, (value) {
+    return _then(_self.copyWith(localDevice: value));
+  });
+}
 }
 
 // dart format on
