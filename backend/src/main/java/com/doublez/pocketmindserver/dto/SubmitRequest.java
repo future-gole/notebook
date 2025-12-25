@@ -1,5 +1,8 @@
 package com.doublez.pocketmindserver.dto;
 
-import java.util.UUID;
+import jakarta.validation.constraints.NotBlank;
 
-public record SubmitRequest(String url) {}
+public record SubmitRequest(
+	@NotBlank(message = "url 不能为空")
+	String url
+) {}

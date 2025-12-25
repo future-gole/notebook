@@ -5,6 +5,20 @@ spring:
     redis:
       host: localhost
       port: 6379
+  datasource:
+    url: jdbc:postgresql://localhost:5432/pocketmind
+    username: your_name
+    password: your_password
+    driver-class-name: org.postgresql.Driver
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:schema-pg.sql
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
   ai:
     dashscope:
       api-key: your_key_here
@@ -22,7 +36,13 @@ spring:
           enabled: true
         jinacrawler:
           enabled: true
-          api-key: your_key_here
+          api-key: your_jina_key
+    openai:
+      api-key: ${OPENAI_API_KEY:sk-placeholder} # 替换为你的 API Key
+      base-url: ${OPENAI_BASE_URL:https://api.openai.com} # 替换为你的 Base URL (例如本地 Ollama: http://localhost:11434/v1)
+      chat:
+        options:
+          model: ${OPENAI_MODEL:gpt-4-turbo} # 替换为你使用的模型名称
   mail:
     host: smtp.qq.com
     port: 465
@@ -39,3 +59,15 @@ spring:
 logging:
   level:
     com.example: debug
+
+mybatis-plus:
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+    map-underscore-to-camel-case: true
+
+pocketmind:
+  jwt:
+    secret: your-secret-key-here
+    user-id-claim: ${POCKETMIND_JWT_USER_ID_CLAIM:userId}
+    leeway-seconds: ${POCKETMIND_JWT_LEEWAY_SECONDS:5}
+    token-ttl-seconds: ${POCKETMIND_JWT_TOKEN_TTL_SECONDS:86400}

@@ -58,3 +58,15 @@ CREATE TABLE IF NOT EXISTS chat_messages (
 );
 
 CREATE INDEX IF NOT EXISTS idx_message_session_created ON chat_messages(session_id, created_at);
+
+-- 5. User Account Table
+-- Stores user credentials for JWT login.
+CREATE TABLE IF NOT EXISTS user_account (
+    id UUID PRIMARY KEY,
+    username VARCHAR(64) NOT NULL UNIQUE,
+    password_hash VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_user_account_username ON user_account(username);

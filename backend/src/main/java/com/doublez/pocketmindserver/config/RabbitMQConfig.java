@@ -7,27 +7,45 @@ import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.amqp.support.converter.MessageConverter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFactory;
+import org.springframework.amqp.rabbit.listener.ConditionalRejectingErrorHandler;
+import org.springframework.amqp.rabbit.retry.RepublishMessageRecoverer;
+import org.springframework.amqp.rabbit.config.RetryInterceptorBuilder;
+import org.springframework.context.annotation.Primary;
 
 @Configuration
 public class RabbitMQConfig {
 
-    public static final String QUEUE_NAME = "crawler_queue";
-    public static final String EXCHANGE_NAME = "crawler_exchange";
-    public static final String ROUTING_KEY = "crawler.key";
+    // MQ 常量集中在 CrawlerMqConstants，避免散落硬编码
 
     @Bean
-    public Queue queue() {
-        return new Queue(QUEUE_NAME, true);
+    public Queue crawlerQueue() {
+        return QueueBuilder.durable(CrawlerMqConstants.CRAWLER_QUEUE).build();
     }
 
     @Bean
-    public DirectExchange exchange() {
-        return new DirectExchange(EXCHANGE_NAME);
+    public DirectExchange crawlerExchange() {
+        return new DirectExchange(CrawlerMqConstants.CRAWLER_EXCHANGE);
     }
 
     @Bean
-    public Binding binding(Queue queue, DirectExchange exchange) {
-        return BindingBuilder.bind(queue).to(exchange).with(ROUTING_KEY);
+    public Binding crawlerBinding(Queue crawlerQueue, DirectExchange crawlerExchange) {
+        return BindingBuilder.bind(crawlerQueue).to(crawlerExchange).with(CrawlerMqConstants.CRAWLER_ROUTING_KEY);
+    }
+
+    @Bean
+    public Queue crawlerDlqQueue() {
+        return QueueBuilder.durable(CrawlerMqConstants.CRAWLER_DLQ_QUEUE).build();
+    }
+
+    @Bean
+    public DirectExchange crawlerDlqExchange() {
+        return new DirectExchange(CrawlerMqConstants.CRAWLER_DLQ_EXCHANGE);
+    }
+
+    @Bean
+    public Binding crawlerDlqBinding(Queue crawlerDlqQueue, DirectExchange crawlerDlqExchange) {
+        return BindingBuilder.bind(crawlerDlqQueue).to(crawlerDlqExchange).with(CrawlerMqConstants.CRAWLER_DLQ_ROUTING_KEY);
     }
 
     @Bean
@@ -40,5 +58,35 @@ public class RabbitMQConfig {
         RabbitTemplate rabbitTemplate = new RabbitTemplate(connectionFactory);
         rabbitTemplate.setMessageConverter(messageConverter());
         return rabbitTemplate;
+    }
+
+    @Bean
+    public RepublishMessageRecoverer crawlerRepublishRecoverer(RabbitTemplate rabbitTemplate) {
+        return new RepublishMessageRecoverer(
+                rabbitTemplate,
+                CrawlerMqConstants.CRAWLER_DLQ_EXCHANGE,
+                CrawlerMqConstants.CRAWLER_DLQ_ROUTING_KEY
+        );
+    }
+
+    @Bean
+    @Primary
+    public SimpleRabbitListenerContainerFactory rabbitListenerContainerFactory(
+            ConnectionFactory connectionFactory,
+            MessageConverter messageConverter,
+            RepublishMessageRecoverer crawlerRepublishRecoverer
+    ) {
+        SimpleRabbitListenerContainerFactory factory = new SimpleRabbitListenerContainerFactory();
+        factory.setConnectionFactory(connectionFactory);
+        factory.setMessageConverter(messageConverter);
+        factory.setDefaultRequeueRejected(false);
+        factory.setErrorHandler(new ConditionalRejectingErrorHandler());
+        factory.setAdviceChain(
+                RetryInterceptorBuilder.stateless()
+                        .maxAttempts(3)
+                        .recoverer(crawlerRepublishRecoverer)
+                        .build()
+        );
+        return factory;
     }
 }
