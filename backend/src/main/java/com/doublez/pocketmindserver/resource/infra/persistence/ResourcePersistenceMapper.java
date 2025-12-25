@@ -1,6 +1,5 @@
 package com.doublez.pocketmindserver.resource.infra.persistence;
 
-import com.doublez.pocketmindserver.model.ResourceMetadata;
 import com.doublez.pocketmindserver.resource.domain.Resource;
 import com.doublez.pocketmindserver.resource.domain.ResourceStatus;
 

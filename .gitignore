@@ -19,6 +19,8 @@ Thumbs.db
 android/key.properties
 key.properties
 ios/ExportOptions.plist
+application-dev.yml
+application.yml
 
 # 密钥库文件
 *.jks

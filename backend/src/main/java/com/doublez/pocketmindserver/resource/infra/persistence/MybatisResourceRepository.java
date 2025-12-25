@@ -1,8 +1,6 @@
 package com.doublez.pocketmindserver.resource.infra.persistence;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.doublez.pocketmindserver.model.ResourceMetadata;
-import com.doublez.pocketmindserver.repository.ResourceMetadataRepository;
 import com.doublez.pocketmindserver.resource.domain.Resource;
 import com.doublez.pocketmindserver.resource.domain.ResourceRepository;
 import org.springframework.stereotype.Repository;
@@ -58,6 +56,32 @@ public class MybatisResourceRepository implements ResourceRepository {
                 new LambdaQueryWrapper<ResourceMetadata>()
                         .eq(ResourceMetadata::getUserId, userId)
                         .in(ResourceMetadata::getId, ids)
+        );
+        return models.stream().map(ResourcePersistenceMapper::toDomain).toList();
+    }
+
+    @Override
+    public Optional<Resource> findLatestByUrl(String url) {
+        ResourceMetadata model = mapper.selectOne(
+                new LambdaQueryWrapper<ResourceMetadata>()
+                        .eq(ResourceMetadata::getOriginalUrl, url)
+                        .orderByDesc(ResourceMetadata::getUpdatedAt)
+                        .last("limit 1")
+        );
+        if (model == null) {
+            return Optional.empty();
+        }
+        return Optional.of(ResourcePersistenceMapper.toDomain(model));
+    }
+
+    @Override
+    public List<Resource> findByUrls(List<String> urls) {
+        if (urls == null || urls.isEmpty()) {
+            return List.of();
+        }
+        List<ResourceMetadata> models = mapper.selectList(
+                new LambdaQueryWrapper<ResourceMetadata>()
+                        .in(ResourceMetadata::getOriginalUrl, urls)
         );
         return models.stream().map(ResourcePersistenceMapper::toDomain).toList();
     }

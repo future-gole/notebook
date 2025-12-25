@@ -279,4 +279,17 @@ class IsarNoteRepository {
       rethrow;
     }
   }
+
+  /// 查找等待抓取资源的笔记
+  ///
+  /// 条件：URL 不为空，且 previewContent 为空，且未删除
+  Future<List<Note>> findPendingResources() async {
+    return await _isar.notes
+        .filter()
+        .urlIsNotNull()
+        .urlIsNotEmpty()
+        .previewContentIsNull()
+        .isDeletedEqualTo(false)
+        .findAll();
+  }
 }

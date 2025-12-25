@@ -1,15 +1,15 @@
 package com.doublez.pocketmindserver.auth.application;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.doublez.pocketmindserver.dto.AuthTokenResponse;
-import com.doublez.pocketmindserver.dto.LoginRequest;
-import com.doublez.pocketmindserver.dto.RegisterRequest;
-import com.doublez.pocketmindserver.model.UserAccount;
-import com.doublez.pocketmindserver.repository.UserAccountRepository;
-import com.doublez.pocketmindserver.security.JwtTokenService;
-import com.doublez.pocketmindserver.web.BusinessException;
-import com.doublez.pocketmindserver.web.UnauthorizedException;
-import com.doublez.pocketmindserver.web.ApiCode;
+import com.doublez.pocketmindserver.auth.api.dto.AuthTokenResponse;
+import com.doublez.pocketmindserver.auth.api.dto.LoginRequest;
+import com.doublez.pocketmindserver.auth.api.dto.RegisterRequest;
+import com.doublez.pocketmindserver.auth.infra.persistence.UserAccount;
+import com.doublez.pocketmindserver.auth.infra.persistence.UserAccountRepository;
+import com.doublez.pocketmindserver.shared.security.JwtTokenService;
+import com.doublez.pocketmindserver.shared.web.ApiCode;
+import com.doublez.pocketmindserver.shared.web.BusinessException;
+import com.doublez.pocketmindserver.shared.web.UnauthorizedException;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -72,3 +72,4 @@ public class AuthApplicationService {
         return new AuthTokenResponse(account.getId().toString(), token, jwtTokenService.tokenTtlSeconds());
     }
 }
+
