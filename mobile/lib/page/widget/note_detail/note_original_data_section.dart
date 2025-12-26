@@ -15,7 +15,7 @@ class NoteOriginalDataSection extends StatelessWidget {
   final String formattedDate;
   final String? previewImageUrl;
   final String? previewTitle;
-  final String? previewDescription;
+  final String? previewContent;
   final bool isLoadingPreview;
   final VoidCallback onSave;
   final Function(String) onLaunchUrl;
@@ -32,7 +32,7 @@ class NoteOriginalDataSection extends StatelessWidget {
     required this.formattedDate,
     this.previewImageUrl,
     this.previewTitle,
-    this.previewDescription,
+    this.previewContent,
     required this.isLoadingPreview,
     required this.onSave,
     required this.onLaunchUrl,
@@ -204,11 +204,12 @@ class NoteOriginalDataSection extends StatelessWidget {
 
               // 网络链接时显示链接标题和正文（来自预览数据）
               if (isHttpsUrl) ...[
-                NoteLinkContentSection(
-                  previewDescription: previewDescription,
-                  contentController: contentController,
-                  onSave: onSave,
-                ),
+                if (!isLoadingPreview)
+                  NoteLinkContentSection(
+                    previewDescription: previewContent,
+                    contentController: contentController,
+                    onSave: onSave,
+                  ),
               ],
 
               // 用户笔记区（个人笔记）

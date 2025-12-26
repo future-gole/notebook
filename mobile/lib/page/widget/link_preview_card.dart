@@ -148,11 +148,11 @@ class _VerticalPreviewCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // 判断是否为空内容（真正的空数据）
-    // 只有当 metadata 完全没有有效信息时才认为是空内容
+    // 判断是否为空内容
     final bool isEmptyContent =
         (metadata.title == null || metadata.title!.isEmpty) &&
-        (metadata.desc == null || metadata.desc!.isEmpty) &&
+        (metadata.desc == null || metadata.desc!.isEmpty);
+    final bool isEmptyImage =
         (metadata.image == null || metadata.image!.isEmpty);
 
     // 桌面端图片高度增加
@@ -163,8 +163,8 @@ class _VerticalPreviewCard extends StatelessWidget {
       hasContent: hasContent,
       isDesktop: isDesktop,
       // 只有空内容时才固定高度,正常内容自适应
-      height: isEmptyContent
-          ? (imageHeight + _kVerticalPlaceholderContentHeight)
+      height: isEmptyContent && isEmptyImage
+          ? (_kVerticalPlaceholderContentHeight)
           : null,
       onTap: onTap,
       child: Column(
@@ -241,27 +241,20 @@ class _CardImageSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (imageUrl == null) {
+      return const SizedBox.shrink();
+    }
     // 桌面端图片高度增加
     final height = isDesktop ? 180.w : _kVerticalImageHeight;
-    final color = Theme.of(context).colorScheme;
-    return Container(
+    return SizedBox(
       width: isVertical ? double.infinity : 120.w,
       height: isVertical ? height : double.infinity,
-      color: imageUrl == null ? color.surfaceContainerLow : null,
-      child: imageUrl == null
-          ? Center(
-              child: Icon(
-                Icons.image_not_supported_outlined,
-                size: isVertical ? 50.w : 40.w,
-                color: color.primary,
-              ),
-            )
-          : PMImage(
-              pathOrUrl: imageUrl!,
-              fit: BoxFit.cover,
-              width: double.infinity,
-              height: double.infinity,
-            ),
+      child: PMImage(
+        pathOrUrl: imageUrl!,
+        fit: BoxFit.cover,
+        width: double.infinity,
+        height: double.infinity,
+      ),
     );
   }
 }
@@ -310,14 +303,14 @@ class _VerticalContentSection extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              metadata.title ?? '预览失败，请检查网络连接',
+              metadata.title ?? '预览失败',
               style: titleStyle?.copyWith(
                 color: metadata.title == null ? colorScheme.error : null,
               ),
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),
-            const SizedBox(height: 4),
+            SizedBox(height: 4.h),
             Expanded(
               child: Text(
                 metadata.desc ?? (metadata.title == null ? '无法获取该链接的预览信息' : ''),
@@ -326,7 +319,7 @@ class _VerticalContentSection extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
               ),
             ),
-            const SizedBox(height: 4),
+            SizedBox(height: 4.h),
             SourceInfo(metadata: metadata, publishDate: publishDate),
           ],
         ),

@@ -1,15 +1,21 @@
+import 'dart:async';
+import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:pocketmind/providers/shared_preferences_provider.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:pocketmind/model/note.dart';
 import 'package:pocketmind/data/repositories/isar_note_repository.dart';
 import 'package:pocketmind/providers/nav_providers.dart';
 import 'package:pocketmind/providers/infrastructure_providers.dart';
 import 'package:pocketmind/service/note_service.dart';
+import 'package:pocketmind/util/url_helper.dart';
 
 import '../util/logger_service.dart';
 
 import 'package:pocketmind/service/metadata_manager.dart';
 import 'package:pocketmind/api/link_preview_api_service.dart';
+import 'package:pocketmind/providers/pm_service_providers.dart';
 
+part 'note_providers.freezed.dart';
 part 'note_providers.g.dart';
 
 /// NoteRepository Provider - 数据层
@@ -25,7 +31,11 @@ IsarNoteRepository noteRepository(Ref ref) {
 @Riverpod(keepAlive: true)
 MetadataManager metadataManager(Ref ref) {
   final apiService = ref.watch(linkPreviewServiceProvider);
-  return MetadataManager(apiService: apiService);
+  final resourceService = ref.watch(resourcePmServiceProvider);
+  return MetadataManager(
+    linkPreviewApi: apiService,
+    resourceService: resourceService,
+  );
 }
 
 /// NoteService Provider - 业务层
@@ -33,7 +43,8 @@ MetadataManager metadataManager(Ref ref) {
 NoteService noteService(Ref ref) {
   final repository = ref.watch(noteRepositoryProvider);
   final metadataManager = ref.watch(metadataManagerProvider);
-  return NoteService(repository, metadataManager);
+  final prefs = ref.watch(sharedPreferencesProvider);
+  return NoteService(repository, metadataManager, prefs);
 }
 
 /// 搜索查询 Provider - 用于管理当前搜索关键词
@@ -106,5 +117,134 @@ class NoteByCategory extends _$NoteByCategory {
       // 可以在这里处理错误，比如显示 SnackBar
       rethrow;
     }
+  }
+}
+
+@freezed
+abstract class NoteDetailState with _$NoteDetailState {
+  const factory NoteDetailState({
+    required Note note,
+    @Default(false) bool isLoading,
+    @Default([]) List<String> tags,
+    @Default(false) bool isSaving,
+    Object? error,
+  }) = _NoteDetailState;
+}
+
+@riverpod
+class NoteDetail extends _$NoteDetail {
+  Timer? _debounceTimer;
+  static const _tag = 'NoteDetailNotifier';
+
+  @override
+  NoteDetailState build(Note initialNote) {
+    final tags =
+        initialNote.tag
+            ?.split(',')
+            .map((e) => e.trim())
+            .where((e) => e.isNotEmpty)
+            .toList() ??
+        [];
+    return NoteDetailState(note: initialNote, tags: tags);
+  }
+
+  /// 更新笔记内容（带防抖保存）
+  void updateNote({
+    String? title,
+    String? content,
+    int? categoryId,
+    List<String>? tags,
+  }) {
+    final updatedNote = state.note.copyWith(
+      title: title ?? state.note.title,
+      content: content ?? state.note.content,
+      categoryId: categoryId ?? state.note.categoryId,
+      tag: tags?.join(',') ?? state.note.tag,
+    );
+
+    state = state.copyWith(note: updatedNote, tags: tags ?? state.tags);
+    _debounceSave();
+  }
+
+  void addTag(String tag) {
+    if (tag.isEmpty || state.tags.contains(tag)) return;
+    updateNote(tags: [...state.tags, tag]);
+  }
+
+  void removeTag(String tag) {
+    updateNote(tags: state.tags.where((t) => t != tag).toList());
+  }
+
+  void updateCategory(int categoryId) {
+    updateNote(categoryId: categoryId);
+  }
+
+  /// 防抖保存逻辑
+  void _debounceSave() {
+    _debounceTimer?.cancel();
+    _debounceTimer = Timer(const Duration(milliseconds: 500), () => saveNote());
+  }
+
+  Future<void> saveNote() async {
+    if (state.isSaving || state.note.id == null) return;
+    state = state.copyWith(isSaving: true);
+    try {
+      final id = await ref
+          .read(noteServiceProvider)
+          .updateNote(
+            id: state.note.id!,
+            title: state.note.title,
+            content: state.note.content,
+            url: state.note.url,
+            categoryId: state.note.categoryId,
+            tag: state.note.tag,
+            previewImageUrl: state.note.previewImageUrl,
+            previewTitle: state.note.previewTitle,
+            previewDescription: state.note.previewDescription,
+            updatedAt: state.note.updatedAt,
+          );
+      if (ref.mounted) {
+        state = state.copyWith(note: state.note.copyWith(id: id));
+      }
+    } catch (e) {
+      PMlog.e(_tag, 'Save failed: $e');
+      if (ref.mounted) state = state.copyWith(error: e);
+    } finally {
+      if (ref.mounted) state = state.copyWith(isSaving: false);
+    }
+  }
+
+  Future<void> deleteNote() async {
+    await ref.read(noteServiceProvider).deleteFullNote(state.note);
+  }
+
+  // Future<void> loadLinkPreview() async {
+  //   if (state.isLoading) return;
+  //   state = state.copyWith(isLoading: true);
+  //   try {
+  //     final updated = await ref
+  //         .read(noteServiceProvider)
+  //         .enrichNoteWithMetadata(state.note);
+  //     if (ref.mounted) state = state.copyWith(note: updated);
+  //   } finally {
+  //     if (ref.mounted) state = state.copyWith(isLoading: false);
+  //   }
+  // }
+
+  // Future<void> loadResourceContentIfNeeded() async {
+  //   if (state.isLoading) return;
+  //   state = state.copyWith(isLoading: true);
+  //   try {
+  //     final updated = await ref
+  //         .read(noteServiceProvider)
+  //         .fetchAndPersistResourceContentIfNeeded(state.note);
+  //     if (ref.mounted) state = state.copyWith(note: updated);
+  //   } finally {
+  //     if (ref.mounted) state = state.copyWith(isLoading: false);
+  //   }
+  // }
+
+  void shareNote(dynamic context) {
+    PMlog.d(_tag, 'Sharing note: ${state.note.title}');
   }
 }

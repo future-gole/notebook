@@ -97,7 +97,8 @@ class AppConstants {
   static const String keyReminderShortcuts = 'reminder_shortcuts';
 
   /// 高精度通知键
-  static const String keyHighPrecisionNotification = 'high_precision_notification';
+  static const String keyHighPrecisionNotification =
+      'high_precision_notification';
 
   /// 通知强度键
   static const String keyNotificationIntensity = 'notification_intensity';

@@ -1,10 +1,9 @@
 import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:pocketmind/util/logger_service.dart';
-import 'api_constants.dart';
 
 /// HTTP 客户端工具类
-/// 
+///
 /// 基于 Dio 封装的网络请求工具类，提供：
 /// - 统一的请求/响应处理
 /// - 全局拦截器（日志、错误处理）
@@ -17,6 +16,9 @@ class HttpClient {
 
   late Dio _dio;
   final String tag = 'HttpClient';
+
+  /// 未授权回调（例如 Token 过期）
+  void Function()? onUnauthorized;
 
   // 基础配置
   static const Duration connectTimeout = Duration(seconds: 30);
@@ -76,13 +78,12 @@ class HttpClient {
   //  1. 如果是第三方 API，T 可能是 Map<String, dynamic>
   //  2. 如果是我们自己的 API，T 可能是 User 或 List<Note>
   Future<T> get<T>(
-      String path, {
-        Map<String, dynamic>? queryParameters,
-        Options? options,
-        CancelToken? cancelToken,
-      }) async {
+    String path, {
+    Map<String, dynamic>? queryParameters,
+    Options? options,
+    CancelToken? cancelToken,
+  }) async {
     try {
-
       final response = await _dio.get<T>(
         path,
         queryParameters: queryParameters,
@@ -106,12 +107,12 @@ class HttpClient {
   /// [queryParameters] 查询参数
   /// [options] 请求选项
   Future<T> post<T>(
-      String path, {
-        dynamic data,
-        Map<String, dynamic>? queryParameters,
-        Options? options,
-        CancelToken? cancelToken,
-      }) async {
+    String path, {
+    dynamic data,
+    Map<String, dynamic>? queryParameters,
+    Options? options,
+    CancelToken? cancelToken,
+  }) async {
     try {
       final response = await _dio.post<T>(
         path,
@@ -129,7 +130,7 @@ class HttpClient {
   }
 
   /// PUT 请求
-  /// 
+  ///
   /// [path] 请求路径
   /// [data] 请求体数据
   /// [queryParameters] 查询参数
@@ -142,7 +143,7 @@ class HttpClient {
     CancelToken? cancelToken,
   }) async {
     try {
-      final response =  await _dio.put<T>(
+      final response = await _dio.put<T>(
         path,
         data: data,
         queryParameters: queryParameters,
@@ -158,7 +159,7 @@ class HttpClient {
   }
 
   /// DELETE 请求
-  /// 
+  ///
   /// [path] 请求路径
   /// [data] 请求体数据
   /// [queryParameters] 查询参数
@@ -171,7 +172,7 @@ class HttpClient {
     CancelToken? cancelToken,
   }) async {
     try {
-      final response =  await _dio.delete<T>(
+      final response = await _dio.delete<T>(
         path,
         data: data,
         queryParameters: queryParameters,
@@ -187,7 +188,7 @@ class HttpClient {
   }
 
   /// PATCH 请求
-  /// 
+  ///
   /// [path] 请求路径
   /// [data] 请求体数据
   /// [queryParameters] 查询参数
@@ -208,7 +209,7 @@ class HttpClient {
         cancelToken: cancelToken,
       );
       return response.data as T;
-    }  on DioException catch (e) {
+    } on DioException catch (e) {
       throw _buildHttpException(e);
     } catch (e) {
       throw HttpException(e.toString());
@@ -216,7 +217,7 @@ class HttpClient {
   }
 
   /// 文件上传
-  /// 
+  ///
   /// [path] 上传路径
   /// [filePath] 本地文件路径
   /// [fieldName] 字段名称
@@ -233,10 +234,7 @@ class HttpClient {
     try {
       String fileName = filePath.split('/').last;
       FormData formData = FormData.fromMap({
-        fieldName: await MultipartFile.fromFile(
-          filePath,
-          filename: fileName,
-        ),
+        fieldName: await MultipartFile.fromFile(filePath, filename: fileName),
         ...?data,
       });
 
@@ -252,7 +250,7 @@ class HttpClient {
   }
 
   /// 文件下载
-  /// 
+  ///
   /// [url] 下载地址
   /// [savePath] 保存路径
   /// [onReceiveProgress] 下载进度回调
@@ -291,15 +289,18 @@ class HttpClient {
 class _ApiTransformInterceptor extends Interceptor {
   @override
   void onResponse(Response response, ResponseInterceptorHandler handler) {
-    // 检查是否是 我们自己 的 API (基于 baseUrl)
+    // 检查是否是我们自己的 API：统一前缀 /api
     // 并且响应是 JSON (Map)
-    final isOurApi = response.requestOptions.uri.toString().startsWith(ApiConstants.pocketMindBaseUrl);
+    final isOurApi = response.requestOptions.uri.path.startsWith('/api');
     if (isOurApi && response.data is Map<String, dynamic>) {
       final data = response.data as Map<String, dynamic>;
 
       // 检查它是否符合我们的 ApiResponse 格式
       if (data.containsKey('code') && data.containsKey('message')) {
-        final apiResponse = ApiResponse.fromJson(data, (json) => json); // (json) => json 只是为了复用逻辑
+        final apiResponse = ApiResponse.fromJson(
+          data,
+          (json) => json,
+        ); // (json) => json 只是为了复用逻辑
 
         if (apiResponse.isSuccess) {
           // 成功：用 ApiResponse.data 替换掉整个 response.data
@@ -381,10 +382,21 @@ class _ErrorInterceptor extends Interceptor {
     // 统一错误处理
     String errorMessage = _handleError(err);
     PMlog.e(tag, '请求错误: $errorMessage');
-    
+
+    // 处理 401 未授权
+    final statusCode = err.response?.statusCode;
+    final businessCode = err.error is HttpException
+        ? (err.error as HttpException).code
+        : null;
+
+    if (statusCode == 401 ||
+        (businessCode != null && businessCode.toString().startsWith('401'))) {
+      HttpClient().onUnauthorized?.call();
+    }
+
     // 可以在这里添加全局错误提示逻辑
     // 例如：显示 Toast、SnackBar 等
-    
+
     handler.next(err);
   }
 }
@@ -443,11 +455,7 @@ class ApiResponse<T> {
   final String message;
   final T? data;
 
-  ApiResponse({
-    required this.code,
-    required this.message,
-    this.data,
-  });
+  ApiResponse({required this.code, required this.message, this.data});
 
   factory ApiResponse.fromJson(
     Map<String, dynamic> json,

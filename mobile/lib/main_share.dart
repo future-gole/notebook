@@ -10,7 +10,9 @@ import 'package:pocketmind/page/share/edit_note_page.dart';
 import 'package:pocketmind/page/share/share_success_page.dart';
 import 'package:pocketmind/page/widget/flowing_background.dart';
 import 'package:pocketmind/providers/infrastructure_providers.dart';
+import 'package:pocketmind/providers/auth_providers.dart';
 import 'package:pocketmind/providers/note_providers.dart';
+import 'package:pocketmind/providers/pm_service_providers.dart';
 import 'package:pocketmind/providers/shared_preferences_provider.dart';
 import 'package:pocketmind/service/note_service.dart';
 import 'package:pocketmind/service/notification_service.dart';
@@ -24,7 +26,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'util/logger_service.dart';
 import 'package:flutter_uri_to_file/flutter_uri_to_file.dart';
 
-late Isar isar; // 这个 Isar 实例专用于分享引擎
+late Isar isar;
 final String tag = 'main_share';
 
 // UI 状态枚举
@@ -93,6 +95,8 @@ class _MyShareAppState extends ConsumerState<MyShareApp>
   @override
   void initState() {
     super.initState();
+    // 初始化鉴权（恢复 token；无 token 时不影响功能）
+    ref.read(authControllerProvider);
     noteService = ref.read(noteServiceProvider);
     _channel.setMethodCallHandler(_handleMethodCall);
     PMlog.d(tag, 'MyShareApp 初始化完成, 等待分享...');
@@ -173,11 +177,24 @@ class _MyShareAppState extends ConsumerState<MyShareApp>
 
         try {
           // 1. 直接保存数据到数据库
-          _noteId = await noteService.addOrUpdateNote(
+          _noteId = await noteService.addNote(
             title: title,
             content: content,
             url: url,
           );
+
+          // 1.1 提交后端抓取请求,保存需要查询的 url
+          if (url != null) {
+            if (_sendBackUrl(url)) {
+              ref.read(resourcePmServiceProvider).submit(url: url);
+            }
+            final sharedPreferences = ref.read(sharedPreferencesProvider);
+            await sharedPreferences.reload();
+            var urls = sharedPreferences.getStringList('needCallBackUrl') ?? [];
+            urls.add(url);
+            await sharedPreferences.setStringList('needCallBackUrl', urls);
+            PMlog.d(tag, '已保存需要回调的 URL 列表: $urls');
+          }
 
           // 2. 更新 UI 状态以显示 ShareSuccessPage
           setState(() {
@@ -198,6 +215,13 @@ class _MyShareAppState extends ConsumerState<MyShareApp>
           message: 'Unknown method ${call.method}',
         );
     }
+  }
+
+  bool _sendBackUrl(String url) {
+    final u = url.toLowerCase();
+    return u.contains('x.com') ||
+        u.contains('twitter.com') ||
+        u.contains('t.co');
   }
 
   @override
@@ -311,6 +335,6 @@ class _MyShareAppState extends ConsumerState<MyShareApp>
 class ShareData {
   final String? title;
   final String? content;
-  final String? url; // 添加 URL 字段
+  final String? url;
   ShareData({required this.title, required this.content, this.url});
 }

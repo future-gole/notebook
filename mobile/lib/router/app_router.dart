@@ -1,11 +1,13 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:pocketmind/model/note.dart';
 import 'package:pocketmind/page/home/home_screen.dart';
 import 'package:pocketmind/page/home/desktop/desktop_home_screen.dart';
 import 'package:pocketmind/page/home/note_detail_page.dart';
 import 'package:pocketmind/page/home/settings_page.dart';
 import 'package:pocketmind/page/home/sync_settings_page.dart';
+import 'package:pocketmind/page/home/auth_page.dart';
 import 'package:pocketmind/page/main_layout.dart';
 import 'package:pocketmind/router/route_paths.dart';
 
@@ -31,19 +33,10 @@ final appRouter = GoRouter(
           routes: [
             // 笔记详情 (嵌套在首页路径下，方便返回)
             GoRoute(
-              path: 'note/:nid',
+              path: RoutePaths.noteDetail,
               builder: (context, state) {
-                final nidStr = state.pathParameters['nid'];
-                final nid = int.tryParse(nidStr ?? '');
-
-                // 参数校验
-                if (nid == null) {
-                  return const Scaffold(body: Center(child: Text('无效的笔记 ID')));
-                }
-
-                // 注意：这里需要 NoteDetailPage 支持通过 ID 加载
-                // 暂时传递一个占位，后续重构 NoteDetailPage
-                return NoteDetailPage(noteId: nid);
+                final note = state.extra as Note;
+                return NoteDetailPage(note: note);
               },
             ),
           ],
@@ -59,6 +52,12 @@ final appRouter = GoRouter(
         GoRoute(
           path: RoutePaths.sync,
           builder: (context, state) => const SyncSettingsPage(),
+        ),
+
+        // auth
+        GoRoute(
+          path: RoutePaths.auth,
+          builder: (context, state) => const AuthPage(),
         ),
       ],
     ),

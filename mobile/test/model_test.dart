@@ -1,5 +1,4 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:isar_community/isar.dart';
 import 'package:pocketmind/model/note.dart';
 import 'package:pocketmind/model/category.dart';
 

@@ -33,7 +33,7 @@ class IsarNoteRepository {
 
       // 如果是更新操作，保留现有的 uuid
       // 注意：如果传入的 note 已经是从数据库取出的对象，它应该已经有 uuid 了
-      // 这里主要是为了防止新建对象时覆盖了原有的 uuid (虽然这种情况在直接使用 Note 对象时较少见)
+      // 这里主要是为了防止新建对象时覆盖了原有的 uuid
       if (note.id != null && note.id != Isar.autoIncrement) {
         final existingNote = await _isar.notes.get(note.id!);
         if (existingNote != null && existingNote.uuid != null) {
@@ -252,6 +252,25 @@ class IsarNoteRepository {
       rethrow;
     }
   }
+  Future<List<Note>> findByUrls(List<String> urls) async {
+    try {
+      final notes = await _isar.notes
+          .filter()
+          .isDeletedEqualTo(false)
+          .and()
+          .group((q) {
+          return q.anyOf(
+            urls, 
+            (q, String url) => q.urlEqualTo(url)
+          );
+        })
+        .findAll();
+      return notes;
+    } catch (e, stackTrace) {
+      PMlog.e(_tag, 'Error while finding notes by url: $e\n$stackTrace');
+      rethrow;
+    }
+  }
 
   Stream<List<Note>> findByQuery(String query) {
     try {
@@ -289,6 +308,8 @@ class IsarNoteRepository {
         .urlIsNotNull()
         .urlIsNotEmpty()
         .previewContentIsNull()
+        .not()
+        .resourceStatusEqualTo('FAILED')
         .isDeletedEqualTo(false)
         .findAll();
   }

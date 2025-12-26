@@ -395,3 +395,10 @@ This section tracks ongoing code quality improvements and refactoring tasks.
 - **解决方案**: Freezed 3.0 要求使用 `abstract` 或 `sealed` 关键字
 - **实施**: 所有 Freezed 类已更新为 `abstract class`
 - **状态**: ✅ 已完成迁移，所有代码正常编译
+
+## New Development Rules (2025-12-24)
+- **Backend ORM**: Use MyBatis-Plus.
+- **Backend Architecture**: Follow MVC (Controller -> Service -> Repository). Keep Controllers clean.
+- **Observability**: Add detailed logs for debugging.
+- **Comments**: Must be in Chinese.
+- **Dependency Check**: Use `context7 mcp` to check versions before adding.

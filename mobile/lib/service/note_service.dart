@@ -4,25 +4,24 @@ import 'package:pocketmind/data/repositories/isar_note_repository.dart';
 import 'package:pocketmind/util/logger_service.dart';
 import 'package:pocketmind/util/image_storage_helper.dart';
 import 'package:pocketmind/service/metadata_manager.dart';
-import 'package:isar_community/isar.dart';
+import 'package:pocketmind/api/models/note_metadata.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 final String noteServiceTag = 'NoteService';
 
-/// 笔记业务服务层
-///
-/// 直接使用 IsarNoteRepository 和 Note 模型
+/// 本地 Note 业务服务层
 class NoteService {
   final IsarNoteRepository _noteRepository;
   final MetadataManager _metadataManager;
+  final SharedPreferences _prefs;
   final ImageStorageHelper _imageHelper = ImageStorageHelper();
 
-  NoteService(this._noteRepository, this._metadataManager);
+  NoteService(this._noteRepository, this._metadataManager, this._prefs);
 
-  /// 增添/更新笔记
+  /// 新增笔记
   ///
   /// 如果保存失败，将抛出异常
-  Future<int> addOrUpdateNote({
-    int? id,
+  Future<int> addNote({
     String? title,
     String? content,
     String? url,
@@ -31,12 +30,10 @@ class NoteService {
     String? previewImageUrl,
     String? previewTitle,
     String? previewDescription,
-    int? updatedAt,
-    bool updateTimestamp = true,
   }) async {
     PMlog.d(
       noteServiceTag,
-      'Saving note: id: $id, title: $title, categoryId: $categoryId, updateTimestamp: $updateTimestamp',
+      'Adding note: title: $title, categoryId: $categoryId',
     );
 
     // 创建 Note 模型
@@ -50,33 +47,74 @@ class NoteService {
       ..previewImageUrl = previewImageUrl
       ..previewTitle = previewTitle
       ..previewDescription = previewDescription
-      ..updatedAt = updatedAt ?? 0;
+      ..updatedAt = 0;
 
-    if (id != null && id != -1) {
-      note.id = id;
-    }
+    final savedId = await _noteRepository.save(note, updateTimestamp: true);
 
-    final savedId = await _noteRepository.save(
-      note,
-      updateTimestamp: updateTimestamp,
+    // todo 暂且不放在这边获取
+    // // 如果包含 URL，触发异步元数据抓取
+    // if (url != null && url.isNotEmpty) {
+    //   // 异步执行，不阻塞保存操作
+    //   Future.microtask(() async {
+    //     try {
+    //       final savedNote = await _noteRepository.getById(savedId);
+    //       if (savedNote != null) {
+    //         await enrichNoteWithMetadata(savedNote);
+    //       }
+    //     } catch (e) {
+    //       PMlog.e(noteServiceTag, 'Background enrichment failed: $e');
+    //     }
+    //   });
+    // }
+
+    return savedId;
+  }
+
+  /// 更新笔记
+  ///
+  /// 如果保存失败，将抛出异常
+  Future<int> updateNote({
+    required int id,
+    String? title,
+    String? content,
+    String? url,
+    int? categoryId,
+    String? tag,
+    String? previewImageUrl,
+    String? previewTitle,
+    String? previewContent,
+    String? previewDescription,
+    int? updatedAt,
+    bool updateTimestamp = true,
+  }) async {
+    PMlog.d(
+      noteServiceTag,
+      'Updating note: id: $id, title: $title, updateTimestamp: $updateTimestamp',
     );
 
-    // 如果是新笔记且包含 URL，触发异步元数据抓取
-    if (id == null || id == -1) {
-      if (url != null && url.isNotEmpty) {
-        // 异步执行，不阻塞保存操作
-        Future.microtask(() async {
-          try {
-            final savedNote = await _noteRepository.getById(savedId);
-            if (savedNote != null) {
-              await enrichNoteWithMetadata(savedNote);
-            }
-          } catch (e) {
-            PMlog.e(noteServiceTag, 'Background enrichment failed: $e');
-          }
-        });
-      }
+    final existingNote = await _noteRepository.getById(id);
+    if (existingNote == null) {
+      throw Exception('Note not found: $id');
     }
+
+    // 更新字段（只更新提供的字段）
+    existingNote.title = title ?? existingNote.title;
+    existingNote.content = content ?? existingNote.content;
+    existingNote.url = url ?? existingNote.url;
+    existingNote.categoryId = categoryId ?? existingNote.categoryId;
+    existingNote.tag = tag ?? existingNote.tag;
+    existingNote.previewImageUrl =
+        previewImageUrl ?? existingNote.previewImageUrl;
+    existingNote.previewTitle = previewTitle ?? existingNote.previewTitle;
+    existingNote.previewDescription =
+        previewDescription ?? existingNote.previewDescription;
+    existingNote.updatedAt = updatedAt ?? existingNote.updatedAt;
+    existingNote.previewContent = previewContent ?? existingNote.previewContent;
+
+    final savedId = await _noteRepository.save(
+      existingNote,
+      updateTimestamp: updateTimestamp,
+    );
 
     return savedId;
   }
@@ -166,59 +204,132 @@ class NoteService {
     return _noteRepository.findByQuery(query);
   }
 
-  /// 丰富笔记元数据（链接预览）
+  // /// 丰富笔记元数据（链接预览）
+  // ///
+  // /// 自动抓取链接预览信息，本地化图片，并更新数据库
+  // /// 如果抓取失败或数据不完整，返回原笔记对象
+  // Future<Note> enrichNoteWithMetadata(Note note) async {
+  //   final url = note.url;
+  //   // 1. 基础校验：必须有 URL，且未处理过（或者强制刷新）
+  //   if (url == null ||
+  //       url.isEmpty ||
+  //       (note.previewImageUrl != null && note.previewImageUrl!.isNotEmpty) ||
+  //       (note.previewTitle != null && note.previewTitle!.isNotEmpty)) {
+  //     return note;
+  //   }
+  //
+  //   PMlog.d(noteServiceTag, '开始获取链接元数据: $url');
+  //
+  //   try {
+  //     // 2. 调用 MetadataManager 获取并处理数据
+  //     final results = await _metadataManager.fetchAndProcessMetadata([url]);
+  //     final metadata = results[url];
+  //
+  //     if (metadata != null && metadata.isValid) {
+  //       // 3. 更新数据库
+  //       note.previewImageUrl = metadata.imageUrl;
+  //       note.previewTitle = metadata.title;
+  //       note.previewDescription = metadata.displayDescription;
+  //
+  //       if (metadata.previewContent != null &&
+  //           metadata.previewContent!.trim().isNotEmpty) {
+  //         note.previewContent = metadata.previewContent;
+  //       }
+  //       if (metadata.aiSummary != null &&
+  //           metadata.aiSummary!.trim().isNotEmpty) {
+  //         note.aiSummary = metadata.aiSummary;
+  //       }
+  //       if (metadata.resourceStatus != null) {
+  //         note.resourceStatus = metadata.resourceStatus;
+  //       }
+  //
+  //       await _noteRepository.save(note);
+  //       PMlog.d(noteServiceTag, '元数据已更新: ${note.id}');
+  //     }
+  //     return note;
+  //   } catch (e) {
+  //     PMlog.e(noteServiceTag, '丰富笔记元数据失败: $e');
+  //     return note;
+  //   }
+  // }
+
+  /// 传入 note 从后端拉取资源正文/摘要
   ///
-  /// 自动抓取链接预览信息，本地化图片，并更新数据库
-  /// 如果抓取失败或数据不完整，不会更新数据库
-  Future<void> enrichNoteWithMetadata(Note note) async {
-    final url = note.url;
-    // 1. 基础校验：必须有 URL，且未处理过（或者强制刷新）
-    // 这里简单判断：如果已经有预览图或标题，就不再处理，避免重复流量
-    if (url == null ||
-        url.isEmpty ||
-        (note.previewImageUrl != null && note.previewImageUrl!.isNotEmpty) ||
-        (note.previewTitle != null && note.previewTitle!.isNotEmpty)) {
+  /// - 仅当 url 存在且 previewContent 为空时尝试
+  /// - 成功：写入 previewContent/aiSummary/resourceStatus，并落库
+  /// - 失败：返回原笔记对象
+  // Future<Note> fetchAndPersistResourceContentIfNeeded(Note note) async {
+  //   final url = note.url;
+  //   if (url == null || url.isEmpty) return note;
+  //   if (note.previewContent != null && note.previewContent!.trim().isNotEmpty) {
+  //     return note;
+  //   }
+  //
+  //   try {
+  //     final noteMetadata = await _metadataManager.fetchAndProcessMetadata([
+  //       url,
+  //     ]);
+  //     if (noteMetadata.isEmpty) return note;
+  //
+  //     PMlog.d(noteServiceTag, '开始保存后端返回的note数据');
+  //     note.title = noteMetadata[url]?.title ?? note.title;
+  //     note.resourceStatus = noteMetadata[url]?.resourceStatus;
+  //     note.previewContent = noteMetadata[url]?.previewContent;
+  //     note.aiSummary = noteMetadata[url]?.aiSummary;
+  //
+  //     // todo 这边需要统一使用一个入口，但是 现在 id 和 uuid 还没区分开，先放着
+  //     await _noteRepository.save(note);
+  //     return note;
+  //   } catch (e) {
+  //     PMlog.e(noteServiceTag, '从后端获取资源内容失败: $e');
+  //     return note;
+  //   }
+  // }
+
+  // todo 确认一下 riverpod 最佳实践在这里是不是这样写最好
+  /// 处理待回调的 URL
+  ///
+  /// 检查 SharedPreferences 中的 needCallBackUrl 列表
+  /// 对每个 URL 尝试查找对应的 Note 并向后端资源内容
+  Future<void> processPendingUrls() async {
+    // 重新获取 SharedPreferences 实例，确保数据是最新的
+    // 因为 Android 的 SharedPreferences 在不同进程（主应用和分享扩展）之间不会自动同步内存缓存。
+    await _prefs.reload();
+    final urls = _prefs.getStringList('needCallBackUrl') ?? [];
+    if (urls.isEmpty) {
+      PMlog.d(noteServiceTag, 'urls 为空不处理');
       return;
     }
 
-    PMlog.d(noteServiceTag, '开始获取链接元数据: $url');
+    PMlog.d(noteServiceTag, '开始处理 URLs: $urls');
+    final items = await _metadataManager.fetchAndProcessMetadata(urls);
 
-    try {
-      // 2. 调用 MetadataManager 获取并处理数据
-      final metadata = await _metadataManager.fetchAndProcessMetadata(url);
-
-      if (metadata != null) {
-        // 3. 更新数据库
-        // previewImageUrl 存储的是本地化后的路径
-        note.previewImageUrl = metadata.image;
-        note.previewTitle = metadata.title;
-        note.previewDescription = metadata.desc;
-
+    var notes = await _noteRepository.findByUrls(urls);
+    for (final note in notes) {
+      final item = items[note.url];
+      if (item != null) {
+        note.previewTitle = item.title;
+        note.previewDescription = item.displayDescription;
+        note.resourceStatus = item.resourceStatus;
+        note.previewContent = item.previewContent;
+        note.aiSummary = item.aiSummary;
         await _noteRepository.save(note);
-        PMlog.d(noteServiceTag, '元数据已更新: ${note.id}');
+        PMlog.d(noteServiceTag, 'Updated note ${note.id} with metadata');
       }
-    } catch (e) {
-      PMlog.e(noteServiceTag, '丰富笔记元数据失败: $e');
-      // 这里可以选择抛出异常供 UI 层展示 Toast
-      rethrow;
     }
-  }
 
-  /// 更新笔记的预览数据（链接预览图片、标题、描述）
-  Future<void> updatePreviewData({
-    required int noteId,
-    String? previewImageUrl,
-    String? previewTitle,
-    String? previewDescription,
-  }) async {
-    final note = await _noteRepository.getById(noteId);
-    if (note == null) return;
+    PMlog.d(noteServiceTag, '开始消除 URLs: $urls');
 
-    note.previewImageUrl = previewImageUrl;
-    note.previewTitle = previewTitle;
-    note.previewDescription = previewDescription;
-
-    await _noteRepository.save(note);
-    PMlog.d(noteServiceTag, '预览数据已保存: noteId=$noteId');
+    // 再次刷新，防止在处理过程中有新的 URL 加入
+    await _prefs.reload();
+    final currentUrls = _prefs.getStringList('needCallBackUrl') ?? [];
+    for (var url in urls) {
+      currentUrls.remove(url);
+    }
+    await _prefs.setStringList('needCallBackUrl', currentUrls);
+    PMlog.d(
+      noteServiceTag,
+      'Pending URLs processed and cleared. Remaining: $currentUrls',
+    );
   }
 }

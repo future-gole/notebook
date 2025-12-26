@@ -147,6 +147,11 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
       body: ListView(
         padding: EdgeInsets.all(16.r),
         children: [
+          // 账号
+          _buildSectionTitle('账号', theme),
+          _buildAccountCard(theme),
+          SizedBox(height: 24.h),
+
           // Title 显示设置
           _buildSectionTitle('显示设置', theme),
           _buildTitleSettingCard(theme),
@@ -185,6 +190,24 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
           // 说明
           _buildInfoCard(theme),
         ],
+      ),
+    );
+  }
+
+  Widget _buildAccountCard(ThemeData theme) {
+    return Card(
+      color: theme.cardColor,
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12.r),
+        side: BorderSide(color: theme.dividerColor.withValues(alpha: 0.1)),
+      ),
+      child: ListTile(
+        leading: const Icon(Icons.person_outline_rounded),
+        title: Text('登录 / 注册', style: theme.textTheme.bodyLarge),
+        subtitle: Text('未登录也可正常使用，本地功能不受影响', style: theme.textTheme.bodySmall),
+        trailing: const Icon(Icons.chevron_right_rounded),
+        onTap: () => context.push(RoutePaths.auth),
       ),
     );
   }

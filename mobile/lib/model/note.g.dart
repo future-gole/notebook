@@ -17,42 +17,57 @@ const NoteSchema = CollectionSchema(
   name: r'Note',
   id: 6284318083599466921,
   properties: {
-    r'categoryId': PropertySchema(
+    r'aiSummary': PropertySchema(
       id: 0,
+      name: r'aiSummary',
+      type: IsarType.string,
+    ),
+    r'categoryId': PropertySchema(
+      id: 1,
       name: r'categoryId',
       type: IsarType.long,
     ),
-    r'content': PropertySchema(id: 1, name: r'content', type: IsarType.string),
+    r'content': PropertySchema(id: 2, name: r'content', type: IsarType.string),
     r'isDeleted': PropertySchema(
-      id: 2,
+      id: 3,
       name: r'isDeleted',
       type: IsarType.bool,
     ),
+    r'previewContent': PropertySchema(
+      id: 4,
+      name: r'previewContent',
+      type: IsarType.string,
+    ),
     r'previewDescription': PropertySchema(
-      id: 3,
+      id: 5,
       name: r'previewDescription',
       type: IsarType.string,
     ),
     r'previewImageUrl': PropertySchema(
-      id: 4,
+      id: 6,
       name: r'previewImageUrl',
       type: IsarType.string,
     ),
     r'previewTitle': PropertySchema(
-      id: 5,
+      id: 7,
       name: r'previewTitle',
       type: IsarType.string,
     ),
-    r'tag': PropertySchema(id: 6, name: r'tag', type: IsarType.string),
-    r'time': PropertySchema(id: 7, name: r'time', type: IsarType.dateTime),
-    r'title': PropertySchema(id: 8, name: r'title', type: IsarType.string),
+    r'resourceStatus': PropertySchema(
+      id: 8,
+      name: r'resourceStatus',
+      type: IsarType.string,
+    ),
+    r'tag': PropertySchema(id: 9, name: r'tag', type: IsarType.string),
+    r'time': PropertySchema(id: 10, name: r'time', type: IsarType.dateTime),
+    r'title': PropertySchema(id: 11, name: r'title', type: IsarType.string),
     r'updatedAt': PropertySchema(
-      id: 9,
+      id: 12,
       name: r'updatedAt',
       type: IsarType.long,
     ),
-    r'url': PropertySchema(id: 10, name: r'url', type: IsarType.string),
-    r'uuid': PropertySchema(id: 11, name: r'uuid', type: IsarType.string),
+    r'url': PropertySchema(id: 13, name: r'url', type: IsarType.string),
+    r'uuid': PropertySchema(id: 14, name: r'uuid', type: IsarType.string),
   },
 
   estimateSize: _noteEstimateSize,
@@ -69,6 +84,19 @@ const NoteSchema = CollectionSchema(
       properties: [
         IndexPropertySchema(
           name: r'uuid',
+          type: IndexType.hash,
+          caseSensitive: true,
+        ),
+      ],
+    ),
+    r'url': IndexSchema(
+      id: -5756857009679432345,
+      name: r'url',
+      unique: false,
+      replace: false,
+      properties: [
+        IndexPropertySchema(
+          name: r'url',
           type: IndexType.hash,
           caseSensitive: true,
         ),
@@ -111,7 +139,19 @@ int _noteEstimateSize(
 ) {
   var bytesCount = offsets.last;
   {
+    final value = object.aiSummary;
+    if (value != null) {
+      bytesCount += 3 + value.length * 3;
+    }
+  }
+  {
     final value = object.content;
+    if (value != null) {
+      bytesCount += 3 + value.length * 3;
+    }
+  }
+  {
+    final value = object.previewContent;
     if (value != null) {
       bytesCount += 3 + value.length * 3;
     }
@@ -130,6 +170,12 @@ int _noteEstimateSize(
   }
   {
     final value = object.previewTitle;
+    if (value != null) {
+      bytesCount += 3 + value.length * 3;
+    }
+  }
+  {
+    final value = object.resourceStatus;
     if (value != null) {
       bytesCount += 3 + value.length * 3;
     }
@@ -167,18 +213,21 @@ void _noteSerialize(
   List<int> offsets,
   Map<Type, List<int>> allOffsets,
 ) {
-  writer.writeLong(offsets[0], object.categoryId);
-  writer.writeString(offsets[1], object.content);
-  writer.writeBool(offsets[2], object.isDeleted);
-  writer.writeString(offsets[3], object.previewDescription);
-  writer.writeString(offsets[4], object.previewImageUrl);
-  writer.writeString(offsets[5], object.previewTitle);
-  writer.writeString(offsets[6], object.tag);
-  writer.writeDateTime(offsets[7], object.time);
-  writer.writeString(offsets[8], object.title);
-  writer.writeLong(offsets[9], object.updatedAt);
-  writer.writeString(offsets[10], object.url);
-  writer.writeString(offsets[11], object.uuid);
+  writer.writeString(offsets[0], object.aiSummary);
+  writer.writeLong(offsets[1], object.categoryId);
+  writer.writeString(offsets[2], object.content);
+  writer.writeBool(offsets[3], object.isDeleted);
+  writer.writeString(offsets[4], object.previewContent);
+  writer.writeString(offsets[5], object.previewDescription);
+  writer.writeString(offsets[6], object.previewImageUrl);
+  writer.writeString(offsets[7], object.previewTitle);
+  writer.writeString(offsets[8], object.resourceStatus);
+  writer.writeString(offsets[9], object.tag);
+  writer.writeDateTime(offsets[10], object.time);
+  writer.writeString(offsets[11], object.title);
+  writer.writeLong(offsets[12], object.updatedAt);
+  writer.writeString(offsets[13], object.url);
+  writer.writeString(offsets[14], object.uuid);
 }
 
 Note _noteDeserialize(
@@ -188,19 +237,22 @@ Note _noteDeserialize(
   Map<Type, List<int>> allOffsets,
 ) {
   final object = Note();
-  object.categoryId = reader.readLong(offsets[0]);
-  object.content = reader.readStringOrNull(offsets[1]);
+  object.aiSummary = reader.readStringOrNull(offsets[0]);
+  object.categoryId = reader.readLong(offsets[1]);
+  object.content = reader.readStringOrNull(offsets[2]);
   object.id = id;
-  object.isDeleted = reader.readBool(offsets[2]);
-  object.previewDescription = reader.readStringOrNull(offsets[3]);
-  object.previewImageUrl = reader.readStringOrNull(offsets[4]);
-  object.previewTitle = reader.readStringOrNull(offsets[5]);
-  object.tag = reader.readStringOrNull(offsets[6]);
-  object.time = reader.readDateTimeOrNull(offsets[7]);
-  object.title = reader.readStringOrNull(offsets[8]);
-  object.updatedAt = reader.readLong(offsets[9]);
-  object.url = reader.readStringOrNull(offsets[10]);
-  object.uuid = reader.readStringOrNull(offsets[11]);
+  object.isDeleted = reader.readBool(offsets[3]);
+  object.previewContent = reader.readStringOrNull(offsets[4]);
+  object.previewDescription = reader.readStringOrNull(offsets[5]);
+  object.previewImageUrl = reader.readStringOrNull(offsets[6]);
+  object.previewTitle = reader.readStringOrNull(offsets[7]);
+  object.resourceStatus = reader.readStringOrNull(offsets[8]);
+  object.tag = reader.readStringOrNull(offsets[9]);
+  object.time = reader.readDateTimeOrNull(offsets[10]);
+  object.title = reader.readStringOrNull(offsets[11]);
+  object.updatedAt = reader.readLong(offsets[12]);
+  object.url = reader.readStringOrNull(offsets[13]);
+  object.uuid = reader.readStringOrNull(offsets[14]);
   return object;
 }
 
@@ -212,13 +264,13 @@ P _noteDeserializeProp<P>(
 ) {
   switch (propertyId) {
     case 0:
-      return (reader.readLong(offset)) as P;
+      return (reader.readStringOrNull(offset)) as P;
     case 1:
-      return (reader.readStringOrNull(offset)) as P;
+      return (reader.readLong(offset)) as P;
     case 2:
-      return (reader.readBool(offset)) as P;
-    case 3:
       return (reader.readStringOrNull(offset)) as P;
+    case 3:
+      return (reader.readBool(offset)) as P;
     case 4:
       return (reader.readStringOrNull(offset)) as P;
     case 5:
@@ -226,14 +278,20 @@ P _noteDeserializeProp<P>(
     case 6:
       return (reader.readStringOrNull(offset)) as P;
     case 7:
-      return (reader.readDateTimeOrNull(offset)) as P;
+      return (reader.readStringOrNull(offset)) as P;
     case 8:
       return (reader.readStringOrNull(offset)) as P;
     case 9:
-      return (reader.readLong(offset)) as P;
-    case 10:
       return (reader.readStringOrNull(offset)) as P;
+    case 10:
+      return (reader.readDateTimeOrNull(offset)) as P;
     case 11:
+      return (reader.readStringOrNull(offset)) as P;
+    case 12:
+      return (reader.readLong(offset)) as P;
+    case 13:
+      return (reader.readStringOrNull(offset)) as P;
+    case 14:
       return (reader.readStringOrNull(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -463,6 +521,77 @@ extension NoteQueryWhere on QueryBuilder<Note, Note, QWhereClause> {
     });
   }
 
+  QueryBuilder<Note, Note, QAfterWhereClause> urlIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(
+        IndexWhereClause.equalTo(indexName: r'url', value: [null]),
+      );
+    });
+  }
+
+  QueryBuilder<Note, Note, QAfterWhereClause> urlIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(
+        IndexWhereClause.between(
+          indexName: r'url',
+          lower: [null],
+          includeLower: false,
+          upper: [],
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Note, Note, QAfterWhereClause> urlEqualTo(String? url) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(
+        IndexWhereClause.equalTo(indexName: r'url', value: [url]),
+      );
+    });
+  }
+
+  QueryBuilder<Note, Note, QAfterWhereClause> urlNotEqualTo(String? url) {
+    return QueryBuilder.apply(this, (query) {
+      if (query.whereSort == Sort.asc) {
+        return query
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'url',
+                lower: [],
+                upper: [url],
+                includeUpper: false,
+              ),
+            )
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'url',
+                lower: [url],
+                includeLower: false,
+                upper: [],
+              ),
+            );
+      } else {
+        return query
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'url',
+                lower: [url],
+                includeLower: false,
+                upper: [],
+              ),
+            )
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'url',
+                lower: [],
+                upper: [url],
+                includeUpper: false,
+              ),
+            );
+      }
+    });
+  }
+
   QueryBuilder<Note, Note, QAfterWhereClause> updatedAtEqualTo(int updatedAt) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
@@ -568,6 +697,168 @@ extension NoteQueryWhere on QueryBuilder<Note, Note, QWhereClause> {
 }
 
 extension NoteQueryFilter on QueryBuilder<Note, Note, QFilterCondition> {
+  QueryBuilder<Note, Note, QAfterFilterCondition> aiSummaryIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'aiSummary'),
+      );
+    });
+  }
+
+  QueryBuilder<Note, Note, QAfterFilterCondition> aiSummaryIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'aiSummary'),
+      );
+    });
+  }
+
+  QueryBuilder<Note, Note, QAfterFilterCondition> aiSummaryEqualTo(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'aiSummary',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Note, Note, QAfterFilterCondition> aiSummaryGreaterThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'aiSummary',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Note, Note, QAfterFilterCondition> aiSummaryLessThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'aiSummary',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Note, Note, QAfterFilterCondition> aiSummaryBetween(
+    String? lower,
+    String? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'aiSummary',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Note, Note, QAfterFilterCondition> aiSummaryStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'aiSummary',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Note, Note, QAfterFilterCondition> aiSummaryEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'aiSummary',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Note, Note, QAfterFilterCondition> aiSummaryContains(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'aiSummary',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Note, Note, QAfterFilterCondition> aiSummaryMatches(
+    String pattern, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'aiSummary',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Note, Note, QAfterFilterCondition> aiSummaryIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'aiSummary', value: ''),
+      );
+    });
+  }
+
+  QueryBuilder<Note, Note, QAfterFilterCondition> aiSummaryIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'aiSummary', value: ''),
+      );
+    });
+  }
+
   QueryBuilder<Note, Note, QAfterFilterCondition> categoryIdEqualTo(int value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
@@ -864,6 +1155,168 @@ extension NoteQueryFilter on QueryBuilder<Note, Note, QFilterCondition> {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         FilterCondition.equalTo(property: r'isDeleted', value: value),
+      );
+    });
+  }
+
+  QueryBuilder<Note, Note, QAfterFilterCondition> previewContentIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'previewContent'),
+      );
+    });
+  }
+
+  QueryBuilder<Note, Note, QAfterFilterCondition> previewContentIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'previewContent'),
+      );
+    });
+  }
+
+  QueryBuilder<Note, Note, QAfterFilterCondition> previewContentEqualTo(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'previewContent',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Note, Note, QAfterFilterCondition> previewContentGreaterThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'previewContent',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Note, Note, QAfterFilterCondition> previewContentLessThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'previewContent',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Note, Note, QAfterFilterCondition> previewContentBetween(
+    String? lower,
+    String? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'previewContent',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Note, Note, QAfterFilterCondition> previewContentStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'previewContent',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Note, Note, QAfterFilterCondition> previewContentEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'previewContent',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Note, Note, QAfterFilterCondition> previewContentContains(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'previewContent',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Note, Note, QAfterFilterCondition> previewContentMatches(
+    String pattern, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'previewContent',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Note, Note, QAfterFilterCondition> previewContentIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'previewContent', value: ''),
+      );
+    });
+  }
+
+  QueryBuilder<Note, Note, QAfterFilterCondition> previewContentIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'previewContent', value: ''),
       );
     });
   }
@@ -1352,6 +1805,168 @@ extension NoteQueryFilter on QueryBuilder<Note, Note, QFilterCondition> {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         FilterCondition.greaterThan(property: r'previewTitle', value: ''),
+      );
+    });
+  }
+
+  QueryBuilder<Note, Note, QAfterFilterCondition> resourceStatusIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'resourceStatus'),
+      );
+    });
+  }
+
+  QueryBuilder<Note, Note, QAfterFilterCondition> resourceStatusIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'resourceStatus'),
+      );
+    });
+  }
+
+  QueryBuilder<Note, Note, QAfterFilterCondition> resourceStatusEqualTo(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'resourceStatus',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Note, Note, QAfterFilterCondition> resourceStatusGreaterThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'resourceStatus',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Note, Note, QAfterFilterCondition> resourceStatusLessThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'resourceStatus',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Note, Note, QAfterFilterCondition> resourceStatusBetween(
+    String? lower,
+    String? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'resourceStatus',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Note, Note, QAfterFilterCondition> resourceStatusStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'resourceStatus',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Note, Note, QAfterFilterCondition> resourceStatusEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'resourceStatus',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Note, Note, QAfterFilterCondition> resourceStatusContains(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'resourceStatus',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Note, Note, QAfterFilterCondition> resourceStatusMatches(
+    String pattern, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'resourceStatus',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Note, Note, QAfterFilterCondition> resourceStatusIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'resourceStatus', value: ''),
+      );
+    });
+  }
+
+  QueryBuilder<Note, Note, QAfterFilterCondition> resourceStatusIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'resourceStatus', value: ''),
       );
     });
   }
@@ -2154,6 +2769,18 @@ extension NoteQueryLinks on QueryBuilder<Note, Note, QFilterCondition> {
 }
 
 extension NoteQuerySortBy on QueryBuilder<Note, Note, QSortBy> {
+  QueryBuilder<Note, Note, QAfterSortBy> sortByAiSummary() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'aiSummary', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Note, Note, QAfterSortBy> sortByAiSummaryDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'aiSummary', Sort.desc);
+    });
+  }
+
   QueryBuilder<Note, Note, QAfterSortBy> sortByCategoryId() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'categoryId', Sort.asc);
@@ -2190,6 +2817,18 @@ extension NoteQuerySortBy on QueryBuilder<Note, Note, QSortBy> {
     });
   }
 
+  QueryBuilder<Note, Note, QAfterSortBy> sortByPreviewContent() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'previewContent', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Note, Note, QAfterSortBy> sortByPreviewContentDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'previewContent', Sort.desc);
+    });
+  }
+
   QueryBuilder<Note, Note, QAfterSortBy> sortByPreviewDescription() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'previewDescription', Sort.asc);
@@ -2223,6 +2862,18 @@ extension NoteQuerySortBy on QueryBuilder<Note, Note, QSortBy> {
   QueryBuilder<Note, Note, QAfterSortBy> sortByPreviewTitleDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'previewTitle', Sort.desc);
+    });
+  }
+
+  QueryBuilder<Note, Note, QAfterSortBy> sortByResourceStatus() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'resourceStatus', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Note, Note, QAfterSortBy> sortByResourceStatusDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'resourceStatus', Sort.desc);
     });
   }
 
@@ -2300,6 +2951,18 @@ extension NoteQuerySortBy on QueryBuilder<Note, Note, QSortBy> {
 }
 
 extension NoteQuerySortThenBy on QueryBuilder<Note, Note, QSortThenBy> {
+  QueryBuilder<Note, Note, QAfterSortBy> thenByAiSummary() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'aiSummary', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Note, Note, QAfterSortBy> thenByAiSummaryDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'aiSummary', Sort.desc);
+    });
+  }
+
   QueryBuilder<Note, Note, QAfterSortBy> thenByCategoryId() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'categoryId', Sort.asc);
@@ -2348,6 +3011,18 @@ extension NoteQuerySortThenBy on QueryBuilder<Note, Note, QSortThenBy> {
     });
   }
 
+  QueryBuilder<Note, Note, QAfterSortBy> thenByPreviewContent() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'previewContent', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Note, Note, QAfterSortBy> thenByPreviewContentDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'previewContent', Sort.desc);
+    });
+  }
+
   QueryBuilder<Note, Note, QAfterSortBy> thenByPreviewDescription() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'previewDescription', Sort.asc);
@@ -2381,6 +3056,18 @@ extension NoteQuerySortThenBy on QueryBuilder<Note, Note, QSortThenBy> {
   QueryBuilder<Note, Note, QAfterSortBy> thenByPreviewTitleDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'previewTitle', Sort.desc);
+    });
+  }
+
+  QueryBuilder<Note, Note, QAfterSortBy> thenByResourceStatus() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'resourceStatus', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Note, Note, QAfterSortBy> thenByResourceStatusDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'resourceStatus', Sort.desc);
     });
   }
 
@@ -2458,6 +3145,14 @@ extension NoteQuerySortThenBy on QueryBuilder<Note, Note, QSortThenBy> {
 }
 
 extension NoteQueryWhereDistinct on QueryBuilder<Note, Note, QDistinct> {
+  QueryBuilder<Note, Note, QDistinct> distinctByAiSummary({
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'aiSummary', caseSensitive: caseSensitive);
+    });
+  }
+
   QueryBuilder<Note, Note, QDistinct> distinctByCategoryId() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'categoryId');
@@ -2475,6 +3170,17 @@ extension NoteQueryWhereDistinct on QueryBuilder<Note, Note, QDistinct> {
   QueryBuilder<Note, Note, QDistinct> distinctByIsDeleted() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'isDeleted');
+    });
+  }
+
+  QueryBuilder<Note, Note, QDistinct> distinctByPreviewContent({
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(
+        r'previewContent',
+        caseSensitive: caseSensitive,
+      );
     });
   }
 
@@ -2505,6 +3211,17 @@ extension NoteQueryWhereDistinct on QueryBuilder<Note, Note, QDistinct> {
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'previewTitle', caseSensitive: caseSensitive);
+    });
+  }
+
+  QueryBuilder<Note, Note, QDistinct> distinctByResourceStatus({
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(
+        r'resourceStatus',
+        caseSensitive: caseSensitive,
+      );
     });
   }
 
@@ -2560,6 +3277,12 @@ extension NoteQueryProperty on QueryBuilder<Note, Note, QQueryProperty> {
     });
   }
 
+  QueryBuilder<Note, String?, QQueryOperations> aiSummaryProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'aiSummary');
+    });
+  }
+
   QueryBuilder<Note, int, QQueryOperations> categoryIdProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'categoryId');
@@ -2578,6 +3301,12 @@ extension NoteQueryProperty on QueryBuilder<Note, Note, QQueryProperty> {
     });
   }
 
+  QueryBuilder<Note, String?, QQueryOperations> previewContentProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'previewContent');
+    });
+  }
+
   QueryBuilder<Note, String?, QQueryOperations> previewDescriptionProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'previewDescription');
@@ -2593,6 +3322,12 @@ extension NoteQueryProperty on QueryBuilder<Note, Note, QQueryProperty> {
   QueryBuilder<Note, String?, QQueryOperations> previewTitleProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'previewTitle');
+    });
+  }
+
+  QueryBuilder<Note, String?, QQueryOperations> resourceStatusProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'resourceStatus');
     });
   }
 

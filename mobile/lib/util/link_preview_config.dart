@@ -14,7 +14,7 @@ class LinkPreviewConfig {
       return true;
     }
     
-    // YouTube 使用 API（效果更好）
+    // YouTube 使用 API
     if (lowerUrl.contains('youtube.com') || 
         lowerUrl.contains('youtu.be')) {
       return true;
@@ -26,4 +26,15 @@ class LinkPreviewConfig {
 
   /// 调试模式：打印详细日志
   static const bool debugMode = true;
+
+  static bool shouldUseBackendService(String url) {
+    final lowerUrl = url.toLowerCase();
+    // X/Twitter 使用 API
+    if (lowerUrl.contains('x.com') || 
+        lowerUrl.contains('twitter.com') ||
+        lowerUrl.contains('t.co')) {
+      return true;
+    }
+    return false;
+  }
 }

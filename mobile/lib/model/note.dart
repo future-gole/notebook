@@ -14,7 +14,8 @@ class Note {
   String? title;
 
   String? content;
-
+  
+  @Index()
   String? url;
 
   DateTime? time;
@@ -44,6 +45,17 @@ class Note {
   /// 链接预览描述
   String? previewDescription;
 
+  /// 后端返回解析后的 Markdown 正文
+  String? previewContent;
+
+  /// 后端资源抓取状态：PENDING / CRAWLED / EMBEDDED / FAILED
+  ///
+  /// 注意：失败时仍保持 previewContent 为 null，遵循“失败静默”。
+  String? resourceStatus;
+
+  /// AI 生成的摘要
+  String? aiSummary;
+
   Note copyWith({
     Id? id,
     String? uuid,
@@ -58,6 +70,9 @@ class Note {
     String? previewImageUrl,
     String? previewTitle,
     String? previewDescription,
+    String? previewContent,
+    String? resourceStatus,
+    String? aiSummary,
   }) {
     return Note()
       ..id = id ?? this.id
@@ -72,6 +87,9 @@ class Note {
       ..tag = tag ?? this.tag
       ..previewImageUrl = previewImageUrl ?? this.previewImageUrl
       ..previewTitle = previewTitle ?? this.previewTitle
-      ..previewDescription = previewDescription ?? this.previewDescription;
+      ..previewDescription = previewDescription ?? this.previewDescription
+      ..previewContent = previewContent ?? this.previewContent
+      ..resourceStatus = resourceStatus ?? this.resourceStatus
+      ..aiSummary = aiSummary ?? this.aiSummary;
   }
 }

@@ -3,7 +3,6 @@ import 'package:pocketmind/model/category.dart';
 import 'package:pocketmind/data/repositories/isar_category_repository.dart';
 import 'package:pocketmind/providers/infrastructure_providers.dart';
 import 'package:pocketmind/service/category_service.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 part 'category_providers.g.dart';
 

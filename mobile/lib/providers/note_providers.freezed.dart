@@ -3,7 +3,7 @@
 // ignore_for_file: type=lint
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
-part of 'note_detail_provider.dart';
+part of 'note_providers.dart';
 
 // **************************************************************************
 // FreezedGenerator
@@ -14,7 +14,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$NoteDetailState {
 
- Note get note; bool get isLoadingPreview; List<String> get tags; bool get isSaving; Object? get error;
+ Note get note; bool get isLoading; List<String> get tags; bool get isSaving; Object? get error;
 /// Create a copy of NoteDetailState
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -25,16 +25,16 @@ $NoteDetailStateCopyWith<NoteDetailState> get copyWith => _$NoteDetailStateCopyW
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is NoteDetailState&&(identical(other.note, note) || other.note == note)&&(identical(other.isLoadingPreview, isLoadingPreview) || other.isLoadingPreview == isLoadingPreview)&&const DeepCollectionEquality().equals(other.tags, tags)&&(identical(other.isSaving, isSaving) || other.isSaving == isSaving)&&const DeepCollectionEquality().equals(other.error, error));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is NoteDetailState&&(identical(other.note, note) || other.note == note)&&(identical(other.isLoading, isLoading) || other.isLoading == isLoading)&&const DeepCollectionEquality().equals(other.tags, tags)&&(identical(other.isSaving, isSaving) || other.isSaving == isSaving)&&const DeepCollectionEquality().equals(other.error, error));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,note,isLoadingPreview,const DeepCollectionEquality().hash(tags),isSaving,const DeepCollectionEquality().hash(error));
+int get hashCode => Object.hash(runtimeType,note,isLoading,const DeepCollectionEquality().hash(tags),isSaving,const DeepCollectionEquality().hash(error));
 
 @override
 String toString() {
-  return 'NoteDetailState(note: $note, isLoadingPreview: $isLoadingPreview, tags: $tags, isSaving: $isSaving, error: $error)';
+  return 'NoteDetailState(note: $note, isLoading: $isLoading, tags: $tags, isSaving: $isSaving, error: $error)';
 }
 
 
@@ -45,7 +45,7 @@ abstract mixin class $NoteDetailStateCopyWith<$Res>  {
   factory $NoteDetailStateCopyWith(NoteDetailState value, $Res Function(NoteDetailState) _then) = _$NoteDetailStateCopyWithImpl;
 @useResult
 $Res call({
- Note note, bool isLoadingPreview, List<String> tags, bool isSaving, Object? error
+ Note note, bool isLoading, List<String> tags, bool isSaving, Object? error
 });
 
 
@@ -62,10 +62,10 @@ class _$NoteDetailStateCopyWithImpl<$Res>
 
 /// Create a copy of NoteDetailState
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? note = null,Object? isLoadingPreview = null,Object? tags = null,Object? isSaving = null,Object? error = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? note = null,Object? isLoading = null,Object? tags = null,Object? isSaving = null,Object? error = freezed,}) {
   return _then(_self.copyWith(
 note: null == note ? _self.note : note // ignore: cast_nullable_to_non_nullable
-as Note,isLoadingPreview: null == isLoadingPreview ? _self.isLoadingPreview : isLoadingPreview // ignore: cast_nullable_to_non_nullable
+as Note,isLoading: null == isLoading ? _self.isLoading : isLoading // ignore: cast_nullable_to_non_nullable
 as bool,tags: null == tags ? _self.tags : tags // ignore: cast_nullable_to_non_nullable
 as List<String>,isSaving: null == isSaving ? _self.isSaving : isSaving // ignore: cast_nullable_to_non_nullable
 as bool,error: freezed == error ? _self.error : error ,
@@ -153,10 +153,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( Note note,  bool isLoadingPreview,  List<String> tags,  bool isSaving,  Object? error)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( Note note,  bool isLoading,  List<String> tags,  bool isSaving,  Object? error)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _NoteDetailState() when $default != null:
-return $default(_that.note,_that.isLoadingPreview,_that.tags,_that.isSaving,_that.error);case _:
+return $default(_that.note,_that.isLoading,_that.tags,_that.isSaving,_that.error);case _:
   return orElse();
 
 }
@@ -174,10 +174,10 @@ return $default(_that.note,_that.isLoadingPreview,_that.tags,_that.isSaving,_tha
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( Note note,  bool isLoadingPreview,  List<String> tags,  bool isSaving,  Object? error)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( Note note,  bool isLoading,  List<String> tags,  bool isSaving,  Object? error)  $default,) {final _that = this;
 switch (_that) {
 case _NoteDetailState():
-return $default(_that.note,_that.isLoadingPreview,_that.tags,_that.isSaving,_that.error);case _:
+return $default(_that.note,_that.isLoading,_that.tags,_that.isSaving,_that.error);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -194,10 +194,10 @@ return $default(_that.note,_that.isLoadingPreview,_that.tags,_that.isSaving,_tha
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( Note note,  bool isLoadingPreview,  List<String> tags,  bool isSaving,  Object? error)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( Note note,  bool isLoading,  List<String> tags,  bool isSaving,  Object? error)?  $default,) {final _that = this;
 switch (_that) {
 case _NoteDetailState() when $default != null:
-return $default(_that.note,_that.isLoadingPreview,_that.tags,_that.isSaving,_that.error);case _:
+return $default(_that.note,_that.isLoading,_that.tags,_that.isSaving,_that.error);case _:
   return null;
 
 }
@@ -209,11 +209,11 @@ return $default(_that.note,_that.isLoadingPreview,_that.tags,_that.isSaving,_tha
 
 
 class _NoteDetailState implements NoteDetailState {
-  const _NoteDetailState({required this.note, this.isLoadingPreview = false, final  List<String> tags = const [], this.isSaving = false, this.error}): _tags = tags;
+  const _NoteDetailState({required this.note, this.isLoading = false, final  List<String> tags = const [], this.isSaving = false, this.error}): _tags = tags;
   
 
 @override final  Note note;
-@override@JsonKey() final  bool isLoadingPreview;
+@override@JsonKey() final  bool isLoading;
  final  List<String> _tags;
 @override@JsonKey() List<String> get tags {
   if (_tags is EqualUnmodifiableListView) return _tags;
@@ -234,16 +234,16 @@ _$NoteDetailStateCopyWith<_NoteDetailState> get copyWith => __$NoteDetailStateCo
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _NoteDetailState&&(identical(other.note, note) || other.note == note)&&(identical(other.isLoadingPreview, isLoadingPreview) || other.isLoadingPreview == isLoadingPreview)&&const DeepCollectionEquality().equals(other._tags, _tags)&&(identical(other.isSaving, isSaving) || other.isSaving == isSaving)&&const DeepCollectionEquality().equals(other.error, error));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _NoteDetailState&&(identical(other.note, note) || other.note == note)&&(identical(other.isLoading, isLoading) || other.isLoading == isLoading)&&const DeepCollectionEquality().equals(other._tags, _tags)&&(identical(other.isSaving, isSaving) || other.isSaving == isSaving)&&const DeepCollectionEquality().equals(other.error, error));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,note,isLoadingPreview,const DeepCollectionEquality().hash(_tags),isSaving,const DeepCollectionEquality().hash(error));
+int get hashCode => Object.hash(runtimeType,note,isLoading,const DeepCollectionEquality().hash(_tags),isSaving,const DeepCollectionEquality().hash(error));
 
 @override
 String toString() {
-  return 'NoteDetailState(note: $note, isLoadingPreview: $isLoadingPreview, tags: $tags, isSaving: $isSaving, error: $error)';
+  return 'NoteDetailState(note: $note, isLoading: $isLoading, tags: $tags, isSaving: $isSaving, error: $error)';
 }
 
 
@@ -254,7 +254,7 @@ abstract mixin class _$NoteDetailStateCopyWith<$Res> implements $NoteDetailState
   factory _$NoteDetailStateCopyWith(_NoteDetailState value, $Res Function(_NoteDetailState) _then) = __$NoteDetailStateCopyWithImpl;
 @override @useResult
 $Res call({
- Note note, bool isLoadingPreview, List<String> tags, bool isSaving, Object? error
+ Note note, bool isLoading, List<String> tags, bool isSaving, Object? error
 });
 
 
@@ -271,10 +271,10 @@ class __$NoteDetailStateCopyWithImpl<$Res>
 
 /// Create a copy of NoteDetailState
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? note = null,Object? isLoadingPreview = null,Object? tags = null,Object? isSaving = null,Object? error = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? note = null,Object? isLoading = null,Object? tags = null,Object? isSaving = null,Object? error = freezed,}) {
   return _then(_NoteDetailState(
 note: null == note ? _self.note : note // ignore: cast_nullable_to_non_nullable
-as Note,isLoadingPreview: null == isLoadingPreview ? _self.isLoadingPreview : isLoadingPreview // ignore: cast_nullable_to_non_nullable
+as Note,isLoading: null == isLoading ? _self.isLoading : isLoading // ignore: cast_nullable_to_non_nullable
 as bool,tags: null == tags ? _self._tags : tags // ignore: cast_nullable_to_non_nullable
 as List<String>,isSaving: null == isSaving ? _self.isSaving : isSaving // ignore: cast_nullable_to_non_nullable
 as bool,error: freezed == error ? _self.error : error ,

@@ -87,9 +87,7 @@ class IsarCategoryRepository {
       category.updatedAt = now;
 
       // 如果是新记录，生成 UUID
-      if (category.uuid == null) {
-        category.uuid = _uuid.v4();
-      }
+      category.uuid ??= _uuid.v4();
 
       int resultId = 0;
       await _isar.writeTxn(() async {

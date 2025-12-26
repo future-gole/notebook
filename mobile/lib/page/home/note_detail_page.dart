@@ -5,7 +5,6 @@ import 'package:go_router/go_router.dart';
 import 'package:pocketmind/model/note.dart';
 import 'package:pocketmind/providers/category_providers.dart';
 import 'package:pocketmind/providers/app_config_provider.dart';
-import 'package:pocketmind/providers/note_detail_provider.dart';
 import 'package:pocketmind/providers/note_providers.dart';
 import 'package:pocketmind/util/responsive_breakpoints.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -22,17 +21,12 @@ import '../../util/date_formatter.dart';
 /// 桌面端：左右分栏布局
 /// 移动端：垂直滚动布局
 class NoteDetailPage extends ConsumerStatefulWidget {
-  final Note? note;
-  final int? noteId;
+  final Note note;
 
   /// 桌面端返回回调 - 用于清除选中状态
   final VoidCallback? onBack;
 
-  const NoteDetailPage({super.key, this.note, this.noteId, this.onBack})
-    : assert(
-        note != null || noteId != null,
-        'Either note or noteId must be provided',
-      );
+  const NoteDetailPage({super.key, required this.note, this.onBack});
 
   @override
   ConsumerState<NoteDetailPage> createState() => _NoteDetailPageState();
@@ -42,24 +36,22 @@ class _NoteDetailPageState extends ConsumerState<NoteDetailPage> {
   late final ScrollController _scrollController;
   TextEditingController? _titleController;
   TextEditingController? _contentController;
-  Note? _currentNote;
+  late Note _currentNote;
 
   @override
   void initState() {
     super.initState();
     _scrollController = ScrollController();
 
-    if (widget.note != null) {
-      _currentNote = widget.note;
-      _initControllers(_currentNote!);
-    }
+    _currentNote = widget.note;
+    _initControllers(_currentNote);
   }
 
   void _initControllers(Note note) {
     _contentController = TextEditingController(text: note.content ?? '');
     _titleController = TextEditingController(text: note.title ?? '');
 
-    // 监听输入变化并更新 Notifier (带防抖)
+    // 监听输入变化并更新 Notifier
     _titleController!.addListener(() {
       ref
           .read(noteDetailProvider(note).notifier)
@@ -71,9 +63,26 @@ class _NoteDetailPageState extends ConsumerState<NoteDetailPage> {
           .updateNote(content: _contentController!.text);
     });
 
-    // 初始化预览数据
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(noteDetailProvider(note).notifier).loadLinkPreview();
+    Future.microtask(() {
+      if (!mounted) return;
+
+      // 仅当内容为空且从未尝试过（status == null）时才自动加载
+      // 如果 status != null (说明已尝试过，无论是 SUCCESS 还是 FAILED)，都不再自动重试
+      final shouldFetchContent =
+          (note.previewContent == null || note.previewContent!.isEmpty) &&
+          note.resourceStatus == null;
+      // 用 预览 兜底
+      final shouldFetchPreview =
+          (note.previewDescription == null ||
+          note.previewDescription!.isEmpty ||
+          note.previewTitle == null ||
+          note.previewTitle!.isEmpty);
+      if ((shouldFetchPreview || shouldFetchContent) &&
+          _currentNote.url != null) {
+        ref.read(metadataManagerProvider).fetchAndProcessMetadata([
+          _currentNote.url!,
+        ]);
+      }
     });
   }
 
@@ -94,48 +103,15 @@ class _NoteDetailPageState extends ConsumerState<NoteDetailPage> {
       screenWidth,
     );
 
-    // 确定当前显示的笔记
-    Note? displayNote = _currentNote ?? widget.note;
-
-    // 如果当前没有笔记且有 ID，则从 Provider 获取
-    if (displayNote == null && widget.noteId != null) {
-      final noteAsync = ref.watch(noteByIdProvider(id: widget.noteId!));
-      displayNote = noteAsync.value;
-
-      // 只有在真正加载中且没有数据时才显示加载器
-      if (noteAsync.isLoading && displayNote == null) {
-        return const Scaffold(body: Center(child: CircularProgressIndicator()));
-      }
-
-      if (noteAsync.hasError && displayNote == null) {
-        return Scaffold(body: Center(child: Text('加载失败: ${noteAsync.error}')));
-      }
-
-      if (!noteAsync.isLoading && displayNote == null) {
-        return const Scaffold(body: Center(child: Text('笔记不存在')));
-      }
-    }
-
-    // 如果获取到了笔记但尚未初始化控制器，则进行初始化
-    if (displayNote != null && _currentNote == null) {
-      // 立即赋值，避免下次 build 再次进入此逻辑
-      _currentNote = displayNote;
-      _initControllers(displayNote);
-    }
-
-    if (_currentNote == null) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
-    }
-
     // 监听详情状态
-    final detailState = ref.watch(noteDetailProvider(_currentNote!));
+    final detailState = ref.watch(noteDetailProvider(_currentNote));
 
     return Scaffold(
       backgroundColor: colorScheme.surface,
       body: SafeArea(
         child: Column(
           children: [
-            // 顶部导航栏 - 已抽离为独立组件
+            // 顶部导航栏
             NoteDetailTopBar(
               onBack: () {
                 if (widget.onBack != null) {
@@ -187,8 +163,9 @@ class _NoteDetailPageState extends ConsumerState<NoteDetailPage> {
               formattedDate: DateFormatter.formatChinese(state.note.time),
               previewImageUrl: state.note.previewImageUrl,
               previewTitle: state.note.previewTitle,
-              previewDescription: state.note.previewDescription,
-              isLoadingPreview: state.isLoadingPreview,
+              previewContent:
+                  state.note.previewContent ?? state.note.previewDescription,
+              isLoadingPreview: state.isLoading,
               onSave: () => ref
                   .read(noteDetailProvider(_currentNote!).notifier)
                   .saveNote(),
@@ -250,8 +227,9 @@ class _NoteDetailPageState extends ConsumerState<NoteDetailPage> {
             formattedDate: DateFormatter.formatChinese(state.note.time),
             previewImageUrl: state.note.previewImageUrl,
             previewTitle: state.note.previewTitle,
-            previewDescription: state.note.previewDescription,
-            isLoadingPreview: state.isLoadingPreview,
+            previewContent:
+                state.note.previewContent ?? state.note.previewDescription,
+            isLoadingPreview: state.isLoading,
             onSave: () =>
                 ref.read(noteDetailProvider(_currentNote!).notifier).saveNote(),
             onLaunchUrl: _launchUrl,

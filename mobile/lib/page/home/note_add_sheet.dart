@@ -171,7 +171,7 @@ class _NoteEditorSheetState extends ConsumerState<NoteEditorSheet>
     final noteService = ref.read(noteServiceProvider);
 
     try {
-      await noteService.addOrUpdateNote(
+      await noteService.addNote(
         title: title.isNotEmpty ? title : null,
         content: content,
         categoryId: _selectedCategoryId,

@@ -86,7 +86,7 @@ class EditNotePageState extends ConsumerState<EditNotePage> {
 
   void _onDone() async {
     final noteService = ref.read(noteServiceProvider);
-    await noteService.addOrUpdateNote(
+    await noteService.updateNote(
       id: widget.id,
       title: _titleEnabled ? _titleController.text : null, // 根据设置决定是否保存标题
       content: _contentController.text,

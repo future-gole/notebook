@@ -111,7 +111,7 @@ final class MetadataManagerProvider
   }
 }
 
-String _$metadataManagerHash() => r'04f7b0e84f079e1368cafd25e6fcd9db684265ec';
+String _$metadataManagerHash() => r'74916151db50f08432a08c78480ee1a28c71c1e0';
 
 /// NoteService Provider - 业务层
 
@@ -157,7 +157,7 @@ final class NoteServiceProvider
   }
 }
 
-String _$noteServiceHash() => r'b23230fef6b3448e075b2697e96c88d811f8a89c';
+String _$noteServiceHash() => r'6dfc7a2f839c66c8246127e978801af7dccebb30';
 
 /// 搜索查询 Provider - 用于管理当前搜索关键词
 
@@ -489,6 +489,104 @@ abstract class _$NoteByCategory extends $StreamNotifier<List<Note>> {
             as $ClassProviderElement<
               AnyNotifier<AsyncValue<List<Note>>, List<Note>>,
               AsyncValue<List<Note>>,
+              Object?,
+              Object?
+            >;
+    element.handleValue(ref, created);
+  }
+}
+
+@ProviderFor(NoteDetail)
+const noteDetailProvider = NoteDetailFamily._();
+
+final class NoteDetailProvider
+    extends $NotifierProvider<NoteDetail, NoteDetailState> {
+  const NoteDetailProvider._({
+    required NoteDetailFamily super.from,
+    required Note super.argument,
+  }) : super(
+         retry: null,
+         name: r'noteDetailProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
+
+  @override
+  String debugGetCreateSourceHash() => _$noteDetailHash();
+
+  @override
+  String toString() {
+    return r'noteDetailProvider'
+        ''
+        '($argument)';
+  }
+
+  @$internal
+  @override
+  NoteDetail create() => NoteDetail();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(NoteDetailState value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<NoteDetailState>(value),
+    );
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is NoteDetailProvider && other.argument == argument;
+  }
+
+  @override
+  int get hashCode {
+    return argument.hashCode;
+  }
+}
+
+String _$noteDetailHash() => r'1e6f05a7d2070e18f6b2383b9c6abbbc7d4ce818';
+
+final class NoteDetailFamily extends $Family
+    with
+        $ClassFamilyOverride<
+          NoteDetail,
+          NoteDetailState,
+          NoteDetailState,
+          NoteDetailState,
+          Note
+        > {
+  const NoteDetailFamily._()
+    : super(
+        retry: null,
+        name: r'noteDetailProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
+
+  NoteDetailProvider call(Note initialNote) =>
+      NoteDetailProvider._(argument: initialNote, from: this);
+
+  @override
+  String toString() => r'noteDetailProvider';
+}
+
+abstract class _$NoteDetail extends $Notifier<NoteDetailState> {
+  late final _$args = ref.$arg as Note;
+  Note get initialNote => _$args;
+
+  NoteDetailState build(Note initialNote);
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final created = build(_$args);
+    final ref = this.ref as $Ref<NoteDetailState, NoteDetailState>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<NoteDetailState, NoteDetailState>,
+              NoteDetailState,
               Object?,
               Object?
             >;

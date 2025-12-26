@@ -42,9 +42,7 @@ class _NoteItemState extends ConsumerState<NoteItem>
 
   // 显示笔记详情页
   void _showNoteDetail(BuildContext context) {
-    if (widget.note.id != null) {
-      context.push(RoutePaths.noteDetailWithId(widget.note.id!));
-    }
+    context.go(RoutePaths.noteDetail, extra: widget.note);
   }
 
   String _formatDate(DateTime? date) {

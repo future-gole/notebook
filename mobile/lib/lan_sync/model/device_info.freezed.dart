@@ -22,6 +22,7 @@ mixin _$DeviceInfo {
  int get port;/// 设备平台 (android, ios, windows, etc.)
  String? get platform;/// App 版本
  String? get appVersion;/// 最后活跃时间
+// ignore: invalid_annotation_target
 @JsonKey(fromJson: _dateTimeFromMillis, toJson: _dateTimeToMillis) DateTime? get lastSeen;
 /// Create a copy of DeviceInfo
 /// with the given fields replaced by the non-null parameter values.
@@ -238,6 +239,7 @@ class _DeviceInfo implements DeviceInfo {
 /// App 版本
 @override final  String? appVersion;
 /// 最后活跃时间
+// ignore: invalid_annotation_target
 @override@JsonKey(fromJson: _dateTimeFromMillis, toJson: _dateTimeToMillis) final  DateTime? lastSeen;
 
 /// Create a copy of DeviceInfo
