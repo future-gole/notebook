@@ -32,25 +32,28 @@ final class ResourcePersistenceMapper {
         );
     }
 
-    static ResourceMetadata.ProcessStatus toProcessStatus(ResourceStatus status) {
-        return switch (status) {
-            case PENDING -> ResourceMetadata.ProcessStatus.PENDING;
-            case CRAWLED -> ResourceMetadata.ProcessStatus.CRAWLED;
-            case EMBEDDED -> ResourceMetadata.ProcessStatus.EMBEDDED;
-            case FAILED -> ResourceMetadata.ProcessStatus.FAILED;
-            default -> throw new IllegalStateException("当前 DB 不支持状态: " + status);
-        };
-    }
-
-    private static ResourceStatus fromProcessStatus(ResourceMetadata.ProcessStatus status) {
-        if (status == null) {
-            return ResourceStatus.PENDING;
-        }
+    static ResourceStatus toProcessStatus(ResourceStatus status) {
         return switch (status) {
             case PENDING -> ResourceStatus.PENDING;
             case CRAWLED -> ResourceStatus.CRAWLED;
             case EMBEDDED -> ResourceStatus.EMBEDDED;
             case FAILED -> ResourceStatus.FAILED;
+            default -> throw new IllegalStateException("当前 DB 不支持状态: " + status);
+        };
+    }
+
+    private static ResourceStatus fromProcessStatus(ResourceStatus status) {
+        if (status == null) {
+            return ResourceStatus.PENDING;
+        }
+        // todo 这边需要修改一下，先放着
+        return switch (status) {
+            case PENDING -> ResourceStatus.PENDING;
+            case CRAWLED -> ResourceStatus.CRAWLED;
+            case EMBEDDED -> ResourceStatus.EMBEDDED;
+            case FAILED -> ResourceStatus.FAILED;
+            case ANALYZING, ANALYZED, EMBEDDING -> ResourceStatus.CRAWLED;
+            default -> throw new IllegalStateException("当前 DB 不支持状态: " + status);
         };
     }
 }

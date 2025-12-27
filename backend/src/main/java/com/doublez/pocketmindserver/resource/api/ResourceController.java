@@ -5,8 +5,12 @@ import com.doublez.pocketmindserver.resource.api.dto.StatusRequest;
 import com.doublez.pocketmindserver.resource.api.dto.SubmitRequest;
 import com.doublez.pocketmindserver.resource.api.dto.SubmitResponse;
 import com.doublez.pocketmindserver.resource.application.ResourceApplicationService;
+import com.doublez.pocketmindserver.resource.domain.ResourceStatus;
+import com.doublez.pocketmindserver.shared.web.ApiCode;
+import com.doublez.pocketmindserver.shared.web.BusinessException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -33,6 +37,10 @@ public class ResourceController {
     @PostMapping("/status")
     public ResponseEntity<List<ResourceStatusDTO>> checkStatus(@Valid @RequestBody StatusRequest request) {
         List<ResourceStatusDTO> statusList = resourceApplicationService.checkStatus(request);
+        if (statusList.isEmpty()) {
+            throw new BusinessException(ApiCode.RESOURCE_NOT_FOUND, HttpStatus.NOT_FOUND);
+        }
+
         return ResponseEntity.ok(statusList);
     }
 }

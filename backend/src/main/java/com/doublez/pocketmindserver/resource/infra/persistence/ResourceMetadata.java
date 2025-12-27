@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.doublez.pocketmindserver.resource.domain.ResourceStatus;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -27,7 +28,7 @@ public class ResourceMetadata {
 
     private String aiSummary;
 
-    private ProcessStatus processStatus;
+    private ResourceStatus processStatus;
 
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createdAt;
@@ -35,10 +36,4 @@ public class ResourceMetadata {
     @TableField(fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime updatedAt;
 
-    public enum ProcessStatus {
-        PENDING,
-        CRAWLED,
-        EMBEDDED,
-        FAILED
-    }
 }

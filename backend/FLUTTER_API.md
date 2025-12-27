@@ -18,14 +18,14 @@
 
 ```json
 {
-  "code": 0,
+  "code": 200,
   "message": "success",
   "data": {},
   "traceId": "..."
 }
 ```
 
-- `code`：数字业务码（`0` 表示成功）
+- `code`：数字业务码（`200` 表示成功）
 - `message`：提示文案（成功时一般为 `success`；失败时为错误提示）
 - `data`：业务数据（不同接口不同）
 - `traceId`：后端日志链路标识（排查问题用）
@@ -134,7 +134,7 @@ Request:
 }
 ```
 
-Response `data`：数组，每项结构如下：
+Response `data`：数组，每项 data 结构如下(后端没有对应url的值那么返回就是空的)：
 ```json
 {
   "url": "https://example.com/article",

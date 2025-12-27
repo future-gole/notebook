@@ -1,5 +1,6 @@
 package com.doublez.pocketmindserver.resource.api.dto;
 
+import com.doublez.pocketmindserver.resource.domain.ResourceStatus;
 import com.doublez.pocketmindserver.resource.infra.persistence.ResourceMetadata;
 
 import java.util.UUID;
@@ -10,6 +11,6 @@ public record ResourceStatusDTO(
         String title,
         String previewContent,
         String aiSummary,
-        ResourceMetadata.ProcessStatus status
+        ResourceStatus status
 ) {
 }

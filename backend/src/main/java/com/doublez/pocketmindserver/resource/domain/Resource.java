@@ -44,12 +44,12 @@ public class Resource {
         return resource;
     }
 
-    public void markCrawled(String title, String contentMarkdown) {
+    public void markCrawled(String title, String contentHtml) {
         if (this.status == ResourceStatus.FAILED) {
             throw new IllegalStateException("资源已失败，不能标记为抓取成功");
         }
         this.title = title;
-        this.contentMarkdown = contentMarkdown;
+        this.contentMarkdown = contentHtml;
         this.status = ResourceStatus.CRAWLED;
     }
 

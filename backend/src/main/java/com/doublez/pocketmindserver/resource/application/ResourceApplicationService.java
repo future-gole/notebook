@@ -4,6 +4,7 @@ import com.doublez.pocketmindserver.resource.api.dto.ResourceStatusDTO;
 import com.doublez.pocketmindserver.resource.api.dto.StatusRequest;
 import com.doublez.pocketmindserver.resource.api.dto.SubmitRequest;
 import com.doublez.pocketmindserver.resource.api.dto.SubmitResponse;
+import com.doublez.pocketmindserver.resource.domain.ResourceStatus;
 import com.doublez.pocketmindserver.resource.infra.mq.event.CrawlerRequestEvent;
 import com.doublez.pocketmindserver.resource.infra.persistence.ResourceMetadata;
 import com.doublez.pocketmindserver.resource.domain.Resource;
@@ -69,24 +70,15 @@ public class ResourceApplicationService {
             return List.of();
         }
 
-        // 同一个 URL 可能有多条记录（例如历史失败后重新提交），取 updatedAt 最新的一条
-        // 这里没有 domain 的 updatedAt，所以退化为：同 URL 取任意一条（优先非 FAILED）
-        Map<String, Resource> bestByUrl = resources.stream()
-                .collect(Collectors.toMap(
-                        Resource::getOriginalUrl,
-                        Function.identity(),
-                        (a, b) -> {
-                            if (a.getStatus() == com.doublez.pocketmindserver.resource.domain.ResourceStatus.FAILED
-                                    && b.getStatus() != com.doublez.pocketmindserver.resource.domain.ResourceStatus.FAILED) {
-                                return b;
-                            }
-                            return a;
-                        }
-                ));
+        // 1. 一个url只会有一个记录，不会有多个
+        Map<String, Resource> resourceMap = resources.stream()
+                .collect(Collectors.toMap(Resource::getOriginalUrl, Function.identity(), (a, b) -> a));
 
         return request.urls().stream()
                 .map(url -> {
-                    Resource r = bestByUrl.get(url);
+                    Resource r = resourceMap.get(url);
+                    // 2. 如果无记录返回错误码 (这里返回null，由Controller判断空列表抛出异常)
+                    // 如果有记录且为fail 那么还是返回正常状态码
                     if (r == null) {
                         return null;
                     }
@@ -103,18 +95,17 @@ public class ResourceApplicationService {
                 .toList();
     }
 
-    private ResourceMetadata.ProcessStatus mapToProcessStatus(com.doublez.pocketmindserver.resource.domain.ResourceStatus status) {
+    private ResourceStatus mapToProcessStatus(ResourceStatus status) {
         // 兼容 domain 扩展状态，避免 valueOf 直接抛异常
         return switch (status) {
-            case PENDING -> ResourceMetadata.ProcessStatus.PENDING;
-            case CRAWLED, EMBEDDING, ANALYZING, ANALYZED -> ResourceMetadata.ProcessStatus.CRAWLED;
-            case EMBEDDED -> ResourceMetadata.ProcessStatus.EMBEDDED;
-            case FAILED -> ResourceMetadata.ProcessStatus.FAILED;
+            case PENDING -> ResourceStatus.PENDING;
+            case CRAWLED, EMBEDDING, ANALYZING, ANALYZED -> ResourceStatus.CRAWLED;
+            case EMBEDDED -> ResourceStatus.EMBEDDED;
+            case FAILED -> ResourceStatus.FAILED;
         };
     }
 
     public void processCrawlerRequest(CrawlerRequestEvent event) {
-        // userId 来自消息体，避免跨租户更新
         var resourceOpt = resourceRepository.findByIdAndUserId(event.uuid(), event.userId());
         if (resourceOpt.isEmpty()) {
             return;
